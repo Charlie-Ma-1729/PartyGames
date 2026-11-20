@@ -32,9 +32,14 @@ export class Board {
     c.strokeStyle = op.c; c.fillStyle = op.c; c.lineWidth = op.w || 6;
     switch (op.k) {
       case 'path':
-        this._poly(op.pts, op.w);
+        if (op.bl) { // 模糊筆刷：實心的細筆心 + 同色的柔邊光暈（shadowBlur 不受座標縮放影響，要自己乘上 SCALE）
+          c.shadowColor = op.c; c.shadowBlur = op.w * 1.3 * SCALE;
+          c.lineWidth = op.w * 0.7;
+        }
+        this._poly(op.pts, op.bl ? op.w * 0.7 : op.w);
         if (op.m) this._poly(op.pts.map(([x, y]) => [W - x, y]), op.w);
         break;
+      case 'spray': this._spray(op); break;
       case 'dot':
         for (const [x, y] of op.pts) { c.beginPath(); c.arc(x, y, op.w / 2, 0, Math.PI * 2); c.fill(); }
         break;
@@ -66,11 +71,39 @@ export class Board {
     c.stroke();
   }
 
+  /** 噴槍：每個點周圍撒一圈小點。亂數由 op.sd 與點的位置、序號決定，所以每台裝置（包含重連重播）畫出來都一樣；i0 = 這個 op 的第一點在整批裡的序號（只有本機即時繪製用） */
+  _spray(op) {
+    const c = this.ctx;
+    op.pts.forEach(([x, y], k) => {
+      let seed = ((op.sd || 0) + ((k + (op.i0 || 0)) * 7919) + x * 31 + y * 17) >>> 0;
+      const rnd = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
+      for (let n = 0; n < 32; n++) {
+        const a = rnd() * Math.PI * 2;
+        const r = op.w * Math.pow(rnd(), 0.65); // 中間比邊緣密一點
+        c.beginPath(); c.arc(x + Math.cos(a) * r, y + Math.sin(a) * r, 1.9, 0, Math.PI * 2); c.fill();
+      }
+    });
+  }
+
   _stamp({ p: [x, y], sh, sz }) {
     const c = this.ctx;
     const r = sz / 2;
     c.beginPath();
-    if (sh === 'circle') c.arc(x, y, r, 0, Math.PI * 2);
+    if (sh === 'drop') {
+      c.moveTo(x, y - r);
+      c.bezierCurveTo(x + r * 0.9, y + r * 0.1, x + r * 0.75, y + r, x, y + r);
+      c.bezierCurveTo(x - r * 0.75, y + r, x - r * 0.9, y + r * 0.1, x, y - r);
+      c.closePath();
+    } else if (sh === 'moon') { // 月牙：外圓減掉往右偏的內圓，兩圓交點之間畫兩段弧
+      const d = r * 0.5; const ri = r * 0.82;
+      const a = (d * d + r * r - ri * ri) / (2 * d);
+      const hh = Math.sqrt(r * r - a * a);
+      const th = Math.atan2(hh, a);
+      const ph = Math.atan2(hh, a - d);
+      c.arc(x, y, r, -th, th, true);
+      c.arc(x + d, y, ri, ph, -ph + Math.PI * 2, false);
+      c.closePath();
+    } else if (sh === 'circle') c.arc(x, y, r, 0, Math.PI * 2);
     else if (sh === 'tri') { c.moveTo(x, y - r); c.lineTo(x + r, y + r * 0.8); c.lineTo(x - r, y + r * 0.8); c.closePath(); }
     else if (sh === 'heart') {
       c.moveTo(x, y + r * 0.9);
@@ -138,8 +171,9 @@ export class Input {
     const color = colorOf(card, h.assigned(), { ci: h.opts().ci });
     this.cur = { kind: card.kind, start: p, last: p, color, card };
     if (card.kind === 'path') {
-      if (h.ink() < 1) { this.cur = null; h.flash(); return; }
-      h.spend(1);
+      const base = card.strokeBase ?? 1;
+      if (h.ink() < base) { this.cur = null; h.flash(); return; }
+      h.spend(base);
       Object.assign(this.cur, { s: ++this.strokeId, pts: [p], len: 0, fresh: true, dead: false });
       h.board.drawOp(this._pathOp([p]));
       this.timer = setInterval(() => this.flush(), FLUSH_MS);
@@ -147,7 +181,17 @@ export class Input {
       this.cur.pts = [];
       this._dot(p);
       this.timer = setInterval(() => this.flush(), FLUSH_MS);
-    } else this._preview(p);
+    } else if (card.kind === 'spray') {
+      Object.assign(this.cur, { pts: [], sd: Math.floor(Math.random() * 1e6), moved: false });
+      this._spray(p);
+      this.timer = setInterval(() => this.flush(), FLUSH_MS);
+    } else {
+      if (card.kind === 'stamp') { // 形狀選「🎲 隨機」就每按一次抽一個；按住拖曳的預覽與放開後蓋出來的是同一個
+        const sh = h.opts().sh;
+        this.cur.sh = STAMPS.includes(sh) ? sh : STAMPS[Math.floor(Math.random() * STAMPS.length)];
+      }
+      this._preview(p);
+    }
   }
 
   move(e) {
@@ -157,7 +201,7 @@ export class Input {
     for (const ev of evs.length ? evs : [e]) {
       const p = this.point(ev);
       if (c.kind === 'path') this._pathTo(p);
-      else if (c.kind === 'dot') { if (dist(c.last, p) >= c.card.width * 0.8) this._dot(p); } else this._preview(p);
+      else if (c.kind === 'dot') { if (dist(c.last, p) >= c.card.gap) this._dot(p); } else if (c.kind === 'spray') { if (dist(c.last, p) >= c.card.gap) { this._spray(p); c.moved = true; } } else this._preview(p);
     }
   }
 
@@ -165,7 +209,7 @@ export class Input {
     const c = this.cur;
     if (!c) return;
     const h = this.h;
-    if (c.kind === 'path' || c.kind === 'dot') { this.flush(); this.cancel(); return; }
+    if (c.kind === 'path' || c.kind === 'dot' || c.kind === 'spray') { this.flush(true); this.cancel(); return; }
     const p = cancelled ? c.last : this.point(e);
     const raw = this._shape(c, p);
     this.cancel();
@@ -182,6 +226,7 @@ export class Input {
     const { card, color } = this.cur;
     const op = { k: 'path', pts, c: color, w: card.width };
     if (card.mirror) op.m = 1;
+    if (card.blur) op.bl = 1;
     return op;
   }
 
@@ -208,9 +253,28 @@ export class Input {
     c.last = p;
   }
 
-  flush() {
+  /** 噴槍：在 p 噴一團；這個 op 的第 i 點用序號 i 當亂數種子的一部分，所以本機逐點畫的跟之後整批送出的一樣 */
+  _spray(p) {
+    const c = this.cur; const h = this.h;
+    if (h.ink() < c.card.perPt) { h.flash(); return; }
+    h.spend(c.card.perPt);
+    h.board.drawOp({ k: 'spray', pts: [p], c: c.color, w: c.card.width, sd: c.sd, i0: c.pts.length });
+    c.pts.push(p);
+    c.last = p;
+  }
+
+  flush(final = false) {
     const c = this.cur;
     if (!c) return;
+    if (c.kind === 'spray') {
+      if (!final && !c.moved) this._spray(c.last); // 停著不動也會一直噴（越噴越濃）
+      c.moved = false;
+      if (!c.pts.length) return;
+      const ops = [{ k: 'spray', pts: c.pts, sd: c.sd, ci: this.h.opts().ci }];
+      c.pts = []; c.sd = Math.floor(Math.random() * 1e6);
+      this.h.send(ops);
+      return;
+    }
     if (c.kind === 'dot') {
       if (!c.pts.length) return;
       const ops = [];
@@ -237,7 +301,7 @@ export class Input {
       case 'line': return { k: 'line', a: c.start, b: p, ci: o.ci };
       case 'circle': return { k: 'circle', p: c.start, r: dist(c.start, p), f: o.f ? 1 : 0, ci: o.ci };
       case 'rect': return { k: 'rect', a: c.start, b: p, f: o.f ? 1 : 0, ci: o.ci };
-      default: return { k: 'stamp', p, sh: STAMPS.includes(o.sh) ? o.sh : 'star', ci: o.ci };
+      default: return { k: 'stamp', p, sh: c.sh, ci: o.ci };
     }
   }
 

@@ -33,7 +33,7 @@ export function loadDrawBank() {
       for (const [name, lv] of Object.entries(j.categories || {})) {
         const seen = new Set();
         const list = [];
-        for (const lvl of ['easy', 'medium']) {
+        for (const lvl of ['easy', 'medium', 'hard']) {
           for (const raw of (lv && lv[lvl]) || []) {
             const names = String(raw).split('|').map((x) => x.trim()).filter(Boolean);
             if (!names.length || seen.has(names[0])) continue;
@@ -50,6 +50,8 @@ export function loadDrawBank() {
 loadDrawBank();
 process.on('SIGHUP', () => { try { loadDrawBank(); } catch (e) { console.error(e); } });
 
+/** 難度 → 會出哪些等級的題目 */
+const LEVELS = { easy: ['easy'], all: ['easy', 'medium'], hard: ['medium', 'hard'], any: ['easy', 'medium', 'hard'] };
 const DEFAULTS = { category: ALL, difficulty: 'easy', duration: 75, rounds: 1 };
 const freshSeat = (extra = {}) => ({ score: 0, guessed: 0, assists: 0, spectator: false, ...extra });
 
@@ -70,13 +72,14 @@ export class CoopDrawGame extends GameBase {
     const cat = s.category ?? prev.category;
     return {
       category: cat === ALL || bank[cat] ? cat : prev.category,
-      difficulty: oneOf(s.difficulty ?? prev.difficulty, ['easy', 'all'], prev.difficulty),
+      difficulty: oneOf(s.difficulty ?? prev.difficulty, Object.keys(LEVELS), prev.difficulty),
       duration: num(s.duration ?? prev.duration, 30, 180, prev.duration),
       rounds: num(s.rounds ?? prev.rounds, 1, 3, prev.rounds),
     };
   }
   static info() {
-    return { categories: Object.entries(bank).map(([name, list]) => ({ name, easy: list.filter((w) => w.lvl === 'easy').length, medium: list.filter((w) => w.lvl === 'medium').length })) };
+    const n = (list, lvl) => list.filter((w) => w.lvl === lvl).length;
+    return { categories: Object.entries(bank).map(([name, list]) => ({ name, easy: n(list, 'easy'), medium: n(list, 'medium'), hard: n(list, 'hard') })) };
   }
   static restore() { return null; } // 計時器多、畫布大，重啟後直接回大廳
 
@@ -96,7 +99,9 @@ export class CoopDrawGame extends GameBase {
   poolWords() {
     const s = this.settings;
     const lists = s.category === ALL ? Object.values(bank) : [bank[s.category] || []];
-    return lists.flat().filter((w) => s.difficulty === 'all' || w.lvl === 'easy');
+    const lv = LEVELS[s.difficulty] || LEVELS.easy;
+    const seen = new Set(); // 不同分類可能有同一題，只留一份
+    return lists.flat().filter((w) => lv.includes(w.lvl) && !seen.has(w.word) && seen.add(w.word));
   }
 
   check() {

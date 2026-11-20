@@ -8,7 +8,7 @@ import path from 'node:path';
 process.env.DUBBING_DIR = mkdtempSync(path.join(tmpdir(), 'partygames-cd-'));
 process.env.FFMPEG_PATH = 'ffmpeg-does-not-exist';
 const { Room } = await import('../server/room.mjs');
-const { norm, bank } = await import('../server/games/coopdraw.mjs');
+const { norm, bank, CoopDrawGame } = await import('../server/games/coopdraw.mjs');
 const rules = await import('../js/games/coopdraw/rules.js');
 const { CARDS, PALETTE, INK_MAX, cardById, sanitizeOp, inkAt } = rules;
 
@@ -19,6 +19,8 @@ function fakeConn() {
   return { sent: [], send(m) { this.sent.push(m.t === 'g' ? { ...m.m, _g: m.g } : m); }, close() { this.closed = true; }, last(t) { return [...this.sent].reverse().find((m) => m.t === t); }, all(t) { return this.sent.filter((m) => m.t === t); } };
 }
 const G = (room, conn, m) => room.handle(conn, { t: 'g', m });
+/** 這條連線有沒有收到題目：只看合力塗鴉的遊戲訊息（大廳的遊戲說明、題庫分類名稱裡可能剛好有單字題的字，不算洩漏） */
+const leaked = (conn, word) => conn.sent.some((m) => m._g === 'coopdraw' && m.t !== 'skipped' && (m.t === 'word' || m.t === 'card' || JSON.stringify(m).includes(word)));
 
 /** n 位玩家的房間，選好合力塗鴉並開始，等進入作畫階段 */
 async function play(n, settings = {}, timing = {}) {
@@ -47,7 +49,8 @@ const giveCard = (t, id, cardId, color = '#e63946') => { t.cards.set(id, { card:
 test('題庫：載入、有別名、答案正規化', () => {
   assert.ok(Object.keys(bank).length >= 5, '至少 5 個分類');
   const all = Object.values(bank).flat();
-  assert.ok(all.length >= 200, `題目夠多（${all.length}）`);
+  assert.ok(all.length >= 600, `題目夠多（${all.length}）`);
+  for (const lvl of ['easy', 'medium', 'hard']) assert.ok(all.filter((w) => w.lvl === lvl).length >= 100, `${lvl} 題數`);
   const bike = all.find((w) => w.word === '腳踏車');
   assert.ok(bike && bike.answers.includes(norm('單車')) && bike.answers.includes(norm('自行車')));
   assert.equal(norm(' 腳 踏車！ '), '腳踏車');
@@ -87,13 +90,63 @@ test('rules：墨水不足時自由手繪截斷、形狀整個拒絕、新的一
   assert.equal(sanitizeOp(pen, null, { k: 'path', s: 1, pts: [[300, 300]] }, 0.5, { s: 1, len: 0, last: [5, 5] }).op, null, '沒墨水時不能靠「單點段落」免費畫點');
   assert.equal(sanitizeOp(pen, null, { k: 'path', s: 1, pts: [[5, 5]] }, 50, { s: 1, len: 0, last: [5, 5] }).op, null, '接續段落只有一個點 = 什麼都沒畫');
   assert.equal(sanitizeOp(cardById('ruler'), null, { k: 'line', a: [0, 0], b: [800, 0] }, 50).op, null, '墨水不夠，整條直線被拒絕');
-  const short = cardById('shortpen'); // maxLen 140
-  const long = sanitizeOp(short, null, { k: 'path', s: 1, pts: [[0, 0], [100, 0], [200, 0], [300, 0]] }, 100);
-  assert.equal(long.op.pts.length, 2, '短筆一筆最多約 140 像素');
-  const next = sanitizeOp(short, null, { k: 'path', s: 1, pts: [[100, 0], [200, 0]] }, 100, long.stroke);
+  const short = cardById('shortpen'); // maxLen 80
+  const long = sanitizeOp(short, null, { k: 'path', s: 1, pts: [[0, 0], [50, 0], [100, 0], [150, 0]] }, 100);
+  assert.equal(long.op.pts.length, 2, '短筆一筆最多約 80 像素');
+  assert.ok(Math.abs(long.cost - (short.strokeBase + 50 * short.perPx)) < 1e-9, '開一筆要多花 strokeBase');
+  const next = sanitizeOp(short, null, { k: 'path', s: 1, pts: [[50, 0], [100, 0]] }, 100, long.stroke);
   assert.equal(next.op, null, '同一筆累計長度已用完');
-  const fresh = sanitizeOp(short, null, { k: 'path', s: 2, pts: [[100, 0], [200, 0]] }, 100, long.stroke);
+  const fresh = sanitizeOp(short, null, { k: 'path', s: 2, pts: [[100, 0], [150, 0]] }, 100, long.stroke);
   assert.ok(fresh.op, '換一筆就重新計算');
+});
+
+test('rules：點點筆比短筆省一點，但都比以前貴', () => {
+  const short = cardById('shortpen'); const dots = cardById('dots');
+  const perPxShort = short.perPx;
+  const perPxDots = dots.perDot / dots.gap; // 拖著點時每像素的花費
+  assert.ok(perPxDots < perPxShort && perPxDots >= perPxShort * 0.6, `點點筆（${perPxDots.toFixed(3)}/px）略優於短筆（${perPxShort}/px）`);
+  assert.ok(short.perPx >= 0.15 && dots.perDot >= 2, '兩者都已經削弱');
+  const r = sanitizeOp(dots, null, { k: 'dot', pts: Array.from({ length: 30 }, (_, i) => [i * 10, 5]) }, 100);
+  assert.equal(r.op.pts.length, 20, '一個操作最多 20 點');
+  assert.ok(sanitizeOp(dots, null, { k: 'dot', pts: Array.from({ length: 20 }, (_, i) => [i * 10, 5]) }, 10).op.pts.length <= 5, '墨水不夠就少畫幾點');
+});
+
+test('rules：所有自由畫線的筆刷墨水都很少（滿墨水只能畫幾百像素）', () => {
+  const brushes = CARDS.filter((c) => c.kind === 'path' && !c.erase);
+  assert.deepEqual(brushes.map((c) => c.id).sort(), ['blur', 'colorpen', 'fat', 'mirror', 'shortpen']);
+  for (const c of brushes) {
+    const px = (INK_MAX - (c.strokeBase ?? 1)) / c.perPx;
+    assert.ok(px <= 320, `${c.id} 滿墨水可以畫 ${Math.round(px)} 像素，太多了`);
+    const pts = Array.from({ length: 60 }, (_, i) => [i * 10, 50]);
+    const r = sanitizeOp(c, null, { k: 'path', s: 1, pts }, INK_MAX);
+    assert.ok(r.op.pts.length < 40, `${c.id} 一次最多畫 ${r.op.pts.length} 點`);
+  }
+});
+
+test('rules：噴槍（噴點、花費、種子）與模糊筆刷（柔邊旗標）', () => {
+  const spray = cardById('spray');
+  const r = sanitizeOp(spray, null, { k: 'spray', pts: [[100, 100], [110, 100], [9999, -5]], sd: 12345, ci: 4 }, 100);
+  assert.equal(r.op.k, 'spray');
+  assert.equal(r.op.c, PALETTE[4]);
+  assert.equal(r.op.sd, 12345);
+  assert.deepEqual(r.op.pts[2], [800, 0], '座標夾限');
+  assert.ok(Math.abs(r.cost - 3 * spray.perPt) < 1e-9);
+  assert.equal(sanitizeOp(spray, null, { k: 'spray', pts: [[1, 1], [2, 2], [3, 3]] }, spray.perPt * 2.5).op.pts.length, 2, '墨水不夠就少噴幾點');
+  assert.equal(sanitizeOp(spray, null, { k: 'spray', pts: [[1, 1]] }, 0.5).op, null);
+  assert.equal(sanitizeOp(spray, null, { k: 'spray', pts: [[1, 1]], sd: 1.5 }, 50).op.sd, 0, '種子不是整數就歸零');
+  assert.equal(sanitizeOp(cardById('ruler'), null, { k: 'spray', pts: [[1, 1]] }, 50).op, null, '別張卡不能噴');
+  const blur = cardById('blur');
+  const b = sanitizeOp(blur, null, { k: 'path', s: 1, pts: [[10, 10], [60, 10]], ci: 2 }, 100);
+  assert.equal(b.op.bl, 1, '模糊筆刷的線帶柔邊旗標');
+  assert.equal(b.op.c, PALETTE[2]);
+  assert.equal(sanitizeOp(cardById('fat'), null, { k: 'path', s: 1, pts: [[10, 10], [60, 10]] }, 100).op.bl, undefined, '其他筆刷沒有');
+});
+
+test('rules：印章可以蓋所有形狀，不認得的形狀退回星星', () => {
+  const stamp = cardById('stamp');
+  for (const sh of rules.STAMPS) assert.equal(sanitizeOp(stamp, '#e63946', { k: 'stamp', p: [100, 100], sh }, 100).op.sh, sh);
+  assert.equal(sanitizeOp(stamp, '#e63946', { k: 'stamp', p: [100, 100], sh: '亂來' }, 100).op.sh, 'star');
+  assert.ok(rules.STAMPS.length >= 6 && rules.STAMPS.every((s) => rules.STAMP_LABEL[s]));
 });
 
 test('rules：墨水會隨時間恢復，不會超過上限', () => {
@@ -117,7 +170,7 @@ test('開始：3 人（1 猜 2 畫）；猜題者拿不到題目，畫家拿得�
   assert.equal(room.game.phase, 'draw');
   assert.equal(drawerIds.length, 2);
   assert.ok(!drawerIds.includes(t.g));
-  for (const c of guesser.sent) assert.ok(!('word' in c) && !JSON.stringify(c).includes(t.word), `猜題者收到不該有的內容：${JSON.stringify(c)}`);
+  assert.ok(!leaked(guesser, t.word), '猜題者收到了題目或工具卡');
   assert.equal(guesser.last('card'), undefined, '猜題者沒有工具卡');
   for (const id of drawerIds) {
     const c = connOf(id);
@@ -303,7 +356,7 @@ test('重連：畫家拿回工具卡、題目、畫布與猜測；猜題者拿�
   const g2 = fakeConn();
   room.join(g2, { playerId: t.g, nick: players.find((p) => p.id === t.g).nick });
   assert.equal(g2.last('canvas').ops.length, 1);
-  assert.ok(!g2.sent.some((m) => m.t === 'word' || m.t === 'card' || JSON.stringify(m).includes(t.word)), '猜題者重連後仍看不到題目');
+  assert.ok(!leaked(g2, t.word), '猜題者重連後仍看不到題目');
   // sync：要求重送畫布（有冷卻）
   const before = c2.all('canvas').length;
   G(room, c2, { t: 'sync' });
@@ -323,7 +376,7 @@ test('旁觀者看得到畫布與猜測，但拿不到題目、也不能畫', as
   const t = room.game.turn;
   assert.equal(t.drawers.length + 1, 3, '旁觀者不參賽');
   const spec = conns[3];
-  assert.ok(!spec.sent.some((m) => m.t === 'word' || m.t === 'card' || JSON.stringify(m).includes(t.word)));
+  assert.ok(!leaked(spec, t.word), '旁觀者看不到題目');
   const d = t.drawers[0];
   giveCard(t, d, 'ruler');
   G(room, conns.find((c) => c.sent.some((m) => m.t === 'card' && room.players.get(d).conn === c)), { t: 'ops', ops: [{ k: 'line', a: [10, 10], b: [210, 10] }] });
@@ -368,7 +421,28 @@ test('設定夾限：回合數、時間、難度、分類', () => {
   assert.equal(s.duration, 180);
   assert.equal(s.rounds, 3);
   assert.equal(s.difficulty, 'easy');
+  for (const d of ['easy', 'all', 'hard', 'any']) {
+    room.handle(a, { t: 'settings', settings: { difficulty: d } });
+    assert.equal(a.last('hub').settings.difficulty, d);
+  }
   assert.equal(s.category, '__all__');
   room.handle(a, { t: 'settings', settings: { difficulty: 'all', category: Object.keys(bank)[0] } });
   assert.equal(a.last('hub').settings.difficulty, 'all');
+});
+
+test('難度：簡單只出 easy、中等＋困難不出 easy、全部包含三級；不同分類的重複題只留一份', () => {
+  const pool = (difficulty, category = '__all__') => new CoopDrawGame({}, { category, difficulty }).poolWords();
+  const set = (l) => new Set(l.map((w) => w.lvl));
+  assert.deepEqual([...set(pool('easy'))], ['easy']);
+  assert.deepEqual([...set(pool('all'))].sort(), ['easy', 'medium']);
+  assert.deepEqual([...set(pool('hard'))].sort(), ['hard', 'medium']);
+  assert.deepEqual([...set(pool('any'))].sort(), ['easy', 'hard', 'medium']);
+  const any = pool('any');
+  assert.equal(new Set(any.map((w) => w.word)).size, any.length, '沒有重複題');
+  assert.ok(any.length > pool('all').length && pool('all').length > pool('easy').length);
+  const cat = Object.keys(bank)[0];
+  assert.ok(pool('any', cat).every((w) => bank[cat].includes(w)), '指定分類只出該分類');
+  const info = CoopDrawGame.info().categories;
+  assert.ok(info.every((c) => c.easy + c.medium + c.hard === bank[c.name].length));
+  assert.ok(info.reduce((n, c) => n + c.hard, 0) >= 100, '有足夠的困難題');
 });

@@ -10,7 +10,7 @@ let input = null;
 
 const D = {
   state: null, idx: 0, card: null, def: null, word: null, ink: { v: INK_MAX, t: Date.now() },
-  mode: 'draw', pingE: PING_EMOJI[0], opts: { ci: 0, f: false, sh: 'star' },
+  mode: 'draw', pingE: PING_EMOJI[0], opts: { ci: 0, f: false, sh: 'random' },
   guesses: [], roundEnd: null, final: null, tick: null, guessCd: 0, previewCost: null,
 };
 
@@ -21,7 +21,7 @@ const SETTINGS_HTML = `
     <div id="cd-cat" class="chips cd-cats"></div>
   </div>
   <div class="grid">
-    <label>題目難度<select id="cd-diff"><option value="easy">簡單</option><option value="all">簡單＋中等</option></select></label>
+    <label>題目難度<select id="cd-diff"><option value="easy">簡單</option><option value="all">簡單＋中等</option><option value="hard">中等＋困難</option><option value="any">全部（簡單到困難）</option></select></label>
     <label>每回合時間<select id="cd-dur"><option value="45">45 秒</option><option value="60">60 秒</option><option value="75">75 秒</option><option value="90">90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option></select></label>
     <label>每人當猜題者幾次<select id="cd-rounds"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option></select></label>
   </div>
@@ -113,7 +113,8 @@ function build() {
 function fillSettings(s, ctx) {
   const box = $('cd-cat');
   const cats = ctx.info.categories || [];
-  const count = (c) => (s.difficulty === 'all' ? c.easy + c.medium : c.easy); // 目前難度下這個分類有幾題
+  const LV = { easy: ['easy'], all: ['easy', 'medium'], hard: ['medium', 'hard'], any: ['easy', 'medium', 'hard'] }; // 要與 server/games/coopdraw.mjs 一致
+  const count = (c) => (LV[s.difficulty] || LV.easy).reduce((n, lv) => n + (c[lv] || 0), 0); // 目前難度下這個分類有幾題
   const total = cats.reduce((n, c) => n + count(c), 0);
   const sig = JSON.stringify(cats.map((c) => c.name));
   if (box.dataset.built !== sig) { // 把所有題庫攤開成標籤，每個人（不只房主）都看得到有哪些；只有房主點得動
@@ -150,7 +151,7 @@ function resetRound(idx) {
   D.card = null; D.def = null; D.word = null;
   D.ink = { v: INK_MAX, t: Date.now() };
   D.mode = 'draw'; D.guesses = []; D.roundEnd = null; D.previewCost = null;
-  D.opts = { ci: 0, f: false, sh: 'star' };
+  D.opts = { ci: 0, f: false, sh: 'random' };
   if (input) input.resetStrokes();
   renderFeed();
 }
@@ -340,8 +341,9 @@ function renderTool() {
   }
   if (def.kind === 'stamp') {
     const row = el('div', 'cd-shapes');
-    STAMPS.forEach((sh) => {
-      const b = el('button', 'cd-opt' + (D.opts.sh === sh ? ' on' : ''), STAMP_LABEL[sh]);
+    row.append(el('span', 'cd-pinglabel', '蓋章形狀：'));
+    [['random', '🎲 隨機'], ...STAMPS.map((sh) => [sh, STAMP_LABEL[sh]])].forEach(([sh, label]) => {
+      const b = el('button', 'cd-opt' + (D.opts.sh === sh ? ' on' : ''), label);
       b.type = 'button';
       b.addEventListener('click', () => { D.opts.sh = sh; renderTool(); });
       row.append(b);

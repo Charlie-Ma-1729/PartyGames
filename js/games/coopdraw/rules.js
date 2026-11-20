@@ -15,8 +15,8 @@ export const BG = '#ffffff';
 export const INK_MAX = 100;
 export const INK_REGEN = 9; // 每秒恢復多少（約 11 秒回滿）
 export const PALETTE = ['#111111', '#e63946', '#f4a261', '#ffd166', '#2a9d8f', '#4cc9f0', '#6a4c93', '#ff8fab', '#8d6e63'];
-export const STAMPS = ['star', 'heart', 'tri', 'circle'];
-export const STAMP_LABEL = { star: '⭐', heart: '❤️', tri: '🔺', circle: '⚪' };
+export const STAMPS = ['star', 'heart', 'tri', 'circle', 'drop', 'moon'];
+export const STAMP_LABEL = { star: '⭐', heart: '❤️', tri: '🔺', circle: '⚪', drop: '💧', moon: '🌙' };
 export const PING_EMOJI = ['👉', '❌', '➕', '⭕', '👍'];
 
 /**
@@ -27,13 +27,15 @@ export const CARDS = [
   { id: 'ruler', name: '直線尺', icon: '📏', desc: '只能畫直線：按住拖曳，放開就畫出來。黑色。', kind: 'line', color: 'black', width: 6, perPx: 0.09, base: 1.5 },
   { id: 'compass', name: '圓規', icon: '⭕', desc: '只能畫圓：從圓心拖曳決定大小。可選空心／實心、可選顏色。', kind: 'circle', color: 'pick', width: 6, perR: 0.12, fillMul: 2.5, base: 4, maxR: 170, canFill: true },
   { id: 'block', name: '方塊', icon: '🔲', desc: '只能畫方塊：對角拖曳。可選空心／實心，顏色是隨機發的。', kind: 'rect', color: 'random', width: 6, perPx: 0.05, areaPx: 0.0002, base: 4, canFill: true },
-  { id: 'shortpen', name: '短筆', icon: '✏️', desc: '自由手繪，但一筆最多畫約 140 像素，要一小段一小段接起來。黑色。', kind: 'path', color: 'black', width: 6, perPx: 0.08, maxLen: 140 },
-  { id: 'dots', name: '點點筆', icon: '⚫', desc: '只能點點（可以按住拖著點）。可選顏色。', kind: 'dot', color: 'pick', width: 14, perDot: 1.6, support: true },
-  { id: 'fat', name: '大色塊', icon: '🖌️', desc: '超粗的筆刷，適合塗大面積。顏色是隨機發的。', kind: 'path', color: 'random', width: 34, perPx: 0.07 },
+  { id: 'shortpen', name: '短筆', icon: '✏️', desc: '自由手繪，但一筆最多畫約 80 像素、每開一筆還要多花墨水，要一小段一小段接起來。黑色。', kind: 'path', color: 'black', width: 6, perPx: 0.35, maxLen: 80, strokeBase: 2 },
+  { id: 'dots', name: '點點筆', icon: '⚫', desc: '只能點點（可以按住拖著點）。可選顏色。比短筆省一點，但只能畫出一顆顆的點。', kind: 'dot', color: 'pick', width: 12, perDot: 3, gap: 11, support: true },
+  { id: 'spray', name: '噴槍', icon: '💨', desc: '按住噴出一團散開的小點（停著不動會越噴越濃），適合上色和畫毛茸茸、煙霧、草叢。顏色可選。', kind: 'spray', color: 'pick', width: 26, perPt: 2, gap: 9 },
+  { id: 'blur', name: '模糊筆刷', icon: '🫧', desc: '邊緣柔軟的粗筆刷，適合畫雲、煙、陰影和漸層感。顏色可選。', kind: 'path', color: 'pick', width: 24, perPx: 0.35, blur: true },
+  { id: 'fat', name: '大色塊', icon: '🖌️', desc: '超粗的筆刷，適合塗大面積。顏色是隨機發的。', kind: 'path', color: 'random', width: 34, perPx: 0.4 },
   { id: 'stamp', name: '印章', icon: '⭐', desc: '只能蓋章（星、愛心、三角、圓）。顏色是隨機發的。', kind: 'stamp', color: 'random', width: 0, size: 56, perStamp: 12, support: true },
-  { id: 'mirror', name: '鏡像筆', icon: '🪞', desc: '自由手繪，畫的線會自動左右對稱複製一份。黑色。', kind: 'path', color: 'black', width: 6, perPx: 0.09, mirror: true },
+  { id: 'mirror', name: '鏡像筆', icon: '🪞', desc: '自由手繪，畫的線會自動左右對稱複製一份。黑色。', kind: 'path', color: 'black', width: 6, perPx: 0.4, mirror: true },
   { id: 'eraser', name: '橡皮擦', icon: '🧽', desc: '只能擦：把別人畫歪的擦掉。', kind: 'path', color: 'erase', width: 40, perPx: 0.05, erase: true, support: true },
-  { id: 'colorpen', name: '彩筆', icon: '🎨', desc: '細細的自由手繪線，顏色可選，但很耗墨水。', kind: 'path', color: 'pick', width: 4, perPx: 0.2 },
+  { id: 'colorpen', name: '彩筆', icon: '🎨', desc: '細細的自由手繪線，顏色可選，但很耗墨水。', kind: 'path', color: 'pick', width: 4, perPx: 0.45 },
 ];
 export const cardById = (id) => CARDS.find((c) => c.id === id) || null;
 
@@ -83,8 +85,9 @@ export function sanitizeOp(card, assigned, raw, ink, stroke = { s: null, len: 0,
       let left = ink;
       let cost = 0;
       if (isNew) { // 開一筆新的要花一點墨水（不然連點一直蓋章就免費了）
-        if (left < 1) return none;
-        left -= 1; cost += 1;
+        const base = card.strokeBase ?? 1;
+        if (left < base) return none;
+        left -= base; cost += base;
       }
       const pts = [];
       for (const p0 of raw.pts.slice(0, 60)) {
@@ -103,7 +106,22 @@ export function sanitizeOp(card, assigned, raw, ink, stroke = { s: null, len: 0,
       st.last = pts[pts.length - 1];
       const op = { k: 'path', s, pts, c, w: card.width };
       if (card.mirror) op.m = 1;
+      if (card.blur) op.bl = 1;
       return { op, cost, stroke: st };
+    }
+    case 'spray': {
+      if (raw.k !== 'spray' || !Array.isArray(raw.pts)) return none;
+      const pts = [];
+      let left = ink;
+      for (const p0 of raw.pts.slice(0, 20)) {
+        const p = pt(p0);
+        if (!p || left < card.perPt) break;
+        left -= card.perPt;
+        pts.push(p);
+      }
+      if (!pts.length) return none;
+      const sd = Number.isInteger(raw.sd) ? clamp(raw.sd, 0, 999999) : 0; // 亂數種子：每個用戶端畫出來的噴點要一模一樣
+      return { op: { k: 'spray', pts, c, w: card.width, sd }, cost: pts.length * card.perPt, stroke };
     }
     case 'dot': {
       if (raw.k !== 'dot' || !Array.isArray(raw.pts)) return none;

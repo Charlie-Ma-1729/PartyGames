@@ -39,7 +39,7 @@ const byId = (players, conns, id) => conns[players.findIndex((p) => p.id === id)
 test('joined 帶遊戲清單；房主選遊戲、改設定，其他人不能', () => {
   const { room, conns, players } = setup(2);
   const j = conns[0].last('joined');
-  assert.deepEqual(j.games.map((g) => g.id), ['songguess', 'dubbing', 'headsup', 'coopdraw']);
+  assert.deepEqual(j.games.map((g) => g.id), ['songguess', 'dubbing', 'headsup', 'coopdraw', 'soramimi']);
   assert.ok(j.info.songguess.counts && j.info.headsup.categories.length > 5);
   assert.equal(conns[0].last('hub').gameId, 'songguess', '預設遊戲');
   room.handle(conns[1], { t: 'pick', game: 'headsup' });

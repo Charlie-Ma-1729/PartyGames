@@ -3,12 +3,14 @@ import { SongGame } from './songguess.mjs';
 import { DubbingGame } from './dubbing.mjs';
 import { HeadsUpGame } from './headsup.mjs';
 import { CoopDrawGame } from './coopdraw.mjs';
+import { SoramimiGame } from './soramimi.mjs';
 
 export const GAMES = {
   songguess: SongGame,
   dubbing: DubbingGame,
   headsup: HeadsUpGame,
   coopdraw: CoopDrawGame,
+  soramimi: SoramimiGame,
 };
 export const DEFAULT_GAME = 'songguess';
 

@@ -3,5 +3,6 @@ import songguess from './songguess/index.js';
 import dubbing from './dubbing/index.js';
 import headsup from './headsup/index.js';
 import coopdraw from './coopdraw/index.js';
+import soramimi from './soramimi/index.js';
 
-export const GAME_MODULES = { songguess, dubbing, headsup, coopdraw };
+export const GAME_MODULES = { songguess, dubbing, headsup, coopdraw, soramimi };

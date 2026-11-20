@@ -12,6 +12,41 @@ export let bank = {};
 /** { [catId]: { [ask]: {k, main, sub}[] } }：打字搜尋用的候選清單。一般題庫 ask = 'work'；J-POP 有 'title'（歌名）與 'artist'（歌手）兩份 */
 export let works = {};
 
+/** 題目編號 → { q, cat }（出題者／空耳選歌用） */
+export let byId = new Map();
+/** 搜尋用索引：{ q, cat, hay（小寫的歌名＋歌手＋作品） }[] */
+let index = [];
+
+const norm = (s) => String(s || '').normalize('NFKC').toLowerCase();
+
+/** 這首歌「作為一首歌」的顯示標籤：歌名＋歌手（動漫題庫另帶作品名） */
+export function songLabel(q, cat) {
+  const a = q.answer || {};
+  if (SONG_CATS.includes(cat)) return { main: a.title || '', sub: a.artist || '' };
+  const work = String(a.work || '').replace(/（.*$/, '').trim();
+  const title = a.title || '';
+  return { main: title || work, sub: [title ? work : '', a.artist].filter(Boolean).join('・') };
+}
+
+/** 有人聲的歌（純音樂 OST 不算）：空耳歌王要唱的，必須是有歌詞可以空耳的歌 */
+export const isVocal = (q) => q.kind !== 'OST';
+
+/** 伺服器端搜尋題庫。回傳 { id, cat, main, sub }[]（最多 limit 筆）。cats 為空 = 全部題庫；accept(q, cat) 可再過濾 */
+export function searchBank(query, cats, limit = 30, accept = null) {
+  const toks = norm(query).split(/\s+/).filter(Boolean).slice(0, 5);
+  if (!toks.length) return [];
+  const allow = Array.isArray(cats) && cats.length ? new Set(cats) : null;
+  const out = [];
+  for (const e of index) {
+    if (allow && !allow.has(e.cat)) continue;
+    if (accept && !accept(e.q, e.cat)) continue;
+    if (!toks.every((t) => e.hay.includes(t))) continue;
+    out.push({ id: e.q.id, cat: e.cat, ...songLabel(e.q, e.cat) });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
 /** 答案的唯一鍵：J-POP 猜歌名用 t:歌名、猜歌手用 a:歌手；其他題庫用 workId */
 export function keyOf(q, cat, ask = 'work') {
   if (SONG_CATS.includes(cat)) return ask === 'artist' ? `a:${q.answer?.artist || ''}` : `t:${q.answer?.title || ''}`;
@@ -40,6 +75,15 @@ export function loadBank() {
   }
   bank = nb;
   works = nw;
+  byId = new Map();
+  index = [];
+  for (const c of CATEGORIES) {
+    for (const q of nb[c.id]) {
+      byId.set(q.id, { q, cat: c.id });
+      const a = q.answer || {};
+      index.push({ q, cat: c.id, hay: norm([a.title, a.artist, a.artistEn, a.work].filter(Boolean).join(' ')) });
+    }
+  }
   const n = Object.values(nb).reduce((s, a) => s + a.length, 0);
   console.log(`題庫載入：${CATEGORIES.map((c) => `${c.id} ${nb[c.id].length}`).join('、')}（共 ${n} 題）`);
 }

@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="css/dubbing.css">
   <link rel="stylesheet" href="css/headsup.css">
   <link rel="stylesheet" href="css/coopdraw.css">
+  <link rel="stylesheet" href="css/soramimi.css">
 </head>
 <body>
   <div id="netbar" class="netbar hidden">⚠ 連線中斷，正在重新連線…（你的座位和分數都會保留）</div>
@@ -194,6 +195,9 @@
         <label>答錯倒扣<select data-k="penalty"><option value="false">不扣分</option><option value="true">扣 100 分</option></select></label>
         <label>揭曉後<select data-k="autoNext"><option value="0">房主按下一題</option><option value="5">5 秒後自動下一題</option><option value="10">10 秒後自動下一題</option><option value="15">15 秒後自動下一題</option></select></label>
         <label>遊戲中途加入<select data-k="allowLateJoin"><option value="true">允許（下一題起參賽）</option><option value="false">不允許</option></select></label>
+        <label>出題方式<select data-k="questionSource"><option value="random">系統隨機出題</option><option value="setter">指定出題者（每題由他挑歌，他不參賽）</option></select></label>
+        <label>出題者<select data-k="setterId"></select></label>
+        <label>出題者每題挑歌時限<select data-k="pickSecs"><option value="30">30 秒</option><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option></select></label>
       </div>
           </section>
           <!-- 其他遊戲的規則由 js/games/*.js 放進來 -->
@@ -226,6 +230,12 @@
       </div>
 
       <div class="mphone-note">🎧 請聽主畫面播放的音樂，在這裡作答</div>
+
+      <!-- 出題者模式：挑歌（出題者）／等待（其他人）／本題由誰出題 -->
+      <div id="msetter" class="msetter hidden">
+        <p id="msetter-note" class="msetter-note"></p>
+        <div id="msetter-picker"></div>
+      </div>
 
       <h2 id="prompt">這首歌來自哪部動畫？</h2>
 

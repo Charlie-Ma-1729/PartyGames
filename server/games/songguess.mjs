@@ -2,8 +2,8 @@
 // 階段：preload → playing → reveal → (preload …) → final。大廳／房主／踢人／重連由房間（server/room.mjs）處理。
 import { buildQueue, buildChoices, pickAsk, ASK_PROMPT, SONG_CATS, CATEGORIES } from '../../js/questions.js';
 import { scoreAnswer, rankPlayers, SCORE_MODES } from '../../js/scoring.js';
-import { bank, works, keyOf } from '../bank.mjs';
-import { MAX_PLAYERS, num, oneOf, subset } from '../protocol.mjs';
+import { bank, works, keyOf, byId, searchBank } from '../bank.mjs';
+import { MAX_PLAYERS, cleanId, num, oneOf, subset } from '../protocol.mjs';
 import { GameBase } from './base.mjs';
 
 export const KINDS = ['OP', 'ED', 'INSERT', 'OST', 'SONG'];
@@ -27,6 +27,9 @@ export const DEFAULT_SETTINGS = {
   penalty: false,
   autoNext: 0, // 揭曉後幾秒自動下一題，0 = 房主手動
   allowLateJoin: true,
+  questionSource: 'random', // random 系統隨機 | setter 由指定的出題者即時挑歌（出題者不參賽、不計分）
+  setterId: null,
+  pickSecs: 60, // 出題者每題的挑歌時限，逾時隨機出題
 };
 
 /** 把使用者傳來的設定夾成合法值（缺的欄位沿用 prev） */
@@ -52,6 +55,9 @@ export function cleanSettings(input, prev = DEFAULT_SETTINGS) {
     penalty: s.penalty === undefined ? p.penalty : !!s.penalty,
     autoNext: s.autoNext === undefined ? p.autoNext : (num(s.autoNext, 0, 60, 0) === 0 ? 0 : num(s.autoNext, 3, 60, 10)),
     allowLateJoin: s.allowLateJoin === undefined ? p.allowLateJoin : !!s.allowLateJoin,
+    questionSource: oneOf(s.questionSource ?? p.questionSource, ['random', 'setter'], p.questionSource),
+    setterId: s.setterId === undefined ? p.setterId : cleanId(s.setterId),
+    pickSecs: num(s.pickSecs ?? p.pickSecs, 10, 180, p.pickSecs),
   };
 }
 
@@ -70,10 +76,10 @@ function buildWorks(s) {
   return out;
 }
 
-const SEAT_KEYS = ['score', 'correct', 'answered', 'totalMs', 'streak', 'eligible', 'spectator', 'ready', 'failed', 'selection', 'lock'];
+const SEAT_KEYS = ['score', 'correct', 'answered', 'totalMs', 'streak', 'eligible', 'spectator', 'ready', 'failed', 'selection', 'lock', 'setter'];
 const freshSeat = (extra = {}) => ({
   score: 0, correct: 0, answered: 0, totalMs: 0, streak: 0,
-  eligible: false, spectator: false, ready: false, failed: false, selection: null, lock: null, ...extra,
+  eligible: false, spectator: false, ready: false, failed: false, selection: null, lock: null, setter: false, ...extra,
 });
 
 export class SongGame extends GameBase {
@@ -102,7 +108,12 @@ export class SongGame extends GameBase {
     const pool = [];
     for (const c of s.categories) for (const q of bank[c] || []) { catOf.set(q.id, c); pool.push(q); }
     const queue = buildQueue(pool, { kinds: s.kinds, maxDifficulty: s.difficulty, maxPerWork: s.perWork, count: s.count });
-    if (queue.length === 0) return { code: 'EMPTY', msg: '符合條件的題目是 0 首，請放寬設定' };
+    if (s.questionSource === 'setter') {
+      const m = this.hub.players.get(s.setterId);
+      if (!m || m.role !== 'player' || !m.connected) return { code: 'NO_SETTER', msg: '請先指定一位在線的出題者（必須是參賽者身分）' };
+      const others = [...this.hub.players.values()].filter((x) => x.role === 'player' && x.connected && x.id !== m.id).length;
+      if (others < 1) return { code: 'NO_GUESSER', msg: '出題者之外至少要有一位參賽者來猜' };
+    } else if (queue.length === 0) return { code: 'EMPTY', msg: '符合條件的題目是 0 首，請放寬設定' };
     this._pre = { queue, catOf };
     return null;
   }
@@ -112,8 +123,12 @@ export class SongGame extends GameBase {
     const { queue, catOf } = this._pre;
     this._pre = null;
     const wl = s.answerMode === 'typing' ? buildWorks(s) : {};
-    for (const m of this.hub.players.values()) if (m.role === 'player') this.seat(m, freshSeat()); // 主畫面與旁觀者不參賽，沒有座位
-    this.g = { queue, catOf, idx: 0, total: Math.min(s.count, queue.length), works: wl, q: null };
+    for (const m of this.hub.players.values()) {
+      if (m.role === 'player') this.seat(m, freshSeat({ setter: s.questionSource === 'setter' && m.id === s.setterId })); // 主畫面與旁觀者不參賽，沒有座位
+    }
+    // 出題者模式：題數由設定決定（不受隨機佇列長度限制；佇列只當備用）
+    const total = s.questionSource === 'setter' ? s.count : Math.min(s.count, queue.length);
+    this.g = { queue, catOf, idx: 0, total, works: wl, q: null, picked: new Set(), pickEndsAt: null, pickMsg: null };
     for (const [ask, list] of Object.entries(wl)) this.broadcast({ t: 'works', ask, list });
     this._nextQuestion();
   }
@@ -124,7 +139,11 @@ export class SongGame extends GameBase {
   onJoin(member) { if (member.role === 'player') this.seat(member, freshSeat({ spectator: true })); this._broadcastState(); }
   onReconnect() { this._broadcastState(); this._checkBarrier(); }
   onDisconnect() { this._broadcastState(); this._checkBarrier(); this._checkProgress(); }
-  onLeave(member) { this.seats.delete(member.id); this._broadcastState(); this._checkBarrier(); this._checkProgress(); }
+  onLeave(member) {
+    this.seats.delete(member.id);
+    if (this.phase === 'pick' && !this._setterSeat()) return this._pickFallback('offline');
+    this._broadcastState(); this._checkBarrier(); this._checkProgress();
+  }
 
   isActive(p) {
     return p.eligible && !p.failed && (p.connected || Date.now() - p.lastSeen <= this.T.staleMs);
@@ -138,7 +157,7 @@ export class SongGame extends GameBase {
       locked: act.filter((p) => p.lock).length, active: act.length,
       players: [...this.seats.values()].map((p) => ({
         id: p.id, nick: p.nick, connected: p.connected, score: p.score,
-        locked: !!p.lock, ready: p.ready, spectator: p.spectator, failed: p.failed,
+        locked: !!p.lock, ready: p.ready, spectator: p.spectator, failed: p.failed, setter: !!p.setter,
       })),
     };
   }
@@ -150,6 +169,7 @@ export class SongGame extends GameBase {
     const g = this.g;
     if (!g) return;
     if (this.settings.answerMode === 'typing') for (const [ask, list] of Object.entries(g.works || {})) this.send(conn, { t: 'works', ask, list });
+    if (this.phase === 'pick' && g.pickMsg) this.send(conn, { ...g.pickMsg, serverNow: Date.now() });
     if (this.phase === 'preload' || this.phase === 'playing' || this.phase === 'reveal') {
       this.send(conn, g.qMsg);
       if (g.goMsg) this.send(conn, g.goMsg);
@@ -174,13 +194,18 @@ export class SongGame extends GameBase {
         case 'select': if (this._cur(msg)) this._select(p, msg); break;
         case 'lock': if (this._cur(msg)) this._lock(p, msg); break;
         case 'playError': if (this._cur(msg)) this._playError(p); break;
+        case 'search': this._search(conn, p, msg); break;
+        case 'setPick': this._setPick(conn, p, msg); break;
         default: break;
       }
     }
     if (this.isHost(member)) { // 房主不論是參賽者、主畫面或旁觀者，都能控制進度
       switch (msg.t) {
         case 'next': if (this.phase === 'reveal') this._nextQuestion(); break;
-        case 'skip': if (this.phase === 'preload' || this.phase === 'playing') this._skipQuestion('房主跳過本題'); break;
+        case 'skip':
+          if (this.phase === 'pick') this._pickFallback('host');
+          else if (this.phase === 'preload' || this.phase === 'playing') this._skipQuestion('房主跳過本題');
+          break;
         case 'forceReveal': if (this.phase === 'playing') this._reveal('host'); break;
         case 'end': if (this.phase !== 'final') this._final(); break;
         default: break;
@@ -216,31 +241,107 @@ export class SongGame extends GameBase {
   /** 訊息帶的題號必須是目前這題（避免延遲的舊訊息） */
   _cur(msg) { return this.g && msg.idx === this.g.idx; }
 
+  // ===== 出題者模式：目前的出題者座位（必須在線；否則退回隨機出題） =====
+  _setterSeat() {
+    const s = this.settings;
+    if (s.questionSource !== 'setter') return null;
+    const p = this.seats.get(s.setterId);
+    return p && p.setter && (p.connected || Date.now() - p.lastSeen <= this.T.staleMs) ? p : null;
+  }
+
+  _setterInfo() {
+    const s = this.settings;
+    const p = s.questionSource === 'setter' ? this.seats.get(s.setterId) : null;
+    return p && p.setter ? { id: p.id, nick: p.nick } : null;
+  }
+
   _nextQuestion({ replace = false } = {}) {
     this.clearTimers();
     const g = this.g;
-    const s = this.settings;
     if (replace) g.idx--;
-    let q; let choices = null; let cat; let ask = 'work';
+    if (g.idx >= g.total) return this._final();
+    if (this._setterSeat()) return this._startPick();
+    this._drawRandom();
+  }
+
+  /** 從隨機佇列抽下一題並開始（佇列空了 = 結束） */
+  _drawRandom() {
+    const g = this.g;
+    const s = this.settings;
     for (;;) {
-      if (g.idx >= g.total || g.queue.length === 0) return this._final();
-      q = g.queue.shift();
-      cat = g.catOf.get(q.id);
-      ask = pickAsk(q, s.jpopAsk); // J-POP「一曲兩用」：這題問歌名還是歌手；其他題庫 ask = 'work'
+      if (g.queue.length === 0) return this._final();
+      const q = g.queue.shift();
+      const cat = g.catOf.get(q.id);
+      const ask = pickAsk(q, s.jpopAsk); // J-POP「一曲兩用」：這題問歌名還是歌手；其他題庫 ask = 'work'
+      let choices = null;
       if (s.answerMode === 'choice') {
         choices = buildChoices(q, bank[cat] || [], cat, { maxDifficulty: s.difficulty, ask });
         if (!choices) continue; // 題庫太小湊不出選項 → 換下一題
       }
-      break;
+      return this._setQuestion(q, cat, ask, choices);
     }
+  }
+
+  /** 出題者挑題階段：廣播 pick，等出題者選歌（逾時／離線／房主跳過 → 隨機） */
+  _startPick() {
+    const g = this.g;
+    const s = this.settings;
+    const setter = this._setterSeat();
+    this.phase = 'pick';
+    for (const p of this.seats.values()) { p.eligible = false; p.ready = false; p.selection = null; p.lock = null; p.failed = false; p.spectator = false; }
+    g.pickEndsAt = Date.now() + s.pickSecs * 1000;
+    g.pickMsg = { t: 'pick', idx: g.idx + 1, total: g.total, setter: { id: setter.id, nick: setter.nick }, endsAt: g.pickEndsAt, serverNow: Date.now() };
+    this.broadcast(g.pickMsg);
+    this._broadcastState();
+    this.after('pick', s.pickSecs * 1000, () => this._pickFallback('timeout'));
+  }
+
+  _pickFallback(reason) {
+    if (this.phase !== 'pick') return;
+    this.clearTimers();
+    this.broadcast({ t: 'pickFallback', idx: this.g.idx + 1, reason });
+    this._drawRandom();
+  }
+
+  _search(conn, p, msg) {
+    if (this.phase !== 'pick' || !p.setter) return;
+    const q = typeof msg.q === 'string' ? msg.q.slice(0, 40) : '';
+    this.send(conn, { t: 'results', q, list: searchBank(q, this.settings.categories, 30) });
+  }
+
+  _setPick(conn, p, msg) {
+    const g = this.g;
+    const s = this.settings;
+    if (this.phase !== 'pick' || !p.setter || msg.idx !== g.idx + 1) return;
+    const hit = typeof msg.id === 'string' ? byId.get(msg.id) : null;
+    if (!hit || !s.categories.includes(hit.cat)) return this.send(conn, { t: 'pickError', msg: '找不到這首歌' });
+    if (g.picked.has(hit.q.id)) return this.send(conn, { t: 'pickError', msg: '這首已經出過了，換一首吧' });
+    const ask = pickAsk(hit.q, s.jpopAsk);
+    let choices = null;
+    if (s.answerMode === 'choice') {
+      choices = buildChoices(hit.q, bank[hit.cat] || [], hit.cat, { maxDifficulty: s.difficulty, ask });
+      if (!choices) return this.send(conn, { t: 'pickError', msg: '這首歌湊不出選項，請換一首' });
+    }
+    this.clearTimers();
+    g.queue = g.queue.filter((x) => x.id !== hit.q.id);
+    g.catOf.set(hit.q.id, hit.cat);
+    this._setQuestion(hit.q, hit.cat, ask, choices);
+  }
+
+  /** 把這題設為目前題目、重設所有座位並廣播題目 */
+  _setQuestion(q, cat, ask, choices) {
+    const g = this.g;
+    const s = this.settings;
+    g.picked.add(q.id);
     g.idx++;
+    g.pickEndsAt = null; g.pickMsg = null;
     g.q = q; g.choices = choices; g.cat = cat; g.ask = ask;
     g.correctIdx = choices ? choices.findIndex((c) => c.correct) : -1;
     g.correctKey = keyOf(q, cat, ask);
     g.startAt = null; g.t0 = null; g.goMsg = null; g.quorumEndsAt = null;
     g.windowMs = (s.duration + s.graceSecs) * 1000;
     for (const p of this.seats.values()) {
-      p.spectator = false; p.eligible = true; p.ready = false; p.failed = false; p.selection = null; p.lock = null;
+      p.spectator = false; p.eligible = !p.setter; p.ready = false; p.failed = false; p.selection = null; p.lock = null;
     }
     for (const sc of this.hub.screens) sc.ready = false;
     g.qMsg = {
@@ -249,6 +350,7 @@ export class SongGame extends GameBase {
       duration: s.duration, graceSecs: s.graceSecs, kind: q.kind, ask, prompt: ask === 'work' ? q.prompt : ASK_PROMPT[ask],
       choices: choices ? choices.map(({ main, sub }) => ({ main, sub })) : null,
       answerMode: s.answerMode, playMode: s.playMode,
+      setter: this._setterInfo(),
     };
     this.phase = 'preload';
     this.broadcast(g.qMsg);
@@ -404,7 +506,7 @@ export class SongGame extends GameBase {
   }
 
   _ranking() {
-    return rankPlayers([...this.seats.values()].map((p) => ({ id: p.id, nick: p.nick, score: p.score, correct: p.correct, answered: p.answered, totalMs: p.totalMs })));
+    return rankPlayers([...this.seats.values()].filter((p) => !p.setter).map((p) => ({ id: p.id, nick: p.nick, score: p.score, correct: p.correct, answered: p.answered, totalMs: p.totalMs })));
   }
 
   /** 本題作廢（影片壞掉／房主跳過）：不計分，換備用題 */
@@ -424,6 +526,7 @@ export class SongGame extends GameBase {
   }
 
   tick() {
+    if (this.phase === 'pick' && !this._setterSeat()) this._pickFallback('offline'); // 出題者離線超過寬限時間
     if (this.phase === 'preload') this._checkBarrier();
     if (this.phase === 'playing') this._checkProgress();
   }
@@ -437,6 +540,7 @@ export class SongGame extends GameBase {
       g: g && {
         idx: g.idx, total: g.total, qId: g.q ? g.q.id : null, queueIds: g.queue.map((q) => q.id),
         catOf: Object.fromEntries([...g.queue, ...(g.q ? [g.q] : [])].map((q) => [q.id, g.catOf.get(q.id)])),
+        picked: [...g.picked], pickEndsAt: g.pickEndsAt, pickMsg: g.pickMsg,
         choices: g.choices, correctIdx: g.correctIdx, correctKey: g.correctKey, cat: g.cat, ask: g.ask,
         startAt: g.startAt, t0: g.t0, goMsg: g.goMsg, qMsg: g.qMsg, quorumEndsAt: g.quorumEndsAt, windowMs: g.windowMs,
       },
@@ -458,6 +562,7 @@ export class SongGame extends GameBase {
       queue: (gd.queueIds || []).map((id) => idMap.get(id)).filter(Boolean),
       catOf: new Map(Object.entries(gd.catOf || {})),
       idx: gd.idx, total: gd.total, q, works: settings.answerMode === 'typing' ? buildWorks(settings) : {},
+      picked: new Set(gd.picked || []), pickEndsAt: gd.pickEndsAt ?? null, pickMsg: gd.pickMsg || null,
       choices: gd.choices, correctIdx: gd.correctIdx, correctKey: gd.correctKey, cat: gd.cat, ask: gd.ask || 'work',
       startAt: gd.startAt, t0: gd.t0, goMsg: gd.goMsg, qMsg: gd.qMsg, quorumEndsAt: gd.quorumEndsAt, windowMs: gd.windowMs,
     };
@@ -475,7 +580,12 @@ export class SongGame extends GameBase {
     const g = this.g;
     const now = Date.now();
     const grace = this.T.restoreGraceMs;
-    if (this.phase === 'preload') {
+    if (this.phase === 'pick') {
+      const at = Math.max((g.pickEndsAt || 0) - now, grace);
+      g.pickEndsAt = now + at;
+      if (g.pickMsg) g.pickMsg.endsAt = g.pickEndsAt;
+      this.after('pick', at, () => this._pickFallback('timeout'));
+    } else if (this.phase === 'preload') {
       this.after('preload', this.T.preloadMs, () => this._go());
     } else if (this.phase === 'playing') {
       const hard = Math.max(g.startAt + g.windowMs + this.T.lagMs - now, grace);

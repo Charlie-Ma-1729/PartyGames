@@ -533,3 +533,98 @@ test('J-POP 不受「歌曲類型」勾選影響（沒有 OP/ED 概念）', { sk
   start(room, conns);
   assert.equal(ph(room), 'preload', '只勾 OP 也能出 J-POP');
 });
+
+// ===== 出題者模式 =====
+
+const firstAnimeSearch = () => { const a = bank.anime[0].answer; return (a.work || a.title).slice(0, 2); };
+
+test('出題者模式：必須指定在線出題者且至少還有一位參賽者', () => {
+  const { room, conns } = setup(3, { questionSource: 'setter', setterId: null });
+  start(room, conns);
+  assert.equal(room.game, null);
+  assert.equal(conns[0].last('error').code, 'NO_SETTER');
+  const s2 = setup(1, { questionSource: 'setter' });
+  s2.room.settings.songguess.setterId = s2.players[0].id;
+  start(s2.room, s2.conns);
+  assert.equal(s2.conns[0].last('error').code, 'NO_GUESSER');
+});
+
+test('出題者模式：出題者搜尋、挑歌 → 其他人作答；出題者不參賽、不進排名', () => {
+  const { room, conns, players } = setup(3, { questionSource: 'setter', count: 2 });
+  room.settings.songguess.setterId = players[2].id;
+  start(room, conns);
+  assert.equal(ph(room), 'pick');
+  const pk = conns[0].last('pick');
+  assert.equal(pk.setter.id, players[2].id);
+  assert.equal(pk.idx, 1);
+  assert.equal(conns[0].last('question'), undefined, '挑歌前沒有題目');
+
+  const kw = firstAnimeSearch();
+  G(room, conns[0], { t: 'search', q: kw }); // 非出題者：忽略
+  assert.equal(conns[0].last('results'), undefined);
+  G(room, conns[2], { t: 'search', q: kw });
+  const res = conns[2].last('results');
+  assert.ok(res.list.length > 0 && res.q === kw);
+  const pickedId = res.list[0].id;
+
+  G(room, conns[0], { t: 'setPick', idx: 1, id: pickedId }); // 非出題者：忽略
+  assert.equal(ph(room), 'pick');
+  G(room, conns[2], { t: 'setPick', idx: 1, id: 'no-such-song' });
+  assert.ok(conns[2].last('pickError'));
+  G(room, conns[2], { t: 'setPick', idx: 1, id: pickedId });
+  assert.equal(ph(room), 'preload');
+  assert.equal(room.game.g.q.id, pickedId);
+  const q = conns[0].last('question');
+  assert.equal(q.setter.id, players[2].id);
+  assert.equal(seat(room, players[2]).eligible, false);
+
+  readyAll(room, conns);
+  assert.equal(ph(room), 'playing');
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 0 }); // 出題者不能作答
+  assert.equal(seat(room, players[2]).lock, null);
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: (ok + 1) % 8, elapsedMs: 0 });
+  assert.equal(ph(room), 'reveal', '只有兩位猜題者鎖定就揭曉');
+  const rv = conns[0].last('reveal');
+  assert.equal(rv.rows.some((r) => r.id === players[2].id), false);
+  assert.equal(rv.ranking.some((r) => r.id === players[2].id), false);
+
+  // 第二題：房主按下一題 → 又進入挑歌；同一首歌不能重複出
+  G(room, conns[0], { t: 'next' });
+  assert.equal(ph(room), 'pick');
+  assert.equal(conns[0].last('pick').idx, 2);
+  G(room, conns[2], { t: 'setPick', idx: 2, id: pickedId });
+  assert.match(conns[2].last('pickError').msg, /已經出過/);
+});
+
+test('出題者模式：挑歌逾時、房主跳過 → 退回隨機出題', async () => {
+  const { room, conns, players } = setup(3, { questionSource: 'setter', pickSecs: 0.1 });
+  room.settings.songguess.setterId = players[2].id;
+  start(room, conns);
+  assert.equal(ph(room), 'pick');
+  await sleep(150);
+  assert.notEqual(ph(room), 'pick');
+  assert.equal(conns[0].last('pickFallback').reason, 'timeout');
+  assert.ok(conns[0].last('question').setter, '之後仍標示出題者，但本題是隨機的');
+
+  const t2 = setup(3, { questionSource: 'setter', pickSecs: 30 });
+  t2.room.settings.songguess.setterId = t2.players[2].id;
+  start(t2.room, t2.conns);
+  G(t2.room, t2.conns[0], { t: 'skip' });
+  assert.equal(ph(t2.room), 'preload');
+  assert.equal(t2.conns[0].last('pickFallback').reason, 'host');
+});
+
+test('出題者模式：出題者離開 → 改隨機；設定夾限', () => {
+  const { room, conns, players } = setup(3, { questionSource: 'setter', pickSecs: 30 });
+  room.settings.songguess.setterId = players[2].id;
+  start(room, conns);
+  room.handle(conns[2], { t: 'leave' });
+  assert.equal(ph(room), 'preload');
+  assert.equal(conns[0].last('pickFallback').reason, 'offline');
+  const s = cleanSettings({ questionSource: 'x', setterId: 'bad id!', pickSecs: 9999 });
+  assert.equal(s.questionSource, 'random');
+  assert.equal(s.setterId, null);
+  assert.equal(s.pickSecs, 180);
+});

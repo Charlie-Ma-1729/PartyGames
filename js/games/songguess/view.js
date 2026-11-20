@@ -2,7 +2,7 @@
 import { CATEGORIES } from '../../questions.js';
 import { $, el, renderRanking } from '../../hub/view.js';
 
-const NUM_KEYS = ['count', 'duration', 'graceSecs', 'difficulty', 'perWork', 'quorumN', 'quorumSecs', 'autoNext'];
+const NUM_KEYS = ['count', 'duration', 'graceSecs', 'difficulty', 'perWork', 'quorumN', 'quorumSecs', 'autoNext', 'pickSecs'];
 const BOOL_KEYS = ['fromMiddle', 'penalty', 'allowLateJoin'];
 const ROOT = '#set-songguess';
 
@@ -15,11 +15,20 @@ export function readForm() {
     const k = sel.dataset.k;
     s[k] = NUM_KEYS.includes(k) ? Number(sel.value) : BOOL_KEYS.includes(k) ? sel.value === 'true' : sel.value;
   });
+  s.setterId = s.setterId || null;
   return s;
 }
 
-/** 以伺服器的設定填入表單；題庫勾選區依各題庫題數重建 */
-export function fillForm(settings, counts) {
+/** 以伺服器的設定填入表單；題庫勾選區依各題庫題數重建。players = 房間裡的玩家（出題者下拉用） */
+export function fillForm(settings, counts, players = []) {
+  // 出題者下拉：只列「參賽者」身分的人
+  const sel = document.querySelector(`${ROOT} [data-k="setterId"]`);
+  const opts = [['', '（請選擇）'], ...players.filter((p) => p.role === 'player').map((p) => [p.id, p.nick + (p.connected ? '' : '（離線）')])];
+  if (sel.dataset.built !== JSON.stringify(opts)) {
+    sel.replaceChildren(...opts.map(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; }));
+    sel.dataset.built = JSON.stringify(opts);
+  }
+  sel.value = settings.setterId || '';
   const box = $('f-categories');
   if (box.dataset.built !== JSON.stringify(counts)) {
     box.replaceChildren();
@@ -35,14 +44,17 @@ export function fillForm(settings, counts) {
   }
   box.querySelectorAll('input').forEach((i) => { i.checked = settings.categories.includes(i.value); });
   document.querySelectorAll(`${ROOT} #f-kinds input`).forEach((i) => { i.checked = settings.kinds.includes(i.value); });
-  document.querySelectorAll(`${ROOT} [data-k]`).forEach((sel) => {
-    const v = String(settings[sel.dataset.k]);
-    if (sel.value !== v) sel.value = v;
+  document.querySelectorAll(`${ROOT} [data-k]`).forEach((s2) => {
+    if (s2.dataset.k === 'setterId') return;
+    const v = String(settings[s2.dataset.k]);
+    if (s2.value !== v) s2.value = v;
   });
-  // 指定人數／倒數秒數只在需要時顯示
+  // 指定人數／倒數秒數／出題者只在需要時顯示
   const hide = (k, on) => { const l = document.querySelector(`${ROOT} [data-k="${k}"]`).closest('label'); l.classList.toggle('hidden', on); };
   hide('quorumN', settings.quorumMode !== 'n');
   hide('quorumSecs', settings.quorumMode === 'off');
+  hide('setterId', settings.questionSource !== 'setter');
+  hide('pickSecs', settings.questionSource !== 'setter');
 }
 
 /** 旁觀者專屬：即時顯示每個人選了什麼（m = null 代表清空） */

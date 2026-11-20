@@ -2,10 +2,12 @@
 import { sharedPlayer } from '../../player.js';
 import * as ui from '../../ui.js';
 import { readForm, fillForm, renderFinal, renderReveal, renderPicks } from './view.js';
+import { createPicker } from '../../hub/songpicker.js';
 
 const $ = (id) => document.getElementById(id);
 
 const S = {
+  pick: null, picker: null, pickNote: '',
   q: null, phase: 'preload', windowMs: 0, state: null, works: [], worksBy: {},
   sel: -1, selKey: null, selLabel: '', locked: false, canAnswer: false,
   localT0: null, t0Server: null, quorumEndsAt: null, nextAt: null, reveal: null, go: null,
@@ -18,6 +20,8 @@ const isScreen = () => A.isScreen();
 /** 這台裝置要不要載入 YouTube：主畫面一定要；玩家只有「各自播放」才要 */
 const needsVideo = () => isScreen() || (S.q && S.q.playMode === 'own');
 const meId = () => A.me().id;
+/** 本題的出題者就是我（出題者模式：不作答、不計分） */
+const isSetter = () => !!(S.q && S.q.setter && S.q.setter.id === meId());
 
 // ===================== 進入／離開 =====================
 function enter() {
@@ -27,13 +31,14 @@ function enter() {
 
 function resetGame() {
   clearTimeout(S.goTimer); clearTimeout(S.activateTimer);
-  Object.assign(S, { q: null, phase: 'preload', state: null, works: [], worksBy: {}, sel: -1, selKey: null, selLabel: '', locked: false, canAnswer: false, localT0: null, t0Server: null, quorumEndsAt: null, nextAt: null, reveal: null, go: null });
+  Object.assign(S, { pick: null, q: null, phase: 'preload', state: null, works: [], worksBy: {}, sel: -1, selKey: null, selLabel: '', locked: false, canAnswer: false, localT0: null, t0Server: null, quorumEndsAt: null, nextAt: null, reveal: null, go: null });
 }
 
 function exit() {
   clearTimeout(S.goTimer); clearTimeout(S.activateTimer); clearInterval(S.tickTimer);
-  S.tickTimer = null; S.q = null;
+  S.tickTimer = null; S.q = null; S.pick = null;
   if (S.player) S.player.stop();
+  $('msetter').classList.add('hidden');
   document.querySelector('.stage').classList.remove('mp', 'mp-screenmode');
 }
 
@@ -43,6 +48,10 @@ function message(m) {
     case 'state': return onState(m);
     case 'picks': if (S.q && m.idx === S.q.idx && S.phase !== 'reveal') renderPicks(m, meId(), S.q); return;
     case 'works': S.worksBy[m.ask || 'work'] = m.list.map((w) => ({ ...w, n: norm(w.main + ' ' + w.sub) })); if (S.q && (S.q.ask || 'work') === (m.ask || 'work')) S.works = S.worksBy[m.ask || 'work']; return;
+    case 'pick': return onPick(m);
+    case 'results': if (S.picker && S.phase === 'pick') S.picker.setResults(m.list, m.q); return;
+    case 'pickError': A.toast(m.msg || '這首不能選', true); return;
+    case 'pickFallback': A.toast({ timeout: '出題者逾時，改由系統隨機出題', offline: '出題者離線，改由系統隨機出題', host: '房主跳過，改由系統隨機出題' }[m.reason] || '改由系統隨機出題', true); return;
     case 'question': return onQuestion(m);
     case 'go': return onGo(m);
     case 't0': if (S.q && m.idx === S.q.idx) S.t0Server = m.t0; return;
@@ -76,12 +85,45 @@ function showGame() {
   $('btn-quit').textContent = '離開';
 }
 
+/** 出題者模式：出題者正在挑歌（出題者看到搜尋框；其他人等待） */
+function onPick(m) {
+  clearTimeout(S.goTimer); clearTimeout(S.activateTimer);
+  if (S.player) S.player.stop();
+  Object.assign(S, { q: null, reveal: null, go: null, phase: 'pick', pick: m, canAnswer: false, nextAt: null, quorumEndsAt: null });
+  ui.showScreen('game');
+  const stage = document.querySelector('.stage');
+  stage.classList.add('mp'); stage.classList.remove('mp-screenmode');
+  $('btn-quit').textContent = '離開';
+  $('progress').textContent = `第 ${m.idx} / ${m.total} 題`;
+  $('prompt').textContent = '出題者挑歌中…';
+  $('cover-text').textContent = '🎙 出題者挑歌中…';
+  ui.setPlaying(false);
+  for (const id of ['choices', 'mtype', 'mreveal', 'mstatus', 'mpicks']) $(id).classList.add('hidden');
+  $('btn-main').classList.add('hidden'); $('btn-mforce').classList.add('hidden');
+  $('btn-mskip').classList.remove('hidden'); $('btn-mend').classList.remove('hidden');
+  const mine = m.setter.id === meId();
+  S.pickNote = mine ? '🎙 輪到你出題！搜尋並點選一首歌，大家會聽這首來猜（本題你不作答）' : `🎙 等待「${m.setter.nick}」挑歌…`;
+  $('msetter').classList.remove('hidden');
+  $('msetter-picker').classList.toggle('hidden', !mine);
+  if (mine && S.picker) { S.picker.clear(); S.picker.focus(); }
+  tick();
+}
+
+/** 題目期間：顯示「本題由誰出題」，出題者另有提示 */
+function renderSetterNote() {
+  const st = S.q && S.q.setter;
+  $('msetter').classList.toggle('hidden', !st);
+  $('msetter-picker').classList.add('hidden');
+  if (st) $('msetter-note').textContent = isSetter() ? '🎙 你是本題出題者：不作答、不計分' : `🎙 本題由「${st.nick}」出題`;
+}
+
 function onQuestion(m) {
   // 斷線重連：伺服器會把「目前這題」再送一次。同一題就只更新資料，不重置選擇、不重載影片、不重置計時
   if (S.q && S.q.idx === m.idx && S.phase !== 'final') {
     S.q = m;
     S.works = S.worksBy[m.ask || 'work'] || [];
     showGame();
+    renderSetterNote();
     renderLocks();
     return;
   }
@@ -90,6 +132,7 @@ function onQuestion(m) {
   S.sel = -1; S.selKey = null; S.selLabel = ''; S.locked = false; S.canAnswer = false;
   S.localT0 = null; S.t0Server = null; S.quorumEndsAt = null; S.nextAt = null; S.reveal = null;
   showGame();
+  renderSetterNote();
   renderPicks(null);
   ui.showQuestion({ kind: m.kind, prompt: m.prompt, ask: m.ask }, m.idx, m.total, m.choices);
   $('mtype-input').placeholder = m.ask === 'artist' ? '輸入歌手名搜尋…' : m.ask === 'title' ? '輸入歌名搜尋…' : '輸入作品名（中文／原文都可以）搜尋…';
@@ -97,7 +140,7 @@ function onQuestion(m) {
   $('mreveal').classList.add('hidden');
   $('mstatus').classList.remove('hidden');
   const typing = m.answerMode === 'typing';
-  $('mtype').classList.toggle('hidden', typing ? !A.isContestant() : true);
+  $('mtype').classList.toggle('hidden', typing ? !A.isContestant() || isSetter() : true);
   $('mtype').classList.remove('locked');
   $('mtype-input').value = ''; $('mtype-list').replaceChildren(); $('mtype-picked').textContent = '';
   setMainButton();
@@ -163,7 +206,7 @@ function onCued() {
 
 function onGo(m) {
   if (!S.q || m.idx !== S.q.idx) return;
-  S.phase = 'playing'; S.canAnswer = A.isContestant(); $('cover').classList.remove('tap');
+  S.phase = 'playing'; S.canAnswer = A.isContestant() && !isSetter(); $('cover').classList.remove('tap');
   setMainButton();
   $('btn-mforce').classList.remove('hidden'); // 只有房主看得到（.host-only）
   S.go = m;
@@ -198,8 +241,8 @@ function onYou(m) { // 重連：還原我的選擇與鎖定狀態
 // ===================== 作答 =====================
 function setMainButton() {
   const b = $('btn-main');
-  b.classList.toggle('hidden', !A.isContestant()); // 主畫面、旁觀者沒有作答鈕
-  if (!A.isContestant()) return;
+  b.classList.toggle('hidden', !A.isContestant() || isSetter()); // 主畫面、旁觀者、出題者沒有作答鈕
+  if (!A.isContestant() || isSetter()) return;
   if (S.phase === 'reveal') return; // 由 onReveal 設定
   if (!S.q) { b.disabled = true; return; }
   if (S.locked) { b.textContent = '✅ 已鎖定，等待其他人…'; b.disabled = true; return; }
@@ -294,7 +337,7 @@ function onReveal(m) {
 function applyRevealButton() {
   const b = $('btn-main');
   if (!S.reveal) return;
-  b.classList.toggle('hidden', !A.isContestant() && !isHost()); // 房主就算是主畫面／旁觀者，也要有「下一題」
+  b.classList.toggle('hidden', (!A.isContestant() || isSetter()) && !isHost()); // 房主就算是主畫面／旁觀者／出題者，也要有「下一題」
   if (isHost()) { b.textContent = S.reveal.last ? '查看最終排行榜 (空白鍵)' : '下一題 (空白鍵)'; b.disabled = false; }
   else { b.textContent = '等待房主按下一題…'; b.disabled = true; }
 }
@@ -315,7 +358,7 @@ function renderLocks() {
   if (!m || !S.q) return;
   const box = $('m-locks');
   box.replaceChildren();
-  const inGame = m.players.filter((p) => !p.spectator);
+  const inGame = m.players.filter((p) => !p.spectator && !p.setter);
   inGame.forEach((p) => {
     const c = document.createElement('span');
     c.className = 'mlock' + (p.locked ? ' on' : '') + (!p.connected ? ' off' : '') + (p.id === meId() ? ' me' : '');
@@ -329,6 +372,11 @@ function renderLocks() {
 
 // ===================== 計時顯示（每 200ms）=====================
 function tick() {
+  if (S.phase === 'pick' && S.pick) {
+    const r = Math.max(0, Math.ceil((S.pick.endsAt - A.now()) / 1000));
+    $('msetter-note').textContent = `${S.pickNote}　⏱ ${r} 秒（逾時改隨機出題）`;
+    return;
+  }
   if (!S.q) return;
   if (S.phase === 'playing') {
     const own = S.q.playMode === 'own' || isScreen();
@@ -360,6 +408,11 @@ function mainAction() {
 // ===================== 綁定一次性事件 =====================
 function init(api) {
   A = api;
+  S.picker = createPicker({
+    onSearch: (q) => A.send({ t: 'search', q }),
+    onPick: (it) => { if (S.pick) A.send({ t: 'setPick', idx: S.pick.idx, id: it.id }); },
+  });
+  $('msetter-picker').append(S.picker.el);
   const multi = () => document.body.classList.contains('multi');
   $('btn-main').addEventListener('click', () => { if (multi()) mainAction(); });
   $('btn-mforce').addEventListener('click', () => A.send({ t: 'forceReveal' }));
@@ -409,9 +462,14 @@ export default {
   init,
   settings: {
     get el() { return $('set-songguess'); },
-    fill: (settings, ctx) => fillForm(settings, ctx.info.counts || {}),
+    fill: (settings, ctx) => fillForm(settings, ctx.info.counts || {}, ctx.hub.players || []),
     read: readForm,
-    startHint: (ctx) => (ctx.hub.settings.playMode === 'screen' && ctx.hub.screens === 0 ? '請先讓一位玩家把身分選為「主畫面」' : null),
+    startHint: (ctx) => {
+      const s = ctx.hub.settings;
+      if (s.playMode === 'screen' && ctx.hub.screens === 0) return '請先讓一位玩家把身分選為「主畫面」';
+      if (s.questionSource === 'setter' && !(ctx.hub.players || []).some((p) => p.id === s.setterId && p.role === 'player' && p.connected)) return '請先指定一位在線的出題者（參賽者身分）';
+      return null;
+    },
   },
   enter, exit, message, onHub,
 };

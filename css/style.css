@@ -206,6 +206,22 @@ body.multi.is-host .host-only { display: inline-block; }
 .mtype-picked b { color: #ffd166; }
 .mtype.locked #mtype-input { opacity: 0.5; pointer-events: none; }
 
+/* 搜尋題庫選歌（js/hub/songpicker.js；猜歌出題者、空耳選歌共用） */
+.songpicker { max-width: 620px; margin: 12px auto 0; text-align: left; }
+.songpicker input { width: 100%; box-sizing: border-box; }
+.sp-hint { color: var(--muted); font-size: 14px; margin: 8px 2px; }
+.sp-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 320px; overflow: auto; border-radius: 12px; background: #1d1f3f; border: 1px solid #3a3d70; }
+.sp-list:empty { display: none; }
+.sp-list li { padding: 10px 14px; cursor: pointer; display: flex; flex-direction: column; border-bottom: 1px solid #2c2f5a; position: relative; }
+.sp-list li:hover { background: #2d2f61; }
+.sp-list li.on { opacity: 0.55; }
+.sp-list li small { color: var(--muted); font-size: 12px; }
+.sp-tag { position: absolute; right: 12px; top: 10px; font-size: 12px; color: #ffd166; }
+
+/* 猜歌出題者模式 */
+.msetter { max-width: 720px; margin: 12px auto; }
+.msetter-note { font-size: 18px; margin: 8px 0; color: #ffe6f2; }
+
 /* 本題結果 */
 .mreveal { background: var(--card); border-radius: 18px; padding: 14px 16px; margin: 12px auto; max-width: 720px; text-align: left; }
 .mreveal h3 { margin: 0 0 8px; font-size: 15px; color: var(--muted); font-weight: 600; }

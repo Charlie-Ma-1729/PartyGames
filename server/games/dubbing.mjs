@@ -16,7 +16,7 @@ const avg3 = (sum, n) => (n > 0 ? Number((sum / n).toFixed(3)) : 0);
 
 export class DubbingGame extends GameBase {
   static meta = {
-    id: 'dubbing', name: '配音大師', icon: '🎙️', min: 1, max: MAX_PLAYERS, screen: false,
+    id: 'dubbing', name: '配音大師', icon: '🎙️', min: 1, max: MAX_PLAYERS, roles: ['player'],
     desc: '每人對著同一段影片用麥克風配音，再輪流播放、互相評分「搞笑」與「配音優異」，最後合成成品可下載！（需要麥克風）',
   };
   static defaults = DEFAULTS;

@@ -275,13 +275,80 @@ test('主畫面模式：沒有主畫面不能開始；以主畫面的 ready 為�
   assert.equal(ph(room), 'lobby');
   assert.equal(conns[0].last('error').code, 'NO_SCREEN');
   const sc = fakeConn();
-  room.joinScreen(sc);
+  assert.ok(room.join(sc, { nick: '客廳電視' }).player);
+  room.handle(sc, { t: 'role', role: 'screen' }); // 在大廳把身分選為主畫面
+  assert.equal(room.screens.length, 1);
   start(room, conns);
   assert.equal(ph(room), 'preload');
+  assert.equal(room.game.seats.size, 2, '主畫面不參賽，沒有座位');
   G(room, sc, { t: 'ready', idx: room.game.g.idx });
   assert.equal(ph(room), 'playing', '手機不用 ready');
   G(room, sc, { t: 'playing', idx: room.game.g.idx });
   assert.ok(sc.last('t0').t0 > 0);
+});
+
+test('身分：只能在大廳、選遊戲支援的身分；不夠的參賽者不能開始；主畫面／旁觀者不算人數', () => {
+  const { room, conns, players } = setup(2);
+  room.handle(conns[1], { t: 'role', role: 'hacker' });
+  assert.equal(players[1].role, 'player', '不存在的身分被忽略');
+  room.handle(conns[1], { t: 'role', role: 'spectator' });
+  assert.equal(conns[0].last('hub').players[1].role, 'spectator');
+  room.handle(conns[0], { t: 'role', role: 'spectator' });
+  start(room, conns);
+  assert.equal(conns[0].last('error').code, 'MIN', '沒有任何參賽者');
+  room.handle(conns[0], { t: 'role', role: 'player' });
+  // 換成不支援身分的遊戲 → 身分重設為參賽者
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  assert.equal(players[1].role, 'player');
+  room.handle(conns[1], { t: 'role', role: 'screen' });
+  assert.equal(players[1].role, 'player', '你說我猜沒有主畫面身分');
+  // 遊戲中不能換身分
+  room.handle(conns[0], { t: 'pick', game: 'songguess' });
+  room.handle(conns[1], { t: 'role', role: 'spectator' });
+  room.handle(conns[0], { t: 'start' });
+  room.handle(conns[1], { t: 'role', role: 'player' });
+  assert.equal(players[1].role, 'spectator');
+  room.destroy();
+});
+
+test('旁觀者：不參賽、不能作答，但即時看到每個人選了什麼；房主是旁觀者也能控制進度', () => {
+  const { room, conns, players } = setup(3, { quorumMode: 'off' });
+  room.handle(conns[2], { t: 'role', role: 'spectator' });
+  start(room, conns);
+  assert.equal(room.game.seats.size, 2);
+  assert.equal(conns[2].last('state').players.length, 2, '旁觀者不在參賽名單');
+  readyAll(room, conns);
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  assert.ok(conns[2].last('picks'), '旁觀者收到作答狀況');
+  assert.equal(conns[0].last('picks'), undefined, '參賽者看不到別人選了什麼');
+  G(room, conns[1], { t: 'select', idx, choice: ok });
+  const p1 = conns[2].last('picks').picks.find((p) => p.id === players[1].id);
+  assert.equal(p1.choice, ok); assert.equal(p1.locked, false);
+  assert.equal(p1.label, conns[0].last('question').choices[ok].main);
+  G(room, conns[2], { t: 'lock', idx, choice: 0 }); // 旁觀者作答無效
+  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  assert.equal(conns[2].last('picks').picks.find((p) => p.id === players[1].id).locked, true);
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  assert.equal(ph(room), 'reveal');
+  // 旁觀者重連會補送目前的作答狀況
+  const c2 = fakeConn();
+  room.disconnect(conns[2]);
+  room.join(c2, { playerId: players[2].id });
+  assert.ok(c2.last('picks'));
+  // 房主換成旁觀者後仍能按下一題
+  room.settings.songguess.allowLateJoin = true;
+  room.handle(conns[0], { t: 'lobby' });
+  room.handle(conns[0], { t: 'role', role: 'spectator' });
+  room.handle(conns[1], { t: 'start' });
+  assert.equal(ph(room), 'lobby', '非房主不能開始');
+  room.handle(conns[2], { t: 'role', role: 'player' });
+  start(room, conns);
+  readyAll(room, [conns[1], c2]);
+  G(room, conns[0], { t: 'forceReveal' });
+  assert.equal(ph(room), 'reveal', '旁觀者房主可以強制揭曉');
+  G(room, conns[0], { t: 'next' });
+  assert.equal(ph(room), 'preload');
+  room.destroy();
 });
 
 test('分頁被關掉：用同暱稱重新加入，接回離線的座位（保留分數、不會變成「名2」）', () => {

@@ -3,11 +3,11 @@
 // 遊戲本身的規則在 server/games/*.mjs（介面見 games/base.mjs），這裡完全不知道各遊戲的細節。
 //
 // 傳輸協定（JSON）：
-//   用戶端 → 伺服器  create / join / leave / kick{id} / pick{game} / settings{settings} / start / lobby / g{m:遊戲訊息}
+//   用戶端 → 伺服器  create / join / leave / kick{id} / pick{game} / role{role} / settings{settings} / start / lobby / g{m:遊戲訊息}
 //   伺服器 → 用戶端  joined / hub（房間狀態）/ g{g:遊戲代號, m:遊戲訊息} / error / kicked
 import { randomBytes } from 'node:crypto';
 import { GAMES, DEFAULT_GAME, gameList, gameInfo } from './games/index.mjs';
-import { MAX_PLAYERS, MAX_SCREENS, cleanNick, cleanId } from './protocol.mjs';
+import { MAX_PLAYERS, cleanNick, cleanId } from './protocol.mjs';
 
 export const TIMING = {
   // 房間
@@ -32,8 +32,9 @@ export class Room {
     this.code = code;
     this.T = { ...TIMING, ...timing };
     this.hostId = null;
-    this.players = new Map(); // id → Member {id, nick, conn, connected, lastSeen, joinedAt}
-    this.screens = new Set(); // conn
+    // id → Member {id, nick, role, conn, connected, lastSeen, joinedAt}
+    // role：player 參賽者｜screen 主畫面（只負責播放，不參賽）｜spectator 旁觀者（不參賽，看得到即時作答）。在大廳由本人選，可選的身分由遊戲的 meta.roles 決定
+    this.players = new Map();
     this.banned = new Set();
     this.gameId = DEFAULT_GAME; // 房主目前選的遊戲
     this.settings = {}; // gameId → 設定（沒設過的用該遊戲的預設值）
@@ -75,11 +76,11 @@ export class Room {
         const ok = this.game.canJoin();
         if (ok !== true) return { error: { code: 'STARTED', msg: ok || '遊戲已開始，無法中途加入' } };
       }
-      p = { id: id || newId(), nick: this._uniqueNick(name), conn, connected: true, lastSeen: Date.now(), joinedAt: Date.now() };
+      p = { id: id || newId(), nick: this._uniqueNick(name), role: 'player', conn, connected: true, lastSeen: Date.now(), joinedAt: Date.now() };
       this.players.set(p.id, p);
       if (!this.hostId) this.hostId = p.id;
     }
-    conn.room = this; conn.player = p; conn.screen = false;
+    conn.room = this; conn.player = p;
     this.lastActive = Date.now();
     this._ensureHost();
     this._hello(conn, p);
@@ -91,24 +92,7 @@ export class Room {
     return { player: p };
   }
 
-  joinScreen(conn) {
-    if (this.screens.size >= MAX_SCREENS) return { error: { code: 'FULL', msg: '主畫面數量已達上限' } };
-    conn.room = this; conn.screen = true; conn.player = null; conn.ready = false;
-    this.screens.add(conn);
-    this.lastActive = Date.now();
-    this._hello(conn, null);
-    if (this.game) { this.game.onScreenJoin(conn); this.game.snapshot(conn, null); }
-    this._broadcastHub();
-    return { screen: true };
-  }
-
   disconnect(conn) {
-    if (conn.screen) {
-      this.screens.delete(conn);
-      this._broadcastHub();
-      if (this.game) this.game.onScreenLeave(conn);
-      return;
-    }
     const p = conn.player;
     if (!p || p.conn !== conn) return; // 已被新連線取代
     p.connected = false; p.conn = null; p.lastSeen = Date.now();
@@ -141,7 +125,6 @@ export class Room {
   _send(conn, msg) { try { conn.send(msg); } catch { /* ignore */ } }
   _broadcast(msg) {
     for (const p of this.players.values()) if (p.conn) this._send(p.conn, msg);
-    for (const s of this.screens) this._send(s, msg);
   }
   /** 給遊戲用：自動包上 {t:'g', g:遊戲代號} */
   sendG(conn, m) { this._send(conn, { t: 'g', g: this.activeId, m }); }
@@ -150,15 +133,15 @@ export class Room {
   _hubMsg() {
     return {
       t: 'hub', code: this.code, phase: this.phase, hostId: this.hostId, gameId: this.gameId,
-      settings: this.getSettings(), screens: this.screens.size,
-      players: [...this.players.values()].map((p) => ({ id: p.id, nick: p.nick, connected: p.connected })),
+      settings: this.getSettings(), screens: this.screens.length,
+      players: [...this.players.values()].map((p) => ({ id: p.id, nick: p.nick, role: p.role, connected: p.connected })),
     };
   }
   _broadcastHub() { this._broadcast(this._hubMsg()); }
 
   /** 加入／重連時的第一批訊息 */
   _hello(conn, p) {
-    this._send(conn, { t: 'joined', code: this.code, role: p ? 'player' : 'screen', playerId: p ? p.id : null, serverNow: Date.now(), games: gameList(), info: gameInfo() });
+    this._send(conn, { t: 'joined', code: this.code, playerId: p.id, serverNow: Date.now(), games: gameList(), info: gameInfo() });
     this._send(conn, this._hubMsg());
   }
 
@@ -168,16 +151,23 @@ export class Room {
     this.lastActive = Date.now();
     if (p) p.lastSeen = Date.now();
     if (msg.t === 'g') {
-      if (this.game && (conn.screen || p) && msg.m && typeof msg.m === 'object' && typeof msg.m.t === 'string') this.game.handle(conn, msg.m);
+      if (this.game && p && msg.m && typeof msg.m === 'object' && typeof msg.m.t === 'string') this.game.handle(conn, msg.m);
       return;
     }
-    if (conn.screen || !p) return;
+    if (!p) return;
     const isHost = p.id === this.hostId;
     switch (msg.t) {
-      case 'pick': if (isHost && !this.game && GAMES[msg.game]) { this.gameId = msg.game; this._broadcastHub(); } break;
+      case 'pick':
+        if (isHost && !this.game && GAMES[msg.game]) {
+          this.gameId = msg.game;
+          for (const m of this.players.values()) if (!this._roles().includes(m.role)) m.role = 'player'; // 新遊戲沒有這個身分
+          this._broadcastHub();
+        }
+        break;
       case 'settings':
         if (isHost && !this.game) { this.settings[this.gameId] = GAMES[this.gameId].clean(msg.settings, this.getSettings()); this._broadcastHub(); }
         break;
+      case 'role': if (!this.game) this._setRole(p, msg.role); break;
       case 'start': if (isHost && !this.game) this._start(conn); break;
       case 'lobby': if (isHost && this.game) this._toLobby(); break;
       case 'kick': if (isHost) this._kick(String(msg.id || '')); break;
@@ -186,11 +176,24 @@ export class Room {
     }
   }
 
+  // ===== 身分（參賽者／主畫面／旁觀者）=====
+  _roles() { return GAMES[this.gameId].meta.roles || ['player']; }
+  _setRole(p, role) {
+    if (!this._roles().includes(role) || p.role === role) return;
+    p.role = role;
+    this._broadcastHub();
+  }
+
+  /** 目前在線上、身分是「主畫面」的連線（遊戲用它來同步載入與播放） */
+  get screens() {
+    return [...this.players.values()].filter((p) => p.role === 'screen' && p.connected && p.conn).map((p) => p.conn);
+  }
+
   // ===== 遊戲開始／結束 =====
   _start(conn) {
     const G = GAMES[this.gameId];
-    const online = [...this.players.values()].filter((p) => p.connected).length;
-    if (online < G.meta.min) return this._send(conn, { t: 'error', code: 'MIN', msg: `「${G.meta.name}」至少需要 ${G.meta.min} 位玩家` });
+    const online = [...this.players.values()].filter((p) => p.connected && p.role === 'player').length;
+    if (online < G.meta.min) return this._send(conn, { t: 'error', code: 'MIN', msg: `「${G.meta.name}」至少需要 ${G.meta.min} 位參賽的玩家（主畫面、旁觀者不算）` });
     const g = new G(this, this.getSettings());
     const err = g.check(conn);
     if (err) return this._send(conn, { t: 'error', ...err });
@@ -245,7 +248,7 @@ export class Room {
     const gd = this.game ? this.game.serialize() : null;
     return {
       code: this.code, hostId: this.hostId, gameId: this.gameId, settings: this.settings, banned: [...this.banned],
-      players: [...this.players.values()].map((p) => ({ id: p.id, nick: p.nick, joinedAt: p.joinedAt })),
+      players: [...this.players.values()].map((p) => ({ id: p.id, nick: p.nick, role: p.role, joinedAt: p.joinedAt })),
       game: gd && { id: this.activeId, data: gd },
     };
   }
@@ -258,7 +261,7 @@ export class Room {
     for (const [id, s] of Object.entries(d.settings || {})) if (GAMES[id]) r.settings[id] = GAMES[id].clean(s, GAMES[id].defaults);
     r.banned = new Set(d.banned || []);
     const now = Date.now();
-    for (const p of d.players || []) r.players.set(p.id, { id: p.id, nick: p.nick, conn: null, connected: false, lastSeen: now, joinedAt: p.joinedAt || now });
+    for (const p of d.players || []) r.players.set(p.id, { id: p.id, nick: p.nick, role: p.role || 'player', conn: null, connected: false, lastSeen: now, joinedAt: p.joinedAt || now });
     const gd = d.game;
     if (gd && gd.data && GAMES[gd.id]) {
       const g = GAMES[gd.id].restore(r, r.getSettings(gd.id), gd.data, env);
@@ -268,7 +271,7 @@ export class Room {
   }
 
   get connectedCount() {
-    return [...this.players.values()].filter((p) => p.connected).length + this.screens.size;
+    return [...this.players.values()].filter((p) => p.connected).length;
   }
 
   destroy() { if (this.game) this.game.destroy(); }

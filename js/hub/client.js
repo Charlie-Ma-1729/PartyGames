@@ -13,19 +13,22 @@ import { Net } from './net.js';
 import { wsUrl } from '../config.js';
 import * as ui from '../ui.js';
 import { GAME_MODULES } from '../games/index.js';
-import { $, renderPlayers, renderGameCards } from './view.js';
+import { $, renderPlayers, renderGameCards, renderRoles } from './view.js';
 
 const SS_KEY = 'partygames-session'; // sessionStorage：{code, pid, nick, role}（每個分頁各自一份，重新整理可回座）
 const NICK_KEY = 'partygames-nick';
 
 const H = {
-  net: null, role: null, pid: null, code: null, nick: '', pending: null,
+  net: null, pid: null, code: null, nick: '', pending: null,
   games: [], info: {}, hub: null, entered: null,
 };
 let deps = { getVolume: () => 80, stopSingle: () => {} };
 
-const isHost = () => H.role === 'player' && !!H.pid && H.pid === (H.hub && H.hub.hostId);
-const isScreen = () => H.role === 'screen';
+const isHost = () => !!H.pid && H.pid === (H.hub && H.hub.hostId);
+/** 我目前的身分：player 參賽者｜screen 主畫面｜spectator 旁觀者 */
+const myRole = () => { const me = H.hub && H.hub.players.find((p) => p.id === H.pid); return (me && me.role) || 'player'; };
+const isScreen = () => myRole() === 'screen';
+const isSpectator = () => myRole() === 'spectator';
 const mod = (id) => GAME_MODULES[id];
 
 // ===================== 給遊戲模組用的介面 =====================
@@ -35,6 +38,9 @@ export const api = {
   me: () => ({ id: H.pid, nick: H.nick }),
   isHost,
   isScreen,
+  isSpectator,
+  /** 這台裝置是不是參賽者（要作答） */
+  isContestant: () => myRole() === 'player',
   hub: () => H.hub,
   info: (id) => H.info[id] || {},
   /** 伺服器時間（毫秒），與伺服器對時後的結果 */
@@ -58,7 +64,7 @@ function toast(msg, warn = false) {
 }
 
 // ===================== 連線 =====================
-const saveSession = () => { try { sessionStorage.setItem(SS_KEY, JSON.stringify({ code: H.code, pid: H.pid, nick: H.nick, role: H.role })); } catch { /* ignore */ } };
+const saveSession = () => { try { sessionStorage.setItem(SS_KEY, JSON.stringify({ code: H.code, pid: H.pid, nick: H.nick })); } catch { /* ignore */ } };
 const loadSession = () => { try { return JSON.parse(sessionStorage.getItem(SS_KEY) || 'null'); } catch { return null; } };
 const clearSession = () => { try { sessionStorage.removeItem(SS_KEY); } catch { /* ignore */ } };
 const inviteLink = () => `${location.origin}${location.pathname}?room=${H.code}`;
@@ -73,7 +79,7 @@ function connect(pending) {
       $('netbar').classList.add('hidden');
       homeMsg('');
       // 重連時用 session 的 playerId 回座；第一次則送 create / join
-      const msg = H.code && (H.pid || H.role === 'screen') ? { t: 'join', code: H.code, playerId: H.pid, nick: H.nick, role: H.role } : H.pending;
+      const msg = H.code && H.pid ? { t: 'join', code: H.code, playerId: H.pid, nick: H.nick } : H.pending;
       if (msg) H.net.send(msg);
     },
     onClose: () => { if (H.code && H.net) $('netbar').classList.remove('hidden'); }, // 已在房間裡斷線：顯示「重新連線中」
@@ -87,9 +93,9 @@ function leaveRoom(silent = false) {
   if (H.net) { H.net.send({ t: 'leave' }); H.net.close(); }
   $('netbar').classList.add('hidden');
   exitGame();
-  H.net = null; H.code = null; H.pid = null; H.hub = null; H.role = null;
+  H.net = null; H.code = null; H.pid = null; H.hub = null;
   clearSession();
-  document.body.classList.remove('multi', 'is-host', 'is-screen');
+  document.body.classList.remove('multi', 'is-host', 'is-screen', 'is-spectator');
   history.replaceState(null, '', location.pathname);
   if (!silent) ui.showScreen('home');
 }
@@ -119,7 +125,7 @@ function onError(m) {
     H.net = null; H.code = null; H.pid = null; H.hub = null;
     if (had) clearSession();
     exitGame();
-    document.body.classList.remove('multi', 'is-host', 'is-screen');
+    document.body.classList.remove('multi', 'is-host', 'is-screen', 'is-spectator');
     ui.showScreen('home');
     homeMsg(m.msg);
     return;
@@ -129,18 +135,19 @@ function onError(m) {
 }
 
 function onJoined(m) {
-  H.code = m.code; H.role = m.role; H.games = m.games || []; H.info = m.info || {};
-  if (m.playerId) H.pid = m.playerId;
+  H.code = m.code; H.games = m.games || []; H.info = m.info || {};
+  H.pid = m.playerId;
   saveSession();
-  history.replaceState(null, '', `${location.pathname}?room=${H.code}${H.role === 'screen' ? '&screen=1' : ''}`);
+  history.replaceState(null, '', `${location.pathname}?room=${H.code}`);
   document.body.classList.add('multi');
-  document.body.classList.toggle('is-screen', H.role === 'screen');
   $('l-code').textContent = H.code;
 }
 
 function onHub(m) {
   H.hub = m;
   document.body.classList.toggle('is-host', isHost());
+  document.body.classList.toggle('is-screen', isScreen());
+  document.body.classList.toggle('is-spectator', isSpectator());
   if (m.phase === 'lobby') {
     if (H.entered) exitGame();
     if (!$('screen-lobby').classList.contains('active')) ui.showScreen('lobby');
@@ -180,14 +187,17 @@ function renderLobby() {
   g.settings.fill(m.settings, ctx);
   $('l-lockhint').textContent = host ? '' : '（只有房主能修改）';
 
-  const online = m.players.filter((p) => p.connected).length;
-  const hint = online < meta.min ? `至少需要 ${meta.min} 位玩家（目前 ${online} 位）` : (g.settings.startHint ? g.settings.startHint(ctx) : null);
+  const roles = meta.roles || ['player'];
+  $('l-role').classList.toggle('hidden', roles.length < 2);
+  renderRoles($('l-roles'), roles, myRole(), (r) => api.sendHub({ t: 'role', role: r }));
+
+  const online = m.players.filter((p) => p.connected && p.role === 'player').length;
+  const hint = online < meta.min ? `至少需要 ${meta.min} 位參賽的玩家（目前 ${online} 位）` : (g.settings.startHint ? g.settings.startHint(ctx) : null);
   $('l-start').classList.toggle('hidden', !host);
   $('l-start').disabled = !!hint;
   $('l-start').textContent = hint || `開始「${meta.name}」▶`;
   $('l-wait').classList.toggle('hidden', host);
-  $('l-wait').textContent = isScreen() ? '你是「主畫面」：遊戲開始後會自動切換到播放畫面。' : '等待房主開始遊戲…';
-  $('l-screen').classList.toggle('hidden', isScreen() || !meta.screen);
+  $('l-wait').textContent = isScreen() ? '你是「主畫面」：遊戲開始後會自動切換到播放畫面。' : isSpectator() ? '你是旁觀者：遊戲開始後可以即時看到大家的作答。等待房主開始…' : '等待房主開始遊戲…';
   $('l-msg').textContent = '';
 }
 
@@ -221,18 +231,17 @@ export function initHub(d) {
   $('h-create').addEventListener('click', () => {
     const nick = nickValue();
     if (!nick) { homeMsg('請先輸入暱稱'); $('h-nick').focus(); return; }
-    remember(nick); H.nick = nick; H.code = null; H.pid = null; H.role = 'player';
+    remember(nick); H.nick = nick; H.code = null; H.pid = null;
     connect({ t: 'create', nick, password: $('h-pass').value });
   });
   const join = () => {
     const code = $('h-code').value.trim().toUpperCase();
-    const asScreen = $('h-asscreen').checked;
     const nick = nickValue();
     if (code.length !== 4) { homeMsg('請輸入 4 碼的房間代碼'); return; }
-    if (!asScreen && !nick) { homeMsg('請先輸入暱稱'); $('h-nick').focus(); return; }
+    if (!nick) { homeMsg('請先輸入暱稱'); $('h-nick').focus(); return; }
     if (nick) remember(nick);
-    H.nick = nick; H.code = null; H.pid = null; H.role = asScreen ? 'screen' : 'player';
-    connect({ t: 'join', code, nick, role: asScreen ? 'screen' : 'player' });
+    H.nick = nick; H.code = null; H.pid = null;
+    connect({ t: 'join', code, nick });
   };
   $('h-join').addEventListener('click', join);
   $('h-code').addEventListener('keydown', (e) => { if (e.key === 'Enter') join(); });
@@ -245,7 +254,6 @@ export function initHub(d) {
     try { await navigator.clipboard.writeText(inviteLink()); toast('已複製邀請連結'); $('l-copy').textContent = '✅ 已複製'; setTimeout(() => { $('l-copy').textContent = '📋 複製邀請連結'; }, 1800); }
     catch { prompt('複製這個邀請連結：', inviteLink()); }
   });
-  $('l-screen').addEventListener('click', () => window.open(`${inviteLink()}&screen=1`, '_blank'));
   $('l-start').addEventListener('click', () => { sendSettings(); api.sendHub({ t: 'start' }); });
   $('l-settings').addEventListener('change', sendSettings);
 
@@ -257,14 +265,10 @@ export function initHub(d) {
     deps.stopSingle();
     $('h-code').value = room;
     if (sess && sess.code === room) {
-      H.code = room; H.pid = sess.pid; H.nick = sess.nick; H.role = sess.role;
+      H.code = room; H.pid = sess.pid; H.nick = sess.nick;
       document.body.classList.add('multi');
       homeMsg('重新連線中…');
       connect(null);
-    } else if (params.get('screen') === '1') {
-      $('h-asscreen').checked = true;
-      H.nick = ''; H.role = 'screen';
-      connect({ t: 'join', code: room, role: 'screen' });
     } else {
       $('h-nick').focus();
       homeMsg(`要加入房間 ${room}：輸入暱稱後按「加入」`);

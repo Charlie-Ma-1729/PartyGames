@@ -12,8 +12,10 @@ const SETTINGS_HTML = `
     <label>題庫分類<select id="hu-cat"></select></label>
     <label>每輪時間<select id="hu-dur"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">120 秒</option></select></label>
     <label>每人當出題者幾次<select id="hu-rounds"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option></select></label>
+    <label>誰來猜<select id="hu-gmode"><option value="rotate">輪流（每個人輪流出題，猜題者是下一位）</option><option value="fixed">指定一位猜題者（其他人輪流出題）</option></select></label>
+    <label id="hu-gwrap">猜題者是<select id="hu-gid"></select></label>
   </div>
-  <p class="note hu-how">玩法：每一輪有一位「出題者」看得到題目，用嘴巴描述（不能直接說出題目裡的字），下一位玩家當「猜題者」。時間內答對越多越好，兩人同分。大家輪流當出題者，最後比總分！<br>建議大家面對面玩：出題者把手機轉向自己，不要讓猜題者看到。</p>`;
+  <p class="note hu-how">玩法：每一輪有一位「出題者」看得到題目，用嘴巴描述（不能直接說出題目裡的字），另一位玩家當「猜題者」。時間內答對越多越好，兩人同分。「輪流」模式大家輪流出題、猜題者是下一位；「指定」模式由房主指定一位猜題者，其他人輪流出題讓他猜（兩個人玩就是經典的一人說、一人猜）。<br>建議大家面對面玩：出題者把手機轉向自己，不要讓猜題者看到。</p>`;
 
 const SCREENS_HTML = `
 <main id="screen-hu" class="screen hu">
@@ -93,9 +95,21 @@ function fillSettings(s, ctx) {
   sel.value = s.category;
   $('hu-dur').value = String(s.duration);
   $('hu-rounds').value = String(s.rounds);
-  for (const id of ['hu-cat', 'hu-dur', 'hu-rounds']) $(id).disabled = !ctx.host;
+  $('hu-gmode').value = s.guesserMode;
+  $('hu-gwrap').classList.toggle('hidden', s.guesserMode !== 'fixed');
+  const gid = $('hu-gid');
+  const players = ctx.hub.players.filter((p) => p.role === 'player');
+  const psig = JSON.stringify(players.map((p) => [p.id, p.nick, p.connected]));
+  if (gid.dataset.built !== psig) {
+    gid.replaceChildren();
+    const none = el('option', null, '（請選擇）'); none.value = ''; gid.append(none);
+    players.forEach((p) => { const o = el('option', null, p.nick + (p.connected ? '' : '（離線）')); o.value = p.id; gid.append(o); });
+    gid.dataset.built = psig;
+  }
+  gid.value = s.guesserId || '';
+  for (const id of ['hu-cat', 'hu-dur', 'hu-rounds', 'hu-gmode', 'hu-gid']) $(id).disabled = !ctx.host;
 }
-const readSettings = () => ({ category: $('hu-cat').value, duration: Number($('hu-dur').value), rounds: Number($('hu-rounds').value) });
+const readSettings = () => ({ category: $('hu-cat').value, duration: Number($('hu-dur').value), rounds: Number($('hu-rounds').value), guesserMode: $('hu-gmode').value, guesserId: $('hu-gid').value || null });
 
 // ===================== 進入／離開 =====================
 function enter() {
@@ -262,12 +276,18 @@ function init(api) {
 }
 
 export default {
-  meta: { id: 'headsup', name: '你說我猜', icon: '🗣️', desc: '一人看題目、用嘴巴描述（不能說出題目的字！），另一人猜。限時內答對越多分越高，大家輪流當出題者。' },
+  meta: { id: 'headsup', name: '你說我猜', icon: '🗣️', desc: '一人看題目、用嘴巴描述（不能說出題目的字！），另一人猜。限時內答對越多分越高。可以輪流當猜題者，也可以指定一位猜題者。' },
   init,
   settings: {
     get el() { return $('set-headsup'); },
     fill: fillSettings,
     read: readSettings,
+    startHint: (ctx) => {
+      const s = ctx.hub.settings;
+      if (s.guesserMode !== 'fixed') return null;
+      const g = ctx.hub.players.find((p) => p.id === s.guesserId);
+      return g && g.connected ? null : '請先指定一位在線的猜題者';
+    },
   },
   enter, exit, message, onHub,
 };

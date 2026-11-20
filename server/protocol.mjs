@@ -1,6 +1,5 @@
 // 訊息驗證、暱稱處理、設定夾限用的小工具（與遊戲無關；各遊戲自己的設定在 server/games/*.mjs）
 export const MAX_PLAYERS = 20;
-export const MAX_SCREENS = 3;
 
 export const num = (v, lo, hi, d) => {
   const n = Math.round(Number(v));

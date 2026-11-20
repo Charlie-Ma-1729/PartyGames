@@ -9,12 +9,32 @@ export function el(tag, cls, text) {
 }
 
 /** 大廳玩家列表（房主可看到 ✕ 踢人） */
+export const ROLE_INFO = {
+  player: { icon: '🎮', name: '參賽者', desc: '自己作答、拿分數' },
+  screen: { icon: '🖥', name: '主畫面', desc: '只負責播放（接電視或投影機），不參賽' },
+  spectator: { icon: '👀', name: '旁觀者', desc: '不參賽，但能即時看到每個人選了什麼' },
+};
+
+/** 我的身分選擇（roles = 這個遊戲可以選的身分） */
+export function renderRoles(box, roles, current, onPick) {
+  box.replaceChildren();
+  roles.forEach((r) => {
+    const info = ROLE_INFO[r];
+    const b = el('button', 'rcard' + (r === current ? ' on' : ''));
+    b.type = 'button';
+    b.append(el('span', 'ricon', info.icon), el('span', 'rname', info.name), el('span', 'rdesc', info.desc));
+    b.addEventListener('click', () => onPick(r));
+    box.append(b);
+  });
+}
+
 export function renderPlayers(hub, meId, isHost, onKick) {
   const box = $('l-players');
   box.replaceChildren();
   hub.players.forEach((p) => {
     const chip = el('span', 'pchip' + (p.id === meId ? ' me' : '') + (p.connected ? '' : ' off'));
-    chip.append((p.id === hub.hostId ? '👑 ' : '') + p.nick);
+    const ri = p.role && p.role !== 'player' ? `${ROLE_INFO[p.role].icon} ` : '';
+    chip.append((p.id === hub.hostId ? '👑 ' : '') + ri + p.nick);
     if (isHost && p.id !== meId) {
       const b = el('button', null, '✕');
       b.title = '移出房間';
@@ -23,8 +43,9 @@ export function renderPlayers(hub, meId, isHost, onKick) {
     }
     box.append(chip);
   });
-  const sc = hub.screens ? `　🖥 主畫面 ×${hub.screens}` : '';
-  $('l-count').textContent = `（${hub.players.length} 人）${sc}`;
+  const n = (r) => hub.players.filter((p) => p.role === r).length;
+  const extra = [n('screen') ? `🖥 主畫面 ×${n('screen')}` : '', n('spectator') ? `👀 旁觀 ×${n('spectator')}` : ''].filter(Boolean).join('　');
+  $('l-count').textContent = `（${hub.players.length} 人）${extra ? '　' + extra : ''}`;
 }
 
 /**

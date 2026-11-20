@@ -88,7 +88,7 @@ server.on('upgrade', (req, socket, head) => {
 
 function makeConn(ws) {
   return {
-    ws, room: null, player: null, screen: false, kicked: false,
+    ws, room: null, player: null, kicked: false,
     send(obj) { if (ws.readyState === 1) ws.send(JSON.stringify(obj)); },
     close() { try { ws.close(1000); } catch { /* ignore */ } },
   };
@@ -135,7 +135,7 @@ wss.on('connection', (ws) => {
     } else if (msg.t === 'join') {
       const room = rooms.get(normCode(msg.code));
       if (!room) { conn.send({ t: 'error', code: 'NO_ROOM', msg: '找不到這個房間，請確認代碼' }); return; }
-      const r = msg.role === 'screen' ? room.joinScreen(conn) : room.join(conn, { playerId: msg.playerId, nick: msg.nick });
+      const r = room.join(conn, { playerId: msg.playerId, nick: msg.nick });
       if (r.error) conn.send({ t: 'error', ...r.error });
       else log(`加入 ${who(conn)}`);
     }
@@ -154,7 +154,7 @@ wss.on('connection', (ws) => {
 function who(conn) {
   const r = conn.room;
   if (!r) return '(未進房)';
-  return `房間=${r.code} 階段=${r.phase} ${conn.screen ? '主畫面' : `玩家=${conn.player ? conn.player.nick : '?'}`}`;
+  return `房間=${r.code} 階段=${r.phase} 玩家=${conn.player ? conn.player.nick : '?'}（${conn.player ? conn.player.role : ''}）`;
 }
 
 // 心跳：20 秒一次，沒回應就斷線

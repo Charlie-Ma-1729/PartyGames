@@ -182,7 +182,6 @@ input[type=text], input[type=password], input[type=number], #h-nick, #h-code, #m
 body.multi #btn-replay, body.multi #btn-skip, body.multi #btn-flag { display: none; }
 .host-only { display: none; }
 body.multi.is-host .host-only { display: inline-block; }
-body.multi.is-screen #btn-main { display: none; }
 .mstatus { max-width: 1000px; margin: 12px auto 0; }
 .mline { display: flex; gap: 16px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: 18px; }
 .mquorum { color: #ffd166; font-weight: 800; }
@@ -291,3 +290,18 @@ body.multi.is-screen #btn-main { display: none; }
 
 /* 連線中斷提示（伺服器重啟、網路閃斷時） */
 .netbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #b45309; color: #fff; text-align: center; padding: 8px 12px; font-size: 15px; box-shadow: 0 2px 12px rgba(0,0,0,.4); }
+
+/* 旁觀者：即時作答 */
+.mpicks { max-width: 720px; margin: 12px auto; background: var(--card); border-radius: 16px; padding: 12px 16px; text-align: left; }
+.mpicks h3 { margin: 0 0 8px; font-size: 15px; color: var(--muted); font-weight: 600; }
+.mpick { display: grid; grid-template-columns: 7em 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); font-size: 16px; }
+.mpick:last-child { border-bottom: 0; }
+.mpick .who { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mpick .what { overflow-wrap: anywhere; }
+.mpick .what.none { color: var(--muted); }
+.mpick .lk { color: var(--ok); font-size: 13px; }
+.mpick.locked .what { color: #ffd166; font-weight: 700; }
+.mpick.failed { opacity: 0.5; }
+.choice .pk { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; align-self: flex-start; max-width: 50%; }
+.choice .pk i { font-style: normal; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.18); }
+.choice .pk i.on { background: #ffd166; color: #1b1d3a; }

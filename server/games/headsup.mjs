@@ -4,11 +4,15 @@
 // 其他人當觀眾，看得到倒數與目前得分。輪流讓每個人都當一次出題者（猜題者是下一位），每輪答對的題數兩人各得同樣的分。
 // 題目只會傳給出題者的裝置，其他人拿不到。
 //
+// 猜題者有兩種分配方式（房主在大廳選）：
+//   輪流（rotate）：每個人輪流當出題者，猜題者是下一位。
+//   指定（fixed）：房主指定一位猜題者，其他人輪流當出題者、一起讓他猜（兩個人時就是經典的「一人說、一人猜」）。
+//
 // 階段：intro（換人準備）→ play（倒數作答）→ turnEnd（本輪結果）→ … → final
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { ROOT } from '../bank.mjs';
-import { MAX_PLAYERS, num, shuffle } from '../protocol.mjs';
+import { MAX_PLAYERS, cleanId, num, oneOf, shuffle } from '../protocol.mjs';
 import { GameBase } from './base.mjs';
 
 const ALL = '__all__';
@@ -32,7 +36,7 @@ export function loadHeadsUpBank() {
 loadHeadsUpBank();
 process.on('SIGHUP', () => { try { loadHeadsUpBank(); } catch (e) { console.error(e); } });
 
-const DEFAULTS = { category: ALL, duration: 60, rounds: 1 };
+const DEFAULTS = { category: ALL, duration: 60, rounds: 1, guesserMode: 'rotate', guesserId: null };
 
 const SEAT_KEYS = ['score', 'correct', 'turns', 'spectator'];
 const freshSeat = (extra = {}) => ({ score: 0, correct: 0, turns: 0, spectator: false, ...extra });
@@ -45,8 +49,8 @@ function rank(rows) {
 
 export class HeadsUpGame extends GameBase {
   static meta = {
-    id: 'headsup', name: '你說我猜', icon: '🗣️', min: 2, max: MAX_PLAYERS, screen: false,
-    desc: '一人看題目、用嘴巴描述（不能說出題目的字！），另一人猜。限時內答對越多分越高，大家輪流當出題者。',
+    id: 'headsup', name: '你說我猜', icon: '🗣️', min: 2, max: MAX_PLAYERS, roles: ['player'],
+    desc: '一人看題目、用嘴巴描述（不能說出題目的字！），另一人猜。限時內答對越多分越高。可以輪流當猜題者，也可以指定一位猜題者。',
   };
   static defaults = DEFAULTS;
   static clean(input, prev = DEFAULTS) {
@@ -56,6 +60,8 @@ export class HeadsUpGame extends GameBase {
       category: cat === ALL || bank[cat] ? cat : prev.category,
       duration: num(s.duration ?? prev.duration, 20, 180, prev.duration),
       rounds: num(s.rounds ?? prev.rounds, 1, 3, prev.rounds),
+      guesserMode: oneOf(s.guesserMode ?? prev.guesserMode, ['rotate', 'fixed'], prev.guesserMode),
+      guesserId: s.guesserId === undefined ? prev.guesserId : cleanId(s.guesserId),
     };
   }
   static info() { return { categories: Object.entries(bank).map(([name, list]) => ({ name, n: list.length })) }; }
@@ -79,7 +85,17 @@ export class HeadsUpGame extends GameBase {
     return [...new Set(Object.values(bank).flat())];
   }
 
-  check() { return this.poolWords().length ? null : { code: 'EMPTY', msg: '這個分類沒有題目' }; }
+  /** 指定猜題者模式：猜題者必須是目前在線的玩家 */
+  _fixedGuesser() {
+    const m = this.hub.players.get(this.settings.guesserId);
+    return m && m.connected ? m : null;
+  }
+
+  check() {
+    if (!this.poolWords().length) return { code: 'EMPTY', msg: '這個分類沒有題目' };
+    if (this.settings.guesserMode === 'fixed' && !this._fixedGuesser()) return { code: 'NO_GUESSER', msg: '請先指定一位在線的猜題者' };
+    return null;
+  }
 
   start() {
     this.deck = shuffle(this.poolWords());
@@ -87,8 +103,14 @@ export class HeadsUpGame extends GameBase {
     const order = shuffle([...this.hub.players.values()].filter((m) => m.connected));
     for (const m of this.hub.players.values()) this.seat(m, freshSeat({ spectator: !order.includes(m) }));
     const n = order.length;
-    for (let r = 0; r < this.settings.rounds; r++) {
-      for (let i = 0; i < n; i++) this.turns.push({ d: order[i].id, g: order[(i + 1) % n].id });
+    if (this.settings.guesserMode === 'fixed') {
+      const g = this._fixedGuesser().id; // 其他人輪流出題，讓同一個人猜
+      const describers = order.filter((m) => m.id !== g);
+      for (let r = 0; r < this.settings.rounds; r++) for (const d of describers) this.turns.push({ d: d.id, g });
+    } else {
+      for (let r = 0; r < this.settings.rounds; r++) {
+        for (let i = 0; i < n; i++) this.turns.push({ d: order[i].id, g: order[(i + 1) % n].id });
+      }
     }
     this.ti = 0;
     this._beginTurn();

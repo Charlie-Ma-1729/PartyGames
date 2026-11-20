@@ -78,8 +78,8 @@ const freshSeat = (extra = {}) => ({
 
 export class SongGame extends GameBase {
   static meta = {
-    id: 'songguess', name: '猜歌大賽', icon: '🎵', min: 1, max: MAX_PLAYERS, screen: true,
-    desc: '聽一小段動漫、流行歌或 OST，搶先猜出它是什麼！可各自播放，也可以由一個大螢幕播給大家聽。',
+    id: 'songguess', name: '猜歌大賽', icon: '🎵', min: 1, max: MAX_PLAYERS, roles: ['player', 'screen', 'spectator'],
+    desc: '聽一小段動漫、流行歌或 OST，搶先猜出它是什麼！可各自播放，也可以由一個大螢幕播給大家聽。進房後可選擇當參賽者、主畫面或旁觀者。',
   };
   static defaults = DEFAULT_SETTINGS;
   static clean(input, prev) { return cleanSettings(input, prev); }
@@ -97,7 +97,7 @@ export class SongGame extends GameBase {
   // ===== 開始 =====
   check() {
     const s = this.settings;
-    if (s.playMode === 'screen' && this.hub.screens.size === 0) return { code: 'NO_SCREEN', msg: '「主畫面播放」需要先開啟主畫面（用另一個分頁／裝置加入並選「作為主畫面」）' };
+    if (s.playMode === 'screen' && this.hub.screens.length === 0) return { code: 'NO_SCREEN', msg: '「主畫面播放」需要有人在大廳把身分選為「主畫面」' };
     const catOf = new Map();
     const pool = [];
     for (const c of s.categories) for (const q of bank[c] || []) { catOf.set(q.id, c); pool.push(q); }
@@ -112,7 +112,7 @@ export class SongGame extends GameBase {
     const { queue, catOf } = this._pre;
     this._pre = null;
     const wl = s.answerMode === 'typing' ? buildWorks(s) : {};
-    for (const m of this.hub.players.values()) this.seat(m, freshSeat());
+    for (const m of this.hub.players.values()) if (m.role === 'player') this.seat(m, freshSeat()); // 主畫面與旁觀者不參賽，沒有座位
     this.g = { queue, catOf, idx: 0, total: Math.min(s.count, queue.length), works: wl, q: null };
     for (const [ask, list] of Object.entries(wl)) this.broadcast({ t: 'works', ask, list });
     this._nextQuestion();
@@ -121,12 +121,10 @@ export class SongGame extends GameBase {
   canJoin() { return this.settings.allowLateJoin ? true : '遊戲已開始，房主不允許中途加入'; }
 
   // ===== 成員變動 =====
-  onJoin(member) { this.seat(member, freshSeat({ spectator: true })); this._broadcastState(); }
+  onJoin(member) { if (member.role === 'player') this.seat(member, freshSeat({ spectator: true })); this._broadcastState(); }
   onReconnect() { this._broadcastState(); this._checkBarrier(); }
   onDisconnect() { this._broadcastState(); this._checkBarrier(); this._checkProgress(); }
   onLeave(member) { this.seats.delete(member.id); this._broadcastState(); this._checkBarrier(); this._checkProgress(); }
-  onScreenJoin(conn) { conn.ready = false; this._broadcastState(); }
-  onScreenLeave() { this._broadcastState(); this._checkBarrier(); }
 
   isActive(p) {
     return p.eligible && !p.failed && (p.connected || Date.now() - p.lastSeen <= this.T.staleMs);
@@ -136,7 +134,7 @@ export class SongGame extends GameBase {
     const act = this.phase === 'playing' ? [...this.seats.values()].filter((p) => this.isActive(p)) : [];
     const g = this.g;
     return {
-      t: 'state', phase: this.phase, idx: g ? g.idx : 0, total: g ? g.total : 0, screens: this.hub.screens.size,
+      t: 'state', phase: this.phase, idx: g ? g.idx : 0, total: g ? g.total : 0, screens: this.hub.screens.length,
       locked: act.filter((p) => p.lock).length, active: act.length,
       players: [...this.seats.values()].map((p) => ({
         id: p.id, nick: p.nick, connected: p.connected, score: p.score,
@@ -148,7 +146,7 @@ export class SongGame extends GameBase {
 
   /** 加入／重連時，把目前題目的狀態補給該連線（state 由 onJoin／onReconnect 廣播） */
   snapshot(conn, member) {
-    const p = member ? this.seats.get(member.id) : null;
+    const p = this.seats.get(member.id) || null;
     const g = this.g;
     if (!g) return;
     if (this.settings.answerMode === 'typing') for (const [ask, list] of Object.entries(g.works || {})) this.send(conn, { t: 'works', ask, list });
@@ -158,6 +156,7 @@ export class SongGame extends GameBase {
       if (g.t0 != null) this.send(conn, { t: 't0', idx: g.idx, t0: g.t0 });
       if (g.quorumEndsAt) this.send(conn, { t: 'quorum', idx: g.idx, endsAt: g.quorumEndsAt });
       if (p) this.send(conn, { t: 'you', idx: g.idx, selection: p.selection, locked: !!p.lock, failed: p.failed });
+      if (member.role === 'spectator') this.send(conn, this._picksMsg());
     }
     if (this.phase === 'reveal' && this.lastReveal) this.send(conn, this.lastReveal);
     if (this.phase === 'final' && this.lastFinal) this.send(conn, this.lastFinal);
@@ -165,20 +164,27 @@ export class SongGame extends GameBase {
 
   // ===== 訊息處理 =====
   handle(conn, msg) {
-    if (conn.screen) return this._handleScreen(conn, msg);
-    const p = this.seatOf(conn);
-    if (!p) return;
-    const host = this.isHost(p);
-    switch (msg.t) {
-      case 'ready': if (this._cur(msg) && this.phase === 'preload') { p.ready = true; this._checkBarrier(); this._broadcastState(); } break;
-      case 'select': if (this._cur(msg)) this._select(p, msg); break;
-      case 'lock': if (this._cur(msg)) this._lock(p, msg); break;
-      case 'playError': if (this._cur(msg)) this._playError(p); break;
-      case 'next': if (host && this.phase === 'reveal') this._nextQuestion(); break;
-      case 'skip': if (host && (this.phase === 'preload' || this.phase === 'playing')) this._skipQuestion('房主跳過本題'); break;
-      case 'forceReveal': if (host && this.phase === 'playing') this._reveal('host'); break;
-      case 'end': if (host && this.phase !== 'final') this._final(); break;
-      default: break;
+    const member = conn.player;
+    if (!member) return;
+    const p = this.seats.get(member.id);
+    if (member.role === 'screen') this._handleScreen(conn, msg);
+    if (p) {
+      switch (msg.t) {
+        case 'ready': if (this._cur(msg) && this.phase === 'preload') { p.ready = true; this._checkBarrier(); this._broadcastState(); } break;
+        case 'select': if (this._cur(msg)) this._select(p, msg); break;
+        case 'lock': if (this._cur(msg)) this._lock(p, msg); break;
+        case 'playError': if (this._cur(msg)) this._playError(p); break;
+        default: break;
+      }
+    }
+    if (this.isHost(member)) { // 房主不論是參賽者、主畫面或旁觀者，都能控制進度
+      switch (msg.t) {
+        case 'next': if (this.phase === 'reveal') this._nextQuestion(); break;
+        case 'skip': if (this.phase === 'preload' || this.phase === 'playing') this._skipQuestion('房主跳過本題'); break;
+        case 'forceReveal': if (this.phase === 'playing') this._reveal('host'); break;
+        case 'end': if (this.phase !== 'final') this._final(); break;
+        default: break;
+      }
     }
   }
 
@@ -186,6 +192,25 @@ export class SongGame extends GameBase {
     if (msg.t === 'ready' && this._cur(msg) && this.phase === 'preload') { conn.ready = true; this._checkBarrier(); }
     else if (msg.t === 'playing' && this._cur(msg) && this.phase === 'playing') this._screenPlaying();
     else if (msg.t === 'playError' && this._cur(msg) && (this.phase === 'preload' || this.phase === 'playing')) this._skipQuestion('主畫面無法播放這首影片');
+  }
+
+  // ===== 旁觀者：即時看到每個人選了什麼 =====
+  _picksMsg() {
+    const g = this.g;
+    const picks = [];
+    for (const p of this.seats.values()) {
+      if (!p.eligible || p.spectator) continue;
+      const sel = p.lock || p.selection;
+      let label = null;
+      if (sel && !p.failed) label = sel.choice !== undefined ? (g.choices[sel.choice] || {}).main || null : this._label(sel);
+      picks.push({ id: p.id, nick: p.nick, choice: sel && sel.choice !== undefined ? sel.choice : null, label, locked: !!p.lock, failed: p.failed });
+    }
+    return { t: 'picks', idx: g ? g.idx : 0, picks };
+  }
+  _broadcastPicks() {
+    if (!this.g) return;
+    const msg = this._picksMsg();
+    for (const m of this.hub.players.values()) if (m.role === 'spectator' && m.conn) this.send(m.conn, msg);
   }
 
   /** 訊息帶的題號必須是目前這題（避免延遲的舊訊息） */
@@ -228,6 +253,7 @@ export class SongGame extends GameBase {
     this.phase = 'preload';
     this.broadcast(g.qMsg);
     this._broadcastState();
+    this._broadcastPicks();
     this.after('preload', this.T.preloadMs, () => this._go());
     this._checkBarrier();
   }
@@ -237,7 +263,7 @@ export class SongGame extends GameBase {
     if (this.phase !== 'preload') return;
     const s = this.settings;
     let all;
-    if (s.playMode === 'screen') all = this.hub.screens.size > 0 && [...this.hub.screens].every((c) => c.ready);
+    if (s.playMode === 'screen') all = this.hub.screens.length > 0 && this.hub.screens.every((c) => c.ready);
     else {
       const act = [...this.seats.values()].filter((p) => this.isActive(p));
       all = act.every((p) => p.ready);
@@ -289,7 +315,7 @@ export class SongGame extends GameBase {
   _select(p, msg) {
     if ((this.phase !== 'preload' && this.phase !== 'playing') || !p.eligible || p.lock || p.failed) return;
     const a = this._validAnswer(msg);
-    if (a) p.selection = a;
+    if (a) { p.selection = a; this._broadcastPicks(); }
   }
 
   _lock(p, msg) {
@@ -305,6 +331,7 @@ export class SongGame extends GameBase {
     p.selection = a;
     p.lock = { ...a, elapsed, correct: this._isCorrect(a) };
     this._broadcastState();
+    this._broadcastPicks();
     this._checkProgress();
   }
 
@@ -312,6 +339,7 @@ export class SongGame extends GameBase {
     if (this.phase !== 'preload' && this.phase !== 'playing') return;
     if (!p.eligible || p.failed) return;
     p.failed = true; p.ready = true;
+    this._broadcastPicks();
     const el = [...this.seats.values()].filter((x) => x.eligible && (x.connected || Date.now() - x.lastSeen <= this.T.staleMs));
     const failed = el.filter((x) => x.failed).length;
     if (this.settings.playMode === 'own' && failed * 2 >= el.length) return this._skipQuestion('多數玩家無法播放這首影片');
@@ -437,7 +465,7 @@ export class SongGame extends GameBase {
       const m = hub.players.get(sd.id);
       if (m) gm.seat(m, Object.fromEntries(SEAT_KEYS.map((k) => [k, sd[k]])));
     }
-    for (const m of hub.players.values()) if (!gm.seats.has(m.id)) gm.seat(m, freshSeat({ spectator: true }));
+    for (const m of hub.players.values()) if (m.role === 'player' && !gm.seats.has(m.id)) gm.seat(m, freshSeat({ spectator: true }));
     gm._rearm();
     return gm;
   }

@@ -45,6 +45,30 @@ export function fillForm(settings, counts) {
   hide('quorumSecs', settings.quorumMode === 'off');
 }
 
+/** 旁觀者專屬：即時顯示每個人選了什麼（m = null 代表清空） */
+export function renderPicks(m, meId, q) {
+  const box = $('mpicks');
+  const old = document.querySelectorAll('#choices .pk');
+  old.forEach((x) => x.remove());
+  if (!m || !document.body.classList.contains('is-spectator')) { box.classList.add('hidden'); box.replaceChildren(); return; }
+  box.replaceChildren(el('h3', null, '👀 即時作答（只有旁觀者看得到）'));
+  m.picks.forEach((p) => {
+    const row = el('div', 'mpick' + (p.locked ? ' locked' : '') + (p.failed ? ' failed' : ''));
+    const what = p.failed ? '（影片無法播放）' : p.label ? ((q && q.choices && p.choice != null ? `${p.choice + 1}. ` : '') + p.label) : '還沒選…';
+    row.append(el('span', 'who', p.nick), el('span', 'what' + (p.label ? '' : ' none'), what), el('span', 'lk', p.locked ? '🔒 已鎖定' : ''));
+    box.append(row);
+  });
+  box.classList.remove('hidden');
+  // 選擇題：在每個選項上標出選它的人
+  const cards = [...document.querySelectorAll('#choices .choice')];
+  m.picks.forEach((p) => {
+    if (p.choice == null || !cards[p.choice]) return;
+    let pk = cards[p.choice].querySelector('.pk');
+    if (!pk) { pk = el('span', 'pk'); cards[p.choice].append(pk); }
+    pk.append(el('i', p.locked ? 'on' : '', p.nick));
+  });
+}
+
 const fmtMs = (ms) => (ms == null ? '' : `${(ms / 1000).toFixed(1)}s`);
 
 /** 最終排行榜（頒獎台 + 完整表格） */

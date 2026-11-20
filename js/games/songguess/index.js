@@ -1,7 +1,7 @@
 // 猜歌大賽（多人）用戶端：各自播放、鎖定、揭曉、排行榜。房間／連線由 js/hub/client.js 處理。
 import { sharedPlayer } from '../../player.js';
 import * as ui from '../../ui.js';
-import { readForm, fillForm, renderFinal, renderReveal } from './view.js';
+import { readForm, fillForm, renderFinal, renderReveal, renderPicks } from './view.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -41,6 +41,7 @@ function exit() {
 function message(m) {
   switch (m.t) {
     case 'state': return onState(m);
+    case 'picks': if (S.q && m.idx === S.q.idx && S.phase !== 'reveal') renderPicks(m, meId(), S.q); return;
     case 'works': S.worksBy[m.ask || 'work'] = m.list.map((w) => ({ ...w, n: norm(w.main + ' ' + w.sub) })); if (S.q && (S.q.ask || 'work') === (m.ask || 'work')) S.works = S.worksBy[m.ask || 'work']; return;
     case 'question': return onQuestion(m);
     case 'go': return onGo(m);
@@ -89,13 +90,14 @@ function onQuestion(m) {
   S.sel = -1; S.selKey = null; S.selLabel = ''; S.locked = false; S.canAnswer = false;
   S.localT0 = null; S.t0Server = null; S.quorumEndsAt = null; S.nextAt = null; S.reveal = null;
   showGame();
+  renderPicks(null);
   ui.showQuestion({ kind: m.kind, prompt: m.prompt, ask: m.ask }, m.idx, m.total, m.choices);
   $('mtype-input').placeholder = m.ask === 'artist' ? '輸入歌手名搜尋…' : m.ask === 'title' ? '輸入歌名搜尋…' : '輸入作品名（中文／原文都可以）搜尋…';
   ui.lockChoices(false);
   $('mreveal').classList.add('hidden');
   $('mstatus').classList.remove('hidden');
   const typing = m.answerMode === 'typing';
-  $('mtype').classList.toggle('hidden', typing ? isScreen() : true);
+  $('mtype').classList.toggle('hidden', typing ? !A.isContestant() : true);
   $('mtype').classList.remove('locked');
   $('mtype-input').value = ''; $('mtype-list').replaceChildren(); $('mtype-picked').textContent = '';
   setMainButton();
@@ -161,7 +163,7 @@ function onCued() {
 
 function onGo(m) {
   if (!S.q || m.idx !== S.q.idx) return;
-  S.phase = 'playing'; S.canAnswer = !isScreen(); $('cover').classList.remove('tap');
+  S.phase = 'playing'; S.canAnswer = A.isContestant(); $('cover').classList.remove('tap');
   setMainButton();
   $('btn-mforce').classList.remove('hidden'); // 只有房主看得到（.host-only）
   S.go = m;
@@ -196,7 +198,8 @@ function onYou(m) { // 重連：還原我的選擇與鎖定狀態
 // ===================== 作答 =====================
 function setMainButton() {
   const b = $('btn-main');
-  if (isScreen()) return;
+  b.classList.toggle('hidden', !A.isContestant()); // 主畫面、旁觀者沒有作答鈕
+  if (!A.isContestant()) return;
   if (S.phase === 'reveal') return; // 由 onReveal 設定
   if (!S.q) { b.disabled = true; return; }
   if (S.locked) { b.textContent = '✅ 已鎖定，等待其他人…'; b.disabled = true; return; }
@@ -281,6 +284,7 @@ function onReveal(m) {
   renderReveal(m, meId());
   $('m-quorum').textContent = '';
   $('m-clock').textContent = '';
+  renderPicks(null);
   $('btn-mforce').classList.add('hidden'); $('btn-mskip').classList.add('hidden');
   applyRevealButton();
   renderLocks();
@@ -289,7 +293,8 @@ function onReveal(m) {
 /** 揭曉後的主按鈕：房主＝下一題；其他人＝等待（房主換人時也會重算） */
 function applyRevealButton() {
   const b = $('btn-main');
-  if (isScreen() || !S.reveal) return;
+  if (!S.reveal) return;
+  b.classList.toggle('hidden', !A.isContestant() && !isHost()); // 房主就算是主畫面／旁觀者，也要有「下一題」
   if (isHost()) { b.textContent = S.reveal.last ? '查看最終排行榜 (空白鍵)' : '下一題 (空白鍵)'; b.disabled = false; }
   else { b.textContent = '等待房主按下一題…'; b.disabled = true; }
 }
@@ -348,9 +353,8 @@ function tick() {
 }
 
 function mainAction() {
-  if (isScreen()) return;
   if (S.phase === 'reveal') { if (isHost()) A.send({ t: 'next' }); return; }
-  lockNow();
+  if (A.isContestant()) lockNow();
 }
 
 // ===================== 綁定一次性事件 =====================
@@ -401,13 +405,13 @@ function init(api) {
 }
 
 export default {
-  meta: { id: 'songguess', name: '猜歌大賽', icon: '🎵', desc: '聽一小段動漫、流行歌或 OST，搶先猜出它是什麼！可各自播放，也可以由一個大螢幕播給大家聽。' },
+  meta: { id: 'songguess', name: '猜歌大賽', icon: '🎵', desc: '聽一小段動漫、流行歌或 OST，搶先猜出它是什麼！可各自播放，也可以由一個大螢幕播給大家聽。進房後可選擇當參賽者、主畫面或旁觀者。' },
   init,
   settings: {
     get el() { return $('set-songguess'); },
     fill: (settings, ctx) => fillForm(settings, ctx.info.counts || {}),
     read: readForm,
-    startHint: (ctx) => (ctx.hub.settings.playMode === 'screen' && ctx.hub.screens === 0 ? '請先開啟主畫面（點上方「🖥 開啟主畫面」）' : null),
+    startHint: (ctx) => (ctx.hub.settings.playMode === 'screen' && ctx.hub.screens === 0 ? '請先讓一位玩家把身分選為「主畫面」' : null),
   },
   enter, exit, message, onHub,
 };

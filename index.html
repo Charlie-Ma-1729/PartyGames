@@ -39,7 +39,6 @@
           <input id="h-code" class="code-input" maxlength="4" placeholder="AB3K" autocapitalize="characters" autocomplete="off" spellcheck="false">
         </label>
         <button id="h-join" class="big primary">加入</button>
-        <label class="check"><input type="checkbox" id="h-asscreen"> 作為「主畫面」（不參賽，只負責播放，目前給猜歌大賽用）</label>
       </section>
     </div>
     <p id="h-msg" class="toast warn"></p>
@@ -149,7 +148,6 @@
     <h1>房間 <span id="l-code" class="code">----</span></h1>
     <div class="row">
       <button id="l-copy" class="ghost">📋 複製邀請連結</button>
-      <button id="l-screen" class="ghost hidden">🖥 開啟主畫面</button>
       <button id="l-leave" class="ghost">離開房間</button>
     </div>
     <div class="lobby-cols">
@@ -161,6 +159,10 @@
         <section class="card">
           <h2>要玩什麼 <span id="l-pickhint" class="note"></span></h2>
           <div id="l-games" class="gamegrid"></div>
+        </section>
+        <section class="card hidden" id="l-role">
+          <h2>我的身分 <span class="note">（開始前可以隨時改）</span></h2>
+          <div id="l-roles" class="rolegrid"></div>
         </section>
         <div id="l-settings">
           <!-- 猜歌大賽的規則 -->
@@ -179,7 +181,7 @@
         <label>每題播放長度<select data-k="duration"><option value="8">8 秒</option><option value="12">12 秒</option><option value="15">15 秒</option><option value="20">20 秒</option><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒</option></select></label>
         <label>音樂結束後還能作答<select data-k="graceSecs"><option value="0">不行（播完就截止）</option><option value="3">3 秒</option><option value="5">5 秒</option><option value="10">10 秒</option><option value="15">15 秒</option></select></label>
         <label>作答方式<select data-k="answerMode"><option value="choice">8 選 1</option><option value="typing">打字搜尋（較難）</option></select></label>
-        <label>播放方式<select data-k="playMode"><option value="own">各自播放（每人自己的裝置）</option><option value="screen">主畫面播放（手機只作答）</option></select></label>
+        <label>播放方式<select data-k="playMode"><option value="own">各自播放（每人自己的裝置）</option><option value="screen">主畫面播放（手機只作答；需要有人選「主畫面」身分）</option></select></label>
         <label>起播位置<select data-k="fromMiddle"><option value="false">從頭播放</option><option value="true">從中間播放（接近高潮處）</option></select></label>
         <label>流行歌（日本／華語／英語）的猜法<select data-k="jpopAsk"><option value="mixed">混合（一曲兩用，每題隨機）</option><option value="title">只猜歌名</option><option value="artist">只猜歌手</option></select></label>
         <label>難度<select data-k="difficulty"><option value="1">簡單（大家都聽過）</option><option value="2">普通</option><option value="3">困難（含冷門）</option></select></label>
@@ -231,6 +233,9 @@
         <div class="mline"><b id="m-lockcount">已鎖定 0 / 0</b><span id="m-clock"></span><span id="m-quorum" class="mquorum"></span></div>
         <div id="m-locks" class="mlocks"></div>
       </div>
+
+      <!-- 旁觀者：即時看到大家選了什麼 -->
+      <div id="mpicks" class="mpicks hidden"></div>
 
       <div id="choices" class="choices hidden"></div>
 

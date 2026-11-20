@@ -227,6 +227,41 @@ test('你說我猜：出題者斷線超過寬限 → 結束該輪；人數不足
   room.destroy();
 });
 
+test('你說我猜：指定猜題者模式——其他人輪流出題、同一個人猜；猜題者必須在線', async () => {
+  const { room, conns, players } = setup(4);
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', duration: 20 } });
+  room.handle(conns[0], { t: 'start' });
+  assert.equal(conns[0].last('error').code, 'NO_GUESSER', '還沒指定猜題者');
+  room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', guesserId: players[2].id, rounds: 2 } });
+  assert.equal(conns[0].last('hub').settings.guesserId, players[2].id);
+  room.handle(conns[0], { t: 'settings', settings: { guesserId: '../bad' } });
+  assert.equal(conns[0].last('hub').settings.guesserId, null, '不合法的 id 被擋掉');
+  room.handle(conns[0], { t: 'settings', settings: { guesserId: players[2].id } });
+  room.disconnect(conns[2]);
+  room.handle(conns[0], { t: 'start' });
+  assert.equal(conns[0].last('error').code, 'NO_GUESSER', '猜題者不在線');
+  const c = fakeConn();
+  room.join(c, { playerId: players[2].id });
+  room.handle(conns[0], { t: 'start' });
+  const g = room.game;
+  assert.equal(g.turns.length, 6, '3 位出題者 × 2 次');
+  assert.ok(g.turns.every((t) => t.g === players[2].id), '每一輪都是同一個人猜');
+  assert.ok(g.turns.every((t) => t.d !== players[2].id), '猜題者自己不出題');
+  const ds = g.turns.slice(0, 3).map((t) => t.d);
+  assert.equal(new Set(ds).size, 3, '三位出題者各一次');
+  room.destroy();
+});
+
+test('你說我猜：兩個人的指定模式就是經典的「一人說、一人猜」', () => {
+  const { room, conns, players } = setup(2);
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', guesserId: players[1].id } });
+  room.handle(conns[0], { t: 'start' });
+  assert.deepEqual(room.game.turns, [{ d: players[0].id, g: players[1].id }]);
+  room.destroy();
+});
+
 // ===================== 配音大師 =====================
 test('配音大師：設定夾限、路徑檢查（擋 ../）', () => {
   const { room, conns } = setup(1);

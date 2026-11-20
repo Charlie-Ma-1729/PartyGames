@@ -54,3 +54,16 @@
   .gcard .gname { font-size: 18px; }
   .gcard .gmeta { margin-top: 2px; }
 }
+
+/* 我的身分（參賽者／主畫面／旁觀者） */
+.rolegrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.rcard {
+  display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 12px 14px; border-radius: 14px;
+  background: #25274a; border: 2px solid #3a3d70; color: var(--text); font: inherit; cursor: pointer;
+}
+.rcard:hover { border-color: var(--accent2); }
+.rcard.on { border-color: var(--accent); background: linear-gradient(135deg, rgba(255, 79, 139, 0.22), rgba(124, 92, 255, 0.22)); }
+.ricon { font-size: 24px; line-height: 1; }
+.rname { font-weight: 800; font-size: 17px; }
+.rdesc { font-size: 13px; color: var(--muted); line-height: 1.4; }
+@media (max-width: 600px) { .rolegrid { grid-template-columns: 1fr; } }

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../server/room.mjs';
-import { cleanSettings, scoreTurn, FIRST_BASE, FIRST_SPEED, SINGER_PER } from '../server/games/soramimi.mjs';
+import { cleanSettings, clipStart, scoreTurn, FIRST_BASE, FIRST_SPEED, SINGER_PER } from '../server/games/soramimi.mjs';
 import { byId } from '../server/bank.mjs';
 
 const FAST = { preloadMs: 60, staleMs: 80, lobbyDropMs: 100, dropMs: 400, turnEndMs: 100, singCountdownMs: 10 };
@@ -247,4 +247,137 @@ test('原曲只會在倒數後自動開播一次：sing 訊息帶 startAt（在�
   // 重複的 ready 不會重新倒數
   G(room, conns[si], { t: 'ready', idx: room.game.turn.idx });
   assert.equal(conns[(si + 1) % 3].all('sing').length, 1);
+});
+
+test('選歌清單：不打字也能逐頁瀏覽整份歌單（分頁、可依題庫篩選、沒有純音樂）', () => {
+  const { room, conns } = setup(2);
+  G(room, conns[0], { t: 'search', q: '', offset: 0 });
+  const p1 = conns[0].last('results');
+  assert.equal(p1.q, ''); assert.equal(p1.offset, 0);
+  assert.ok(p1.list.length > 0 && p1.list.length <= 40);
+  assert.ok(p1.total >= p1.list.length);
+  assert.ok(p1.list.every((x) => x.main && byId.get(x.id).q.kind !== 'OST'));
+  if (p1.total > p1.list.length) {
+    G(room, conns[0], { t: 'search', q: '', offset: p1.list.length });
+    const p2 = conns[0].last('results');
+    assert.equal(p2.offset, p1.list.length);
+    assert.ok(p2.list.length > 0);
+    assert.equal(new Set([...p1.list, ...p2.list].map((x) => x.id)).size, p1.list.length + p2.list.length, '頁與頁之間不重複');
+  }
+  const cat = room.game.settings.categories[0];
+  G(room, conns[0], { t: 'search', q: '', cat, offset: 0 });
+  const pc = conns[0].last('results');
+  assert.ok(pc.list.every((x) => x.cat === cat));
+  G(room, conns[0], { t: 'search', q: '', cat: 'not-a-cat', offset: -5 });
+  const bad = conns[0].last('results');
+  assert.equal(bad.cat, ''); assert.equal(bad.offset, 0, '亂填的題庫與位移會被夾成預設值');
+});
+
+test('歌單是全部人混在一起抽：歌手不會唱到自己選的歌（連同名同歌手的也不會）', () => {
+  const { room, conns, players } = setup(3, { rounds: 3, perPlayer: 4 });
+  pickAll(room, conns);
+  const g = room.game;
+  assert.equal(g.turns.length, 9, '每人 3 次');
+  const keyOfId = (id) => { const l = g._labelOf(id); return `${l.main}|${l.sub}`.toLowerCase(); };
+  for (const t of g.turns) {
+    const mine = g.seats.get(t.singerId).picks;
+    assert.equal(mine.includes(t.songId), false, '不會抽到自己選的歌');
+    assert.equal(mine.map(keyOfId).includes(keyOfId(t.songId)), false, '同名的歌也算自己的');
+  }
+  // 歌來自別人的題庫，而且在還有沒唱過的歌時不重複
+  const others = (sid) => players.filter((p) => p.id !== sid).flatMap((p) => g.seats.get(p.id).picks);
+  assert.ok(g.turns.every((t) => others(t.singerId).includes(t.songId)));
+  const distinct = new Set(g.turns.map((t) => keyOfId(t.songId))).size;
+  assert.ok(distinct >= Math.min(9, 6), '盡量不重複');
+});
+
+test('只有一個人選歌：他自己沒有歌可唱（略過），沒選歌的人改唱他的歌；全都沒選歌則不開始', () => {
+  const { room, conns, players } = setup(3);
+  G(room, conns[1], { t: 'begin' }); // 非房主：忽略
+  G(room, conns[0], { t: 'begin' });
+  assert.equal(ph(room), 'picking', '誰都沒選歌：不開始');
+  assert.ok(conns[0].last('skipped'));
+  G(room, conns[0], { t: 'fill' });
+  G(room, conns[0], { t: 'begin' });
+  assert.equal(ph(room), 'intro');
+  const singers = room.game.turns.map((t) => t.singerId);
+  assert.equal(singers.includes(players[0].id), false, '選歌的人自己沒有別人的歌可唱');
+  assert.equal(singers.length, 2);
+});
+
+test('起播位置：從頭／從中間／固定第 N 秒（歌手收到的 start 隨設定改變）', () => {
+  assert.equal(cleanSettings({ startMode: 'x' }).startMode, 'begin');
+  assert.equal(cleanSettings({ startMode: 'fixed', startSec: 15 }).startSec, 15);
+  assert.equal(cleanSettings({ startSec: 9999 }).startSec, 120);
+  assert.equal(clipStart({ start: 0, mid: 53 }, { startMode: 'begin', startSec: 15 }), 0);
+  assert.equal(clipStart({ start: 0, mid: 53 }, { startMode: 'middle', startSec: 15 }), 53);
+  assert.equal(clipStart({ start: 0 }, { startMode: 'middle', startSec: 15 }), 0, '沒有中間資料就從頭');
+  assert.equal(clipStart({ start: 0, mid: 53 }, { startMode: 'fixed', startSec: 15 }), 15);
+  for (const [mode, check] of [['fixed', (st) => st === 15], ['begin', (st, q) => st === (q.start || 0)], ['middle', (st, q) => st === (q.mid != null ? q.mid : (q.start || 0))]]) {
+    const { room, conns, players } = setup(3, { startMode: mode, startSec: 15 });
+    pickAll(room, conns);
+    const song = conns[singerIdx(room, players)].last('song');
+    assert.ok(check(song.start, room.game.turn.q), `${mode}: start=${song.start}`);
+  }
+});
+
+test('已經公布過的歌不會再出現在後面的選項裡（不能用刪去法）；結果公布時附上影片與歌手聽到的起點', () => {
+  const { room, conns, players } = setup(4, { rounds: 3, perPlayer: 6, startMode: 'fixed', startSec: 15 });
+  pickAll(room, conns);
+  const answered = [];
+  let guard = 0;
+  while (ph(room) !== 'final' && guard++ < 30) {
+    const t = room.game.turn;
+    const si = singerIdx(room, players);
+    const songMsg = conns[si].last('song');
+    const turnMsg = conns[(si + 1) % 4].last('turn');
+    for (const key of answered) {
+      assert.equal(turnMsg.choices.some((c) => `${c.main}\u0001${c.sub}` === key), false, '前面公布過的答案不會變成干擾項');
+    }
+    toSing(room, conns, players);
+    G(room, conns[0], { t: 'forceReveal' });
+    const rv = conns[0].last('reveal');
+    assert.equal(rv.video.ytId, t.q.ytId, '結果公布時才附上影片');
+    assert.equal(rv.video.start, songMsg.start, '預覽起點 = 歌手聽到的起點');
+    assert.equal(rv.video.start, 15);
+    answered.push(`${rv.answer.main}\u0001${rv.answer.sub}`);
+    G(room, conns[0], { t: 'next' });
+  }
+  assert.equal(ph(room), 'final');
+  assert.equal(answered.length, 12);
+});
+
+test('固定歌手：其他人挑歌、全部給他唱；歌手不挑歌、不用準備', () => {
+  assert.equal(cleanSettings({ singerMode: 'x' }).singerMode, 'rotate');
+  assert.equal(cleanSettings({ singerMode: 'fixed', fixedSingerId: 'not valid!' }).fixedSingerId, '');
+  const room = new Room('SORF', FAST);
+  const conns = []; const players = [];
+  for (let i = 0; i < 4; i++) { const c = fakeConn(); players.push(room.join(c, { nick: 'P' + (i + 1) }).player); conns.push(c); }
+  room.gameId = 'soramimi';
+  room.settings.soramimi = { ...cleanSettings({ perPlayer: 3, autoNext: 0 }), singerMode: 'fixed', fixedSingerId: '' };
+  room.handle(conns[0], { t: 'start' });
+  assert.equal(ph(room), 'lobby', '沒指定固定歌手不能開始');
+  assert.equal(conns[0].last('error').code, 'NO_SINGER');
+  room.settings.soramimi.fixedSingerId = players[1].id;
+  room.handle(conns[0], { t: 'start' });
+  assert.equal(ph(room), 'picking');
+  assert.equal(conns[0].last('state').fixedSinger, players[1].id);
+  // 歌手不能挑歌／補滿；他視為已準備
+  G(room, conns[1], { t: 'fill' });
+  assert.equal(room.game.seats.get(players[1].id).picks.length, 0);
+  G(room, conns[1], { t: 'add', id: [...byId.keys()][0] });
+  assert.match(conns[1].last('pickError').msg, /固定歌手/);
+  assert.equal(conns[1].last('mine').max, 0);
+  // 其他三人挑滿並準備 → 自動開始
+  [0, 2, 3].forEach((i) => G(room, conns[i], { t: 'fill' }));
+  [0, 2].forEach((i) => G(room, conns[i], { t: 'ready', on: true }));
+  assert.equal(ph(room), 'picking', '還有人沒準備');
+  G(room, conns[3], { t: 'ready', on: true });
+  assert.equal(ph(room), 'intro');
+  const g = room.game;
+  const picks = new Set([0, 2, 3].flatMap((i) => g.seats.get(players[i].id).picks.map((id) => { const l = g._labelOf(id); return `${l.main}|${l.sub}`; })));
+  assert.equal(g.turns.length, picks.size, '大家挑的歌（去重）全部給他唱');
+  assert.ok(g.turns.every((t) => t.singerId === players[1].id));
+  assert.equal(conns[1].last('song').ytId, g.turn.q.ytId, '只有固定歌手收到影片');
+  [0, 2, 3].forEach((i) => assert.equal(conns[i].all('song').length, 0));
 });

@@ -2,7 +2,7 @@
 import { sharedPlayer } from '../../player.js';
 import * as ui from '../../ui.js';
 import { readForm, fillForm, renderFinal, renderReveal, renderPicks } from './view.js';
-import { createPicker } from '../../hub/songpicker.js';
+import { createPicker, catOptions } from '../../hub/songpicker.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -49,7 +49,7 @@ function message(m) {
     case 'picks': if (S.q && m.idx === S.q.idx && S.phase !== 'reveal') renderPicks(m, meId(), S.q); return;
     case 'works': S.worksBy[m.ask || 'work'] = m.list.map((w) => ({ ...w, n: norm(w.main + ' ' + w.sub) })); if (S.q && (S.q.ask || 'work') === (m.ask || 'work')) S.works = S.worksBy[m.ask || 'work']; return;
     case 'pick': return onPick(m);
-    case 'results': if (S.picker && S.phase === 'pick') S.picker.setResults(m.list, m.q); return;
+    case 'results': if (S.picker && S.phase === 'pick') S.picker.setResults(m); return;
     case 'pickError': A.toast(m.msg || '這首不能選', true); return;
     case 'pickFallback': A.toast({ timeout: '出題者逾時，改由系統隨機出題', offline: '出題者離線，改由系統隨機出題', host: '房主跳過，改由系統隨機出題' }[m.reason] || '改由系統隨機出題', true); return;
     case 'question': return onQuestion(m);
@@ -105,7 +105,11 @@ function onPick(m) {
   S.pickNote = mine ? '🎙 輪到你出題！搜尋並點選一首歌，大家會聽這首來猜（本題你不作答）' : `🎙 等待「${m.setter.nick}」挑歌…`;
   $('msetter').classList.remove('hidden');
   $('msetter-picker').classList.toggle('hidden', !mine);
-  if (mine && S.picker) { S.picker.clear(); S.picker.focus(); }
+  if (mine && S.picker) {
+    const hub = A.hub();
+    S.picker.setCats(catOptions(hub && hub.settings && hub.settings.categories));
+    S.picker.clear(); // 直接列出整份歌單，不用先打字
+  }
   tick();
 }
 
@@ -409,7 +413,7 @@ function mainAction() {
 function init(api) {
   A = api;
   S.picker = createPicker({
-    onSearch: (q) => A.send({ t: 'search', q }),
+    onSearch: (r) => A.send({ t: 'search', ...r }),
     onPick: (it) => { if (S.pick) A.send({ t: 'setPick', idx: S.pick.idx, id: it.id }); },
   });
   $('msetter-picker').append(S.picker.el);

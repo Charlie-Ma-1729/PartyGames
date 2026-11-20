@@ -13,8 +13,8 @@
 //
 // 階段：picking（大家挑歌）→ intro（等歌手預載）→ sing（猜）→ reveal（結果）→ … → final
 import { rankPlayers } from '../../js/scoring.js';
-import { bank, byId, searchBank, songLabel, isVocal, CATEGORIES } from '../bank.mjs';
-import { MAX_PLAYERS, num, oneOf, shuffle, subset } from '../protocol.mjs';
+import { bank, byId, browseReply, songLabel, isVocal, CATEGORIES } from '../bank.mjs';
+import { MAX_PLAYERS, cleanId, num, oneOf, shuffle, subset } from '../protocol.mjs';
 import { GameBase } from './base.mjs';
 
 export const FIRST_BASE = 100;
@@ -28,21 +28,36 @@ export const SING_COUNTDOWN_MS = 3000; // 歌手按「我準備好了」後的�
 export const ALL_CATS = CATEGORIES.map((c) => c.id).filter((id) => id !== 'ost');
 export const DEFAULTS = {
   perPlayer: 10, // 每人題庫幾首
-  rounds: 1, // 每人當幾次歌手
+  rounds: 1, // 每人當幾次歌手（輪流模式）
+  singerMode: 'rotate', // rotate 輪流當歌手 | fixed 固定一位歌手：其他人挑歌，全部給他唱
+  fixedSingerId: '', // singerMode = fixed 時的歌手（玩家 id）
   categories: ALL_CATS,
   clipSecs: 20, // 歌手聽到的片段長度
+  startMode: 'begin', // 從哪裡開始播：begin 從頭 | middle 從中間（接近高潮處，沒有資料的歌仍從頭）| fixed 固定從第 startSec 秒
+  startSec: 15, // startMode = fixed 時，從第幾秒開始
   singSecs: 60, // 每回合猜的時限
   answerMode: 'choice', // choice 8 選 1 | search 從候選清單搜尋
   autoNext: 10, // 結果停留幾秒後自動下一位，0 = 房主手動
 };
+
+/** 歌手聽的片段從影片的第幾秒開始（秒）。middle = 題庫標的「最多重播處」前幾秒（約副歌），沒有資料就從頭 */
+export function clipStart(q, s) {
+  if (s.startMode === 'fixed') return s.startSec;
+  if (s.startMode === 'middle' && q.mid != null) return q.mid;
+  return q.start || 0;
+}
 
 export function cleanSettings(input, prev = DEFAULTS) {
   const s = input && typeof input === 'object' ? input : {};
   return {
     perPlayer: num(s.perPlayer ?? prev.perPlayer, 3, 20, prev.perPlayer),
     rounds: num(s.rounds ?? prev.rounds, 1, 5, prev.rounds),
+    singerMode: oneOf(s.singerMode ?? prev.singerMode, ['rotate', 'fixed'], prev.singerMode),
+    fixedSingerId: s.fixedSingerId === undefined ? (prev.fixedSingerId || '') : (cleanId(s.fixedSingerId) || ''),
     categories: subset(s.categories ?? prev.categories, ALL_CATS, prev.categories),
     clipSecs: num(s.clipSecs ?? prev.clipSecs, 10, 60, prev.clipSecs),
+    startMode: oneOf(s.startMode ?? prev.startMode, ['begin', 'middle', 'fixed'], prev.startMode),
+    startSec: num(s.startSec ?? prev.startSec, 0, 120, prev.startSec),
     singSecs: num(s.singSecs ?? prev.singSecs, 20, 180, prev.singSecs),
     answerMode: oneOf(s.answerMode ?? prev.answerMode, ['choice', 'search'], prev.answerMode),
     autoNext: s.autoNext === undefined ? prev.autoNext : (num(s.autoNext, 0, 60, 0) === 0 ? 0 : num(s.autoNext, 3, 60, 10)),
@@ -76,8 +91,9 @@ export class SoramimiGame extends GameBase {
   constructor(hub, settings) {
     super(hub, settings);
     this.phase = 'picking';
-    this.pool = []; // { k, main, sub }[]：所有人題庫合併、依歌名去重（不公開歸屬）
+    this.pool = []; // { k, main, sub }[]：所有人題庫合併、依歌名去重（不公開歸屬）；歌手從這裡抽，但不會抽到自己選的
     this.poolIdx = new Map(); // 歌名鍵 → pool 索引
+    this.usedKeys = new Set(); // 已經公布過答案的歌（歌名鍵）：後面的選項不再出現
     this.turns = [];
     this.ti = 0;
     this.turn = null;
@@ -85,8 +101,24 @@ export class SoramimiGame extends GameBase {
     this.lastFinal = null;
   }
 
+  /** 固定歌手模式：開局時指定的那位玩家（其他模式為 null）。他不挑歌，其他人挑的歌全部給他唱 */
+  get fixedId() { return this._fixedId || null; }
+
+  check() {
+    const s = this.settings;
+    if (s.singerMode !== 'fixed') return null;
+    const m = this.hub.players.get(s.fixedSingerId);
+    if (!m || m.role !== 'player' || !m.connected) return { code: 'NO_SINGER', msg: '請先指定一位在線的固定歌手（必須是參賽者身分）' };
+    const others = [...this.hub.players.values()].filter((x) => x.role === 'player' && x.connected && x.id !== m.id).length;
+    if (others < 1) return { code: 'NO_GUESSER', msg: '固定歌手之外至少要有一位參賽者來挑歌、猜歌' };
+    return null;
+  }
+
   start() {
-    for (const m of this.hub.players.values()) if (m.role === 'player') this.seat(m, freshSeat());
+    this._fixedId = this.settings.singerMode === 'fixed' ? this.settings.fixedSingerId : null;
+    for (const m of this.hub.players.values()) {
+      if (m.role === 'player') this.seat(m, freshSeat(m.id === this._fixedId ? { ready: true } : {})); // 固定歌手不挑歌，視為已準備
+    }
     this._broadcastState();
     for (const p of this.seats.values()) this._sendMine(p);
   }
@@ -102,7 +134,7 @@ export class SoramimiGame extends GameBase {
   _stateMsg() {
     const t = this.turn;
     return {
-      t: 'state', phase: this.phase, serverNow: Date.now(), perPlayer: this.settings.perPlayer,
+      t: 'state', phase: this.phase, serverNow: Date.now(), perPlayer: this.settings.perPlayer, fixedSinger: this.fixedId,
       idx: t ? t.idx : 0, total: this.turns.length, singer: t ? this._who(t.singerId) : null,
       players: [...this.seats.values()].map((p) => ({
         id: p.id, nick: p.nick, connected: p.connected, score: p.score, ready: p.ready, picks: p.picks.length,
@@ -114,7 +146,7 @@ export class SoramimiGame extends GameBase {
 
   _sendMine(p) {
     this.sendTo(p, {
-      t: 'mine', max: this.settings.perPlayer, ready: p.ready,
+      t: 'mine', max: p.id === this.fixedId ? 0 : this.settings.perPlayer, ready: p.ready,
       picks: p.picks.map((id) => ({ id, ...(this._labelOf(id) || { main: '?', sub: '' }) })),
     });
   }
@@ -122,14 +154,14 @@ export class SoramimiGame extends GameBase {
   // ===== 挑歌階段 =====
   _search(conn, msg) {
     if (this.phase !== 'picking') return;
-    const q = typeof msg.q === 'string' ? msg.q.slice(0, 40) : '';
-    this.send(conn, { t: 'results', q, list: searchBank(q, this.settings.categories, 30, isVocal) });
+    this.send(conn, browseReply(msg, this.settings.categories, isVocal));
   }
 
   _unready(p) { if (p.ready) { p.ready = false; this._broadcastState(); } }
 
   _add(p, id) {
     if (this.phase !== 'picking' || typeof id !== 'string') return;
+    if (p.id === this.fixedId) return this.sendTo(p, { t: 'pickError', msg: '你是固定歌手，由其他人挑歌給你唱' });
     const h = byId.get(id);
     if (!h || !this._allowed(h.cat) || p.picks.includes(id)) return;
     if (!isVocal(h.q)) return this.sendTo(p, { t: 'pickError', msg: '純音樂沒辦法空耳，請選有歌詞的歌' });
@@ -150,7 +182,7 @@ export class SoramimiGame extends GameBase {
 
   /** 隨機補滿到 perPlayer 首 */
   _fill(p) {
-    if (this.phase !== 'picking') return;
+    if (this.phase !== 'picking' || p.id === this.fixedId) return;
     const have = new Set(p.picks);
     const cand = [];
     for (const c of this.settings.categories) for (const q of bank[c] || []) if (!have.has(q.id) && isVocal(q) && songLabel(q, c).main) cand.push(q.id);
@@ -160,7 +192,7 @@ export class SoramimiGame extends GameBase {
   }
 
   _ready(p, on) {
-    if (this.phase !== 'picking') return;
+    if (this.phase !== 'picking' || p.id === this.fixedId) return;
     if (on && p.picks.length !== this.settings.perPlayer) return this.sendTo(p, { t: 'pickError', msg: `要先選滿 ${this.settings.perPlayer} 首（可按「隨機補滿」）` });
     p.ready = !!on;
     this._sendMine(p); this._broadcastState();
@@ -169,32 +201,52 @@ export class SoramimiGame extends GameBase {
 
   _checkAllReady() {
     if (this.phase !== 'picking') return;
+    if (this.fixedId && !this.seats.has(this.fixedId)) return; // 固定歌手離開了：不自動開始（房主可以回大廳重新指定）
     const act = [...this.seats.values()].filter((p) => this._active(p));
-    if (act.length >= 2 && act.every((p) => p.ready)) this._begin();
+    if (act.length >= 2 && act.every((p) => p.ready)) this._begin(); // 固定歌手一開始就是 ready，只等其他人
   }
 
   /** 開始輪流：每位有歌的玩家當 rounds 次歌手（順序隨機、每圈重新洗牌） */
   _begin() {
     if (this.phase !== 'picking') return;
-    const seats = [...this.seats.values()].filter((p) => p.picks.length > 0);
-    if (seats.length === 0) return;
-    const seen = new Map();
+    const seats = [...this.seats.values()];
+    // 全部人的歌混在一起（同一首歌被多人選只算一首，記下所有選它的人）
+    const seen = new Map(); // labelKey → { id, label, owners:Set<playerId> }
     for (const p of seats) {
       for (const id of p.picks) {
         const l = this._labelOf(id);
-        if (l && !seen.has(labelKey(l))) seen.set(labelKey(l), l);
+        if (!l) continue;
+        const k = labelKey(l);
+        if (!seen.has(k)) seen.set(k, { id, label: l, owners: new Set() });
+        seen.get(k).owners.add(p.id);
       }
     }
-    this.pool = [...seen.values()].map((l, i) => ({ k: i, main: l.main, sub: l.sub }));
+    if (seen.size === 0) return this.broadcast({ t: 'skipped', reason: '還沒有人選歌，無法開始' });
+    this.pool = [...seen.values()].map((e, i) => ({ k: i, main: e.label.main, sub: e.label.sub }));
     this.poolIdx = new Map([...seen.keys()].map((k, i) => [k, i]));
-    const queues = new Map(seats.map((p) => [p.id, shuffle(p.picks)]));
+    this.usedKeys = new Set();
+    // 每回合從混合歌單抽一首：歌手不會抽到自己選的歌；盡量不重複（抽完才允許重複）
+    const all = [...seen.values()];
+    let used = new Set();
     this.turns = [];
-    for (let r = 0; r < this.settings.rounds; r++) {
+    if (this.fixedId) {
+      // 固定歌手：其他人挑的歌（去重後）隨機排序，全部給他唱
+      if (!this.seats.has(this.fixedId)) return this.broadcast({ t: 'skipped', reason: '固定歌手不在房間裡，無法開始' });
+      this.turns = shuffle(all).map((e) => ({ singerId: this.fixedId, songId: e.id }));
+    }
+    for (let r = 0; !this.fixedId && r < this.settings.rounds; r++) {
       for (const p of shuffle(seats)) {
-        const q = queues.get(p.id);
-        this.turns.push({ singerId: p.id, songId: q[r % q.length] });
+        const mine = all.filter((e) => !e.owners.has(p.id));
+        if (!mine.length) continue; // 全部的歌都是他自己選的（例如只有他一個人選歌）→ 這回合沒有歌可唱
+        let fresh = mine.filter((e) => !used.has(e.id));
+        if (!fresh.length) { used = new Set(); fresh = mine; }
+        const e = fresh[Math.floor(Math.random() * fresh.length)];
+        used.add(e.id);
+        this.turns.push({ singerId: p.id, songId: e.id });
       }
     }
+    if (!this.turns.length && this.fixedId) return this.broadcast({ t: 'skipped', reason: '還沒有人挑歌，無法開始' });
+    if (!this.turns.length) return this.broadcast({ t: 'skipped', reason: '每位玩家選的歌都一樣，沒有別人的歌可以唱；請多選一些不同的歌' });
     this.ti = 0;
     this._beginTurn();
   }
@@ -217,8 +269,9 @@ export class SoramimiGame extends GameBase {
     const s = this.settings;
     let choices = null; let correctIdx = -1;
     if (s.answerMode === 'choice') {
-      const exclude = new Set([labelKey(label)]);
-      const others = shuffle(this.pool.filter((c) => c.k !== correctPool)).slice(0, CHOICES - 1).map((c) => ({ main: c.main, sub: c.sub }));
+      // 前面回合已經公布過的答案不再當干擾項（不然猜的人可以用刪去法）；正解本身不受影響
+      const exclude = new Set([...this.usedKeys, labelKey(label)]);
+      const others = shuffle(this.pool.filter((c) => c.k !== correctPool && !this.usedKeys.has(labelKey(c)))).slice(0, CHOICES - 1).map((c) => ({ main: c.main, sub: c.sub }));
       others.forEach((c) => exclude.add(labelKey(c)));
       for (let tries = 0; others.length < CHOICES - 1 && tries < 400; tries++) { // 題庫混合不夠 8 首：從所選題庫補干擾項
         const c = s.categories[Math.floor(Math.random() * s.categories.length)];
@@ -236,7 +289,7 @@ export class SoramimiGame extends GameBase {
     this.turn = {
       idx: this.ti + 1, singerId: t.singerId, songId: t.songId, q, cat, label, correctPool, choices, correctIdx,
       guesses: new Map(), guesserIds: new Set(this._guessers(singer).map((p) => p.id)),
-      endsAt: null, startedAt: null, ytMsg: { t: 'song', idx: this.ti + 1, ytId: q.ytId, start: q.start || 0, duration: s.clipSecs },
+      endsAt: null, startedAt: null, ytMsg: { t: 'song', idx: this.ti + 1, ytId: q.ytId, start: clipStart(q, s), duration: s.clipSecs },
     };
     this.phase = 'intro';
     this.turn.pubMsg = this._turnMsg();
@@ -257,7 +310,8 @@ export class SoramimiGame extends GameBase {
       t: 'turn', idx: t.idx, total: this.turns.length, singer: this._who(t.singerId), answerMode: this.settings.answerMode,
       singSecs: this.settings.singSecs,
       choices: t.choices ? t.choices.map(({ main, sub }) => ({ main, sub })) : null,
-      pool: this.settings.answerMode === 'search' ? this.pool : null,
+      // 搜尋模式的候選清單同理：已公布過的答案拿掉（保留原本的 k，猜的時候用 k 對照）
+      pool: this.settings.answerMode === 'search' ? this.pool.filter((c) => c.k === t.correctPool || !this.usedKeys.has(labelKey(c))) : null,
     };
   }
 
@@ -334,12 +388,15 @@ export class SoramimiGame extends GameBase {
     const singer = this.seats.get(t.singerId);
     if (singer) { singer.score += sc.singer; singer.sang++; }
     this.phase = 'reveal';
+    this.usedKeys.add(labelKey(t.label)); // 這首已公布，之後的選項不會再出現它
     const last = this.ti + 1 >= this.turns.length;
     const a = t.q.answer || {};
     this.lastReveal = {
       t: 'reveal', idx: t.idx, total: this.turns.length, last, reason,
       singer: { ...this._who(t.singerId), points: sc.singer, total: singer ? singer.score : 0 },
       answer: { main: t.label.main, sub: t.label.sub, work: a.work || '', artist: a.artist || '' },
+      // 揭曉後才公開影片：結果畫面嵌入預覽，起點與歌手聽到的一樣
+      video: { ytId: t.q.ytId, start: Math.floor(t.ytMsg.start || 0) },
       correctCount: winners.length, rows, ranking: this._ranking(),
       nextAt: s.autoNext > 0 ? Date.now() + s.autoNext * 1000 : null, serverNow: Date.now(),
     };
@@ -393,6 +450,7 @@ export class SoramimiGame extends GameBase {
     const t = this.turn;
     this.seats.delete(member.id);
     if (this.phase !== 'final' && this.seats.size < 2) return this._final();
+    if (this.phase !== 'final' && this.phase !== 'picking' && member.id === this.fixedId) return this._final(); // 固定歌手走了，後面都沒人唱
     if (t && member.id === t.singerId) return this._abandonTurn('歌手離開了，略過這一回合');
     this._broadcastState();
     this._checkAllReady();

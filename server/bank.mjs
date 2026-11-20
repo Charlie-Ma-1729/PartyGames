@@ -32,20 +32,34 @@ export function songLabel(q, cat) {
 /** 有人聲的歌（純音樂 OST 不算）：空耳歌王要唱的，必須是有歌詞可以空耳的歌 */
 export const isVocal = (q) => q.kind !== 'OST';
 
-/** 伺服器端搜尋題庫。回傳 { id, cat, main, sub }[]（最多 limit 筆）。cats 為空 = 全部題庫；accept(q, cat) 可再過濾 */
-export function searchBank(query, cats, limit = 30, accept = null) {
-  const toks = norm(query).split(/\s+/).filter(Boolean).slice(0, 5);
-  if (!toks.length) return [];
+/**
+ * 選歌清單的瀏覽／搜尋（分頁）。q 空白 = 不篩關鍵字（直接逐頁瀏覽）；cat 空白 = 全部（受 cats 限制）。
+ * 回傳 { list: {id,cat,main,sub}[], total }；total 是符合條件的總數，客戶端靠它判斷還有沒有下一頁。
+ */
+export function browseBank({ q = '', cat = '', cats = [], offset = 0, limit = 40, accept = null } = {}) {
+  const toks = norm(q).split(/\s+/).filter(Boolean).slice(0, 5);
   const allow = Array.isArray(cats) && cats.length ? new Set(cats) : null;
-  const out = [];
+  const list = [];
+  let total = 0;
   for (const e of index) {
     if (allow && !allow.has(e.cat)) continue;
+    if (cat && e.cat !== cat) continue;
     if (accept && !accept(e.q, e.cat)) continue;
-    if (!toks.every((t) => e.hay.includes(t))) continue;
-    out.push({ id: e.q.id, cat: e.cat, ...songLabel(e.q, e.cat) });
-    if (out.length >= limit) break;
+    if (toks.length && !toks.every((t) => e.hay.includes(t))) continue;
+    const label = songLabel(e.q, e.cat);
+    if (!label.main) continue;
+    if (total >= offset && list.length < limit) list.push({ id: e.q.id, cat: e.cat, ...label });
+    total++;
   }
-  return out;
+  return { list, total };
+}
+
+/** 把客戶端的 search 訊息 { q, cat, offset } 夾值後查詢，回傳 results 訊息（q／cat／offset 原樣帶回，客戶端用來丟掉過期的回應） */
+export function browseReply(msg, cats, accept = null, limit = 40) {
+  const q = typeof msg.q === 'string' ? msg.q.slice(0, 40) : '';
+  const cat = typeof msg.cat === 'string' && cats.includes(msg.cat) ? msg.cat : '';
+  const offset = Number.isInteger(msg.offset) ? Math.max(0, Math.min(msg.offset, 100000)) : 0;
+  return { t: 'results', q, cat, offset, ...browseBank({ q, cat, cats, offset, limit, accept }) };
 }
 
 /** 答案的唯一鍵：J-POP 猜歌名用 t:歌名、猜歌手用 a:歌手；其他題庫用 workId */

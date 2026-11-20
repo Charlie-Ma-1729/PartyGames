@@ -2,7 +2,7 @@
 // 階段：preload → playing → reveal → (preload …) → final。大廳／房主／踢人／重連由房間（server/room.mjs）處理。
 import { buildQueue, buildChoices, pickAsk, askPrompt, SONG_CATS, CATEGORIES } from '../../js/questions.js';
 import { scoreAnswer, rankPlayers, SCORE_MODES } from '../../js/scoring.js';
-import { bank, works, keyOf, byId, searchBank } from '../bank.mjs';
+import { bank, works, keyOf, byId, browseReply } from '../bank.mjs';
 import { recordRound } from '../songstats.mjs';
 import { MAX_PLAYERS, cleanId, num, oneOf, subset } from '../protocol.mjs';
 import { GameBase } from './base.mjs';
@@ -307,8 +307,7 @@ export class SongGame extends GameBase {
 
   _search(conn, p, msg) {
     if (this.phase !== 'pick' || !p.setter) return;
-    const q = typeof msg.q === 'string' ? msg.q.slice(0, 40) : '';
-    this.send(conn, { t: 'results', q, list: searchBank(q, this.settings.categories, 30) });
+    this.send(conn, browseReply(msg, this.settings.categories));
   }
 
   _setPick(conn, p, msg) {

@@ -212,13 +212,17 @@ body.multi.is-host .host-only { display: inline-block; }
 .songpicker { max-width: 620px; margin: 12px auto 0; text-align: left; }
 .songpicker input { width: 100%; box-sizing: border-box; }
 .sp-hint { color: var(--muted); font-size: 14px; margin: 8px 2px; }
-.sp-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: 320px; overflow: auto; border-radius: 12px; background: #1d1f3f; border: 1px solid #3a3d70; }
+.sp-bar { display: flex; gap: 8px; }
+.sp-bar select { flex: 0 1 42%; min-width: 0; }
+.sp-bar input { flex: 1 1 auto; min-width: 0; }
+.sp-list { list-style: none; margin: 6px 0 0; padding: 0; max-height: min(52vh, 440px); overflow: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; border-radius: 12px; background: #1d1f3f; border: 1px solid #3a3d70; }
 .sp-list:empty { display: none; }
 .sp-list li { padding: 10px 14px; cursor: pointer; display: flex; flex-direction: column; border-bottom: 1px solid #2c2f5a; position: relative; }
 .sp-list li:hover { background: #2d2f61; }
 .sp-list li.on { opacity: 0.55; }
 .sp-list li small { color: var(--muted); font-size: 12px; }
-.sp-tag { position: absolute; right: 12px; top: 10px; font-size: 12px; color: #ffd166; }
+.sp-tag { display: none; position: absolute; right: 12px; top: 10px; font-size: 12px; color: #ffd166; }
+.sp-list li.on .sp-tag { display: inline; }
 
 /* 猜歌出題者模式 */
 .msetter { max-width: 720px; margin: 12px auto; }

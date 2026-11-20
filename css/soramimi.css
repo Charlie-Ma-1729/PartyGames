@@ -43,6 +43,10 @@
 @media (max-width: 560px) { .sr-choices { grid-template-columns: 1fr; } }
 
 /* 結果 */
+.sr-embed { max-width: 560px; margin: 10px auto; }
+.sr-embed:empty { display: none; }
+.sr-embed-cap { color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+.sr-embed iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #000; }
 .sr-answer { font-size: clamp(28px, 7vw, 48px); font-weight: 900; margin: 6px 0; color: #ffd166; }
 .sr-singer { font-size: 20px; margin: 14px 0; }
 .sr-singer .ok { color: var(--ok); }

@@ -3,7 +3,7 @@
 import { ClipPlayer } from '../../player.js';
 import { CATEGORIES } from '../../questions.js';
 import { $, el, renderRanking } from '../../hub/view.js';
-import { createPicker } from '../../hub/songpicker.js';
+import { createPicker, catOptions } from '../../hub/songpicker.js';
 
 let A = null;
 const S = {
@@ -17,8 +17,12 @@ const SETTINGS_HTML = `
   <div id="sr-categories" class="chips"></div>
   <div class="grid">
     <label>每人題庫幾首<select id="sr-perPlayer"><option value="3">3 首</option><option value="5">5 首</option><option value="8">8 首</option><option value="10">10 首</option><option value="15">15 首</option><option value="20">20 首</option></select></label>
-    <label>每人當幾次歌手<select id="sr-rounds"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="5">5 次</option></select></label>
+    <label>誰當歌手<select id="sr-singerMode"><option value="rotate">輪流當歌手</option><option value="fixed">固定一位歌手（其他人挑歌給他唱）</option></select></label>
+    <label id="sr-fixed-wrap">固定歌手<select id="sr-fixedSingerId"></select></label>
+    <label id="sr-rounds-wrap">每人當幾次歌手<select id="sr-rounds"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option><option value="5">5 次</option></select></label>
     <label>歌手聽到的片段長度<select id="sr-clipSecs"><option value="10">10 秒</option><option value="15">15 秒</option><option value="20">20 秒</option><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒</option></select></label>
+    <label>從歌曲哪裡開始播<select id="sr-startMode"><option value="begin">從頭播放</option><option value="middle">從中間播放（接近高潮處）</option><option value="fixed">固定從指定秒數開始</option></select></label>
+    <label id="sr-startSec-wrap">固定從第幾秒開始<select id="sr-startSec"><option value="0">0 秒</option><option value="10">10 秒</option><option value="15">15 秒（預設）</option><option value="20">20 秒</option><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒（1 分鐘）</option><option value="90">90 秒</option></select></label>
     <label>每回合猜歌時間<select id="sr-singSecs"><option value="30">30 秒</option><option value="45">45 秒</option><option value="60">60 秒</option><option value="90">90 秒</option><option value="120">2 分鐘</option><option value="180">3 分鐘</option></select></label>
     <label>猜的方式<select id="sr-answerMode"><option value="choice">8 選 1</option><option value="search">從所有人的歌裡搜尋（較難）</option></select></label>
     <label>結果之後<select id="sr-autoNext"><option value="0">房主按下一位</option><option value="5">5 秒後自動下一位</option><option value="10">10 秒後自動下一位</option><option value="20">20 秒後自動下一位</option></select></label>
@@ -31,8 +35,8 @@ const SCREENS_HTML = `
   <header class="sr-top"><span id="sr-round" class="sr-chip">🎤 空耳歌王</span><span id="sr-timer" class="sr-timer"></span><span id="sr-score" class="sr-chip"></span></header>
 
   <section id="sr-pick" class="sr-panel hidden">
-    <h2>先挑你的 <span id="sr-pick-n">10</span> 首歌</h2>
-    <p class="sr-tip">只能選有歌詞的歌（純音樂沒辦法空耳）。之後輪到你當歌手時，會從這些歌裡隨機抽一首給你聽。其他人看不到你挑了什麼，只會看到所有人的歌混在一起的候選。</p>
+    <h2 id="sr-pick-title">先挑你的 <span id="sr-pick-n">10</span> 首歌</h2>
+    <p id="sr-pick-tip" class="sr-tip">只能選有歌詞的歌（純音樂沒辦法空耳）。所有人挑的歌會混在一起；輪到你當歌手時，會從「別人挑的歌」裡隨機抽一首給你聽，不會抽到你自己挑的。其他人看不到誰挑了什麼，選項也是所有人的歌混在一起。</p>
     <div id="sr-picker"></div>
     <h3>我的題庫 <span id="sr-mine-count"></span></h3>
     <ul id="sr-mine" class="sr-mine"></ul>
@@ -68,6 +72,7 @@ const SCREENS_HTML = `
     <div class="sr-caption">這首歌是</div>
     <div id="sr-answer" class="sr-answer"></div>
     <div id="sr-answer-sub" class="sr-tip"></div>
+    <div id="sr-embed" class="sr-embed"></div>
     <div id="sr-singer-row" class="sr-singer"></div>
     <div id="sr-rows" class="sr-rows"></div>
     <h3>目前排行</h3>
@@ -113,7 +118,7 @@ function build() {
 }
 
 // ===================== 設定面板 =====================
-const NUM = ['perPlayer', 'rounds', 'clipSecs', 'singSecs', 'autoNext'];
+const NUM = ['perPlayer', 'rounds', 'clipSecs', 'startSec', 'singSecs', 'autoNext'];
 function fillSettings(s, ctx) {
   const counts = ctx.info.counts || {};
   const box = $('sr-categories');
@@ -133,10 +138,23 @@ function fillSettings(s, ctx) {
   box.querySelectorAll('input').forEach((i) => { i.checked = s.categories.includes(i.value); });
   for (const k of NUM) $('sr-' + k).value = String(s[k]);
   $('sr-answerMode').value = s.answerMode;
+  $('sr-startMode').value = s.startMode;
+  // 固定歌手：下拉只列「參賽者」身分的人；輪流模式才需要「每人當幾次」
+  const sel = $('sr-fixedSingerId');
+  const opts = [['', '（請選擇）'], ...ctx.hub.players.filter((p) => p.role === 'player').map((p) => [p.id, p.nick + (p.connected ? '' : '（離線）')])];
+  if (sel.dataset.built !== JSON.stringify(opts)) {
+    sel.replaceChildren(...opts.map(([v, t]) => { const o = document.createElement('option'); o.value = v; o.textContent = t; return o; }));
+    sel.dataset.built = JSON.stringify(opts);
+  }
+  sel.value = s.fixedSingerId || '';
+  $('sr-singerMode').value = s.singerMode;
+  $('sr-fixed-wrap').classList.toggle('hidden', s.singerMode !== 'fixed');
+  $('sr-rounds-wrap').classList.toggle('hidden', s.singerMode === 'fixed');
+  $('sr-startSec-wrap').classList.toggle('hidden', s.startMode !== 'fixed'); // 只有「固定秒數」才需要選秒數
   $('sr-voice').disabled = !ctx.host;
 }
 const readSettings = () => {
-  const s = { categories: [...document.querySelectorAll('#sr-categories input:checked')].map((i) => i.value), answerMode: $('sr-answerMode').value };
+  const s = { categories: [...document.querySelectorAll('#sr-categories input:checked')].map((i) => i.value), answerMode: $('sr-answerMode').value, startMode: $('sr-startMode').value, singerMode: $('sr-singerMode').value, fixedSingerId: $('sr-fixedSingerId').value };
   for (const k of NUM) s[k] = Number($('sr-' + k).value);
   return s;
 };
@@ -152,6 +170,7 @@ function exit() {
   clearInterval(S.tick); S.tick = null;
   clearTimeout(S.playTimer);
   if (S.player) S.player.stop();
+  clearEmbed();
   S.state = null; S.turn = null; S.song = null;
 }
 
@@ -160,7 +179,7 @@ function message(m) {
   switch (m.t) {
     case 'state': return onState(m);
     case 'mine': S.mine = m; renderMine(); return;
-    case 'results': if (S.picker) S.picker.setResults(m.list, m.q); return;
+    case 'results': if (S.picker) S.picker.setResults(m); return;
     case 'pickError': A.toast(m.msg || '不能這樣選', true); return;
     case 'turn': return onTurn(m);
     case 'song': return onSong(m);
@@ -192,6 +211,7 @@ function onTurn(m) {
   S.readySent = false; S.played = false; S.clipDone = false;
   clearTimeout(S.playTimer);
   if (S.player) S.player.stop();
+  clearEmbed(); // 上一回合的預覽不能繼續出聲
   render();
 }
 
@@ -208,6 +228,7 @@ function onReveal(m) {
 function onFinal(m) {
   S.final = m;
   if (S.player) S.player.stop();
+  clearEmbed();
   $('sr-final-sub').textContent = `共 ${m.total} 回合`;
   renderRanking({ podium: $('sr-podium'), table: $('sr-table') }, m.ranking, meId(), (r) => `猜對 ${r.correct} 首・當歌手 ${r.sang} 次`);
   A.show('sora-final');
@@ -244,18 +265,35 @@ function render() {
 // ----- 挑歌 -----
 function renderPick() {
   const st = S.state;
-  $('sr-pick-n').textContent = String(S.mine.max || st.perPlayer);
+  const fixed = st.fixedSinger ? st.players.find((p) => p.id === st.fixedSinger) : null;
+  const iAmFixed = !!fixed && fixed.id === meId();
+  if (!S.pickTipDefault) S.pickTipDefault = $('sr-pick-tip').textContent;
+  if (fixed) { // 固定歌手模式：其他人挑歌，全部給歌手唱；歌手自己不挑
+    $('sr-pick-title').textContent = iAmFixed ? `🎤 你是固定歌手：等大家挑歌` : `挑 ${st.perPlayer} 首歌給「${fixed.nick}」唱`;
+    $('sr-pick-tip').textContent = iAmFixed
+      ? '大家挑的歌會全部交給你，一首一首輪流唱（每首只播一次、不能重播）。等大家都選好就會自動開始，你不用挑歌。'
+      : `只能選有歌詞的歌（純音樂沒辦法空耳）。所有人挑的歌會混在一起，全部由「${fixed.nick}」空耳演唱，你們輪流猜。歌手看不到誰挑了什麼。`;
+  } else {
+    $('sr-pick-title').replaceChildren('先挑你的 ', Object.assign(el('span'), { id: 'sr-pick-n', textContent: String(S.mine.max || st.perPlayer) }), ' 首歌');
+    $('sr-pick-tip').textContent = S.pickTipDefault;
+  }
   $('sr-begin').classList.toggle('hidden', !A.isHost());
-  const playing = A.isContestant();
-  $('sr-pick').classList.toggle('spectating', !playing);
+  const playing = A.isContestant() && !iAmFixed;
+  $('sr-pick').classList.toggle('spectating', !A.isContestant() || iAmFixed);
   $('sr-picker').classList.toggle('hidden', !playing);
   $('sr-fill').classList.toggle('hidden', !playing);
   $('sr-ready').classList.toggle('hidden', !playing);
+  $('sr-mine').parentElement.querySelector('h3').classList.toggle('hidden', !playing);
+  if (playing && S.picker) { // 一進到挑歌畫面就直接列出歌單（可滑動），不用先打字搜尋
+    const hub = A.hub();
+    S.picker.setCats(catOptions(hub && hub.settings && hub.settings.categories));
+    S.picker.open();
+  }
   renderMine();
   const board = $('sr-readyboard');
   board.replaceChildren();
   st.players.forEach((p) => {
-    const c = el('span', 'sr-rd' + (p.ready ? ' on' : '') + (p.connected ? '' : ' off'), `${p.ready ? '✅' : '✏️'} ${p.nick} ${p.picks}/${st.perPlayer}`);
+    const c = el('span', 'sr-rd' + (p.ready ? ' on' : '') + (p.connected ? '' : ' off'), p.id === st.fixedSinger ? `🎤 ${p.nick}（固定歌手）` : `${p.ready ? '✅' : '✏️'} ${p.nick} ${p.picks}/${st.perPlayer}`);
     board.append(c);
   });
 }
@@ -387,7 +425,7 @@ function renderGuess() {
   }
   $('sr-mine-guess').textContent = '';
   if (locked) {
-    const c = t.answerMode === 'choice' ? t.choices[S.guess] : t.pool[S.guess];
+    const c = t.answerMode === 'choice' ? t.choices[S.guess] : t.pool.find((x) => x.k === S.guess);
     $('sr-mine-guess').textContent = c ? `🔒 你猜的是「${c.main}」，等待其他人…` : '🔒 已送出，等待其他人…';
   }
   const who = $('sr-who');
@@ -423,8 +461,32 @@ function searchPool(q) {
 }
 
 // ----- 結果 -----
+/** 結果畫面的原曲預覽（YouTube 嵌入）：從歌手聽到的同一個起點開始，按播放即可。同一回合不重建，才不會打斷正在播的聲音 */
+function renderEmbed(m) {
+  const box = $('sr-embed');
+  const v = m && m.video;
+  if (!v || !/^[\w-]{11}$/.test(v.ytId || '')) return clearEmbed();
+  const key = `${m.idx}:${v.ytId}:${v.start}`;
+  if (box.dataset.key === key) return;
+  box.dataset.key = key;
+  const f = document.createElement('iframe');
+  f.src = `https://www.youtube.com/embed/${v.ytId}?start=${Math.max(0, Math.floor(v.start || 0))}&rel=0&playsinline=1`;
+  f.title = '原曲預覽';
+  f.allow = 'autoplay; encrypted-media; picture-in-picture';
+  f.allowFullscreen = true;
+  f.referrerPolicy = 'strict-origin-when-cross-origin';
+  box.replaceChildren(el('div', 'sr-embed-cap', `▶ 原曲預覽（從歌手聽到的第 ${Math.floor(v.start || 0)} 秒開始）`), f);
+}
+function clearEmbed() {
+  const box = $('sr-embed');
+  if (!box) return;
+  delete box.dataset.key;
+  box.replaceChildren(); // 移除 iframe 就會停止播放
+}
+
 function renderResult() {
   const m = S.reveal;
+  renderEmbed(m);
   $('sr-answer').textContent = m.answer.main;
   $('sr-answer-sub').textContent = [m.answer.sub, m.answer.work && m.answer.work !== m.answer.main ? m.answer.work : ''].filter(Boolean).join('　・　');
   const sr = $('sr-singer-row');
@@ -485,7 +547,7 @@ function init(api) {
   A = api;
   build();
   S.picker = createPicker({
-    onSearch: (q) => A.send({ t: 'search', q }),
+    onSearch: (r) => A.send({ t: 'search', ...r }),
     onPick: (it) => A.send({ t: 'add', id: it.id }),
   });
   $('sr-picker').append(S.picker.el);
@@ -516,7 +578,14 @@ export default {
     get el() { return $('set-soramimi'); },
     fill: fillSettings,
     read: readSettings,
-    startHint: () => ($('sr-voice').checked ? null : '請先確認大家已開好語音通話（勾選上方的方塊）'),
+    startHint: (ctx) => {
+      const s = ctx.hub.settings;
+      if (s.singerMode === 'fixed') {
+        const m = ctx.hub.players.find((p) => p.id === s.fixedSingerId);
+        if (!m || m.role !== 'player' || !m.connected) return '請先指定一位在線的固定歌手（必須是參賽者身分）';
+      }
+      return $('sr-voice').checked ? null : '請先確認大家已開好語音通話（勾選上方的方塊）';
+    },
   },
   enter, exit, message, onHub,
 };

@@ -16,8 +16,11 @@ const D = {
 
 const SETTINGS_HTML = `
   <h2>合力塗鴉規則 <span id="cd-lockhint" class="note"></span></h2>
+  <div class="cd-catbox">
+    <div class="cd-cathead"><span>題庫分類</span><b id="cd-catpick" class="cd-catpick"></b></div>
+    <div id="cd-cat" class="chips cd-cats"></div>
+  </div>
   <div class="grid">
-    <label>題庫分類<select id="cd-cat"></select></label>
     <label>題目難度<select id="cd-diff"><option value="easy">簡單</option><option value="all">簡單＋中等</option></select></label>
     <label>每回合時間<select id="cd-dur"><option value="45">45 秒</option><option value="60">60 秒</option><option value="75">75 秒</option><option value="90">90 秒</option><option value="120">120 秒</option><option value="150">150 秒</option></select></label>
     <label>每人當猜題者幾次<select id="cd-rounds"><option value="1">1 次</option><option value="2">2 次</option><option value="3">3 次</option></select></label>
@@ -108,22 +111,38 @@ function build() {
 
 // ===================== 設定面板 =====================
 function fillSettings(s, ctx) {
-  const sel = $('cd-cat');
+  const box = $('cd-cat');
   const cats = ctx.info.categories || [];
-  const sig = JSON.stringify(cats);
-  if (sel.dataset.built !== sig) {
-    sel.replaceChildren();
-    const all = el('option', null, `🎲 全部混合（${cats.reduce((n, c) => n + c.easy + c.medium, 0)} 題）`); all.value = '__all__'; sel.append(all);
-    cats.forEach((c) => { const o = el('option', null, `${c.name}（${c.easy + c.medium}）`); o.value = c.name; sel.append(o); });
-    sel.dataset.built = sig;
+  const count = (c) => (s.difficulty === 'all' ? c.easy + c.medium : c.easy); // 目前難度下這個分類有幾題
+  const total = cats.reduce((n, c) => n + count(c), 0);
+  const sig = JSON.stringify(cats.map((c) => c.name));
+  if (box.dataset.built !== sig) { // 把所有題庫攤開成標籤，每個人（不只房主）都看得到有哪些；只有房主點得動
+    box.replaceChildren();
+    const add = (value, text) => {
+      const label = el('label', 'chip cd-catchip');
+      const input = document.createElement('input');
+      input.type = 'radio'; input.name = 'cd-cat'; input.value = value;
+      const n = el('span', 'cd-catn', '');
+      n.dataset.cat = value;
+      label.append(input, el('span', null, text), n);
+      box.append(label);
+    };
+    add('__all__', '🎲 全部混合');
+    cats.forEach((c) => add(c.name, c.name));
+    box.dataset.built = sig;
   }
-  sel.value = s.category;
+  box.querySelectorAll('input').forEach((i) => { i.checked = i.value === s.category; i.disabled = !ctx.host; });
+  box.querySelectorAll('.cd-catn').forEach((n) => { const c = cats.find((x) => x.name === n.dataset.cat); n.textContent = String(c ? count(c) : total); });
+  const cur = s.category === '__all__' ? null : cats.find((c) => c.name === s.category);
+  $('cd-catpick').textContent = cur ? `${cur.name}（${count(cur)} 題）` : `🎲 全部混合（${total} 題）`;
+  const on = box.querySelector('input:checked');
+  if (on && box.dataset.shown !== s.category) { box.dataset.shown = s.category; if (!ctx.host) on.parentElement.scrollIntoView({ block: 'nearest' }); }
   $('cd-diff').value = s.difficulty;
   $('cd-dur').value = String(s.duration);
   $('cd-rounds').value = String(s.rounds);
-  for (const id of ['cd-cat', 'cd-diff', 'cd-dur', 'cd-rounds']) $(id).disabled = !ctx.host;
+  for (const id of ['cd-diff', 'cd-dur', 'cd-rounds']) $(id).disabled = !ctx.host;
 }
-const readSettings = () => ({ category: $('cd-cat').value, difficulty: $('cd-diff').value, duration: Number($('cd-dur').value), rounds: Number($('cd-rounds').value) });
+const readSettings = () => ({ category: ($('cd-cat').querySelector('input:checked') || { value: '__all__' }).value, difficulty: $('cd-diff').value, duration: Number($('cd-dur').value), rounds: Number($('cd-rounds').value) });
 
 // ===================== 進入／離開 =====================
 function resetRound(idx) {

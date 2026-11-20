@@ -10,6 +10,18 @@
 .cd-wordbar { margin: 6px auto 10px; padding: 8px 16px; border-radius: 14px; background: var(--card); font-size: 18px; font-weight: 700; }
 .cd-wordbar.drawer { background: linear-gradient(135deg, #2a1f5c, #6b2a7a 55%, #b0306a); font-size: clamp(20px, 5vw, 28px); }
 
+/* 大廳：題庫分類標籤（所有人都看得到，只有房主點得動） */
+.cd-catbox { margin-bottom: 14px; }
+.cd-cathead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; color: var(--muted); font-size: 14px; margin-bottom: 6px; }
+.cd-catpick { color: var(--text); font-size: 15px; }
+.cd-cats { gap: 8px; max-height: 240px; overflow-y: auto; padding: 4px 2px; border-radius: 12px; }
+.cd-catchip { padding: 6px 12px; font-size: 15px; gap: 6px; }
+.cd-catchip input { display: none; }
+.cd-catchip .cd-catn { color: var(--muted); font-size: 12px; }
+.cd-catchip:has(input:checked) { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-color: transparent; font-weight: 700; }
+.cd-catchip:has(input:checked) .cd-catn { color: #fff; opacity: 0.85; }
+.gset.readonly .cd-catchip { cursor: default; }
+
 /* 畫布 */
 .cd-stage { position: relative; width: 100%; max-width: 760px; margin: 0 auto; aspect-ratio: 4 / 3; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45); user-select: none; -webkit-user-select: none; }
 .cd-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }

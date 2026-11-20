@@ -135,7 +135,7 @@ function onQuestion(m) {
   renderSetterNote();
   renderPicks(null);
   ui.showQuestion({ kind: m.kind, prompt: m.prompt, ask: m.ask }, m.idx, m.total, m.choices);
-  $('mtype-input').placeholder = m.ask === 'artist' ? '輸入歌手名搜尋…' : m.ask === 'title' ? '輸入歌名搜尋…' : '輸入作品名（中文／原文都可以）搜尋…';
+  $('mtype-input').placeholder = m.ask === 'artist' ? '輸入歌手／作者名搜尋…' : m.ask === 'title' ? '輸入歌名搜尋…' : '輸入作品名（中文／原文都可以）搜尋…';
   ui.lockChoices(false);
   $('mreveal').classList.add('hidden');
   $('mstatus').classList.remove('hidden');

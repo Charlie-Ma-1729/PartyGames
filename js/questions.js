@@ -4,7 +4,8 @@ export const CATEGORIES = [
   { id: 'song', label: '🎤 日本流行歌 J-POP（經典＋熱門）', file: 'data/song.json' },
   { id: 'tw', label: '🇹🇼 華語流行歌（台灣為主）', file: 'data/tw.json' },
   { id: 'en', label: '🇺🇸 英語流行歌', file: 'data/en.json' },
-  { id: 'ost', label: '🎮 遊戲 / 其他 OST', file: 'data/ost.json' },
+  { id: 'vocaloid', label: '🎹 VOCALOID（初音ミク等）', file: 'data/vocaloid.json' },
+  { id: 'ost', label: '🎮 遊戲 OST（瑪利歐、寶可夢、英雄聯盟…）', file: 'data/ost.json' },
   { id: 'movie', label: '🎬 電影主題曲 / 配樂', file: 'data/movie.json' },
 ];
 
@@ -43,12 +44,14 @@ export function shuffle(arr) {
 }
 
 /** 「歌名／歌手」類題庫（日本流行歌 song、華語 tw、英語 en）：一首歌可以問歌名，也可以問歌手 */
-export const SONG_CATS = ['song', 'tw', 'en'];
-export const SONG_KINDS = ['JPOP', 'TWPOP', 'ENPOP'];
+export const SONG_CATS = ['song', 'tw', 'en', 'vocaloid'];
+export const SONG_KINDS = ['JPOP', 'TWPOP', 'ENPOP', 'VOCALOID'];
 export const isSongKind = (k) => SONG_KINDS.includes(k);
 
 /** 「一曲兩用」：同一首歌可以問歌名，也可以問歌手 */
 export const ASK_PROMPT = { title: '這首歌的歌名是？', artist: '這首歌是哪位歌手唱的？' };
+/** 猜「歌手」那一題的題目文字：VOCALOID 的「歌手」是作者（P 主），因為唱的是虛擬歌手 */
+export const askPrompt = (kind, ask) => (kind === 'VOCALOID' && ask === 'artist' ? '這首歌的作者（P 主）是誰？' : ASK_PROMPT[ask]);
 
 /** J-POP 的出題方式：mode = title | artist | mixed（每題隨機）；其他題庫的題目不受影響（ask = 'work'） */
 export function pickAsk(q, mode) {
@@ -61,7 +64,7 @@ export function assignAsk(queue, mode) {
   return queue.map((q) => {
     if (!isSongKind(q.kind)) return q;
     const ask = pickAsk(q, mode);
-    return { ...q, ask, prompt: ASK_PROMPT[ask] };
+    return { ...q, ask, prompt: askPrompt(q.kind, ask) };
   });
 }
 

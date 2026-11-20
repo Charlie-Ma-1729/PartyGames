@@ -1,8 +1,8 @@
 // DOM 呈現層（不含遊戲邏輯）
 const $ = (id) => document.getElementById(id);
 
-const KIND_LABEL = { OP: 'OP 片頭曲', ED: 'ED 片尾曲', INSERT: '插入曲', OST: 'OST 配樂', SONG: '電影歌曲', JPOP: 'J-POP', TWPOP: '華語', ENPOP: '英語' };
-const isSongKind = (k) => k === 'JPOP' || k === 'TWPOP' || k === 'ENPOP';
+const KIND_LABEL = { OP: 'OP 片頭曲', ED: 'ED 片尾曲', INSERT: '插入曲', OST: 'OST 配樂', SONG: '電影歌曲', JPOP: 'J-POP', TWPOP: '華語', ENPOP: '英語', VOCALOID: 'VOCALOID' };
+const isSongKind = (k) => k === 'JPOP' || k === 'TWPOP' || k === 'ENPOP' || k === 'VOCALOID';
 
 export function showScreen(name) {
   document.querySelectorAll('.screen').forEach((s) => s.classList.remove('active'));
@@ -159,7 +159,7 @@ export function showQuestion(q, index, total, choices = null) {
   $('progress').textContent = `第 ${index} / ${total} 題`;
   hideEverything();
   renderChoices(choices);
-  $('badge').textContent = isSongKind(q.kind) ? `${KIND_LABEL[q.kind]}・${q.ask === 'artist' ? '猜歌手' : '猜歌名'}` : (KIND_LABEL[q.kind] || '配樂');
+  $('badge').textContent = isSongKind(q.kind) ? `${KIND_LABEL[q.kind]}・${q.ask === 'artist' ? (q.kind === 'VOCALOID' ? '猜作者' : '猜歌手') : '猜歌名'}` : (KIND_LABEL[q.kind] || '配樂');
   flyBadge();
   $('prompt').textContent = q.prompt || '這首歌來自哪部動畫？';
   $('cover-text').textContent = '載入中…';
@@ -181,10 +181,10 @@ export function showAnswer(q) {
   const a = q.answer || {};
   const jp = isSongKind(q.kind); // 歌名／歌手類：一曲兩用，揭曉時歌名與歌手都顯示
   $('ans-work').textContent = jp ? (a.title || '') : (a.work || '');
-  $('ans-title').textContent = jp ? `🎤 ${a.artist || ''}${a.artistEn ? `（${a.artistEn}）` : ''}` : (a.title ? `♪ ${a.title}` : '');
+  $('ans-title').textContent = jp ? `${q.kind === 'VOCALOID' ? '🎹' : '🎤'} ${a.artist || ''}${a.artistEn ? `（${a.artistEn}）` : ''}` : (a.title ? `♪ ${a.title}` : '');
   const dl = $('ans-credits');
   dl.innerHTML = '';
-  [[q.kind === 'OST' ? '作曲／演出' : '演唱', jp ? null : a.artist], ['作詞', a.lyricist], ['作曲', a.composer], ['編曲', a.arranger]].forEach(([k, v]) => {
+  [[q.kind === 'OST' ? '作曲／演出' : '演唱', jp ? null : a.artist], ['演唱（VOCALOID）', a.vocal], ['作詞', a.lyricist], ['作曲', a.composer], ['編曲', a.arranger]].forEach(([k, v]) => {
     if (!v) return;
     const dt = document.createElement('dt');
     dt.textContent = k;

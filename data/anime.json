@@ -82358,26 +82358,6 @@
   "startSource": "heuristic"
  },
  {
-  "id": "a-a59b786b",
-  "workId": "wa602c1",
-  "kind": "ED",
-  "ytId": "_pQBYfcZTGE",
-  "start": 0,
-  "mid": 53,
-  "prompt": "這首歌來自哪部動畫？",
-  "answer": {
-   "title": "Happen?木枯らしに吹かれて?",
-   "work": "Yuuna and the Haunted Hot Springs（ゆらぎ荘の幽奈さん）",
-   "artist": "Yuuna Yunohana (Miyuri Shimabukuro), Chisaki Miyazaki (Eri Suzuki), and Sagiri Ameno (Rie Takahashi)"
-  },
-  "year": 2018,
-  "difficulty": 2,
-  "video": "ゆらぎ荘の幽奈さん ED - Happen~木枯らしに吹かれて~ Free a cappella フリーアカペラ",
-  "channel": "ユアルシ",
-  "startSource": "heuristic",
-  "review": true
- },
- {
   "id": "a-fa1558be",
   "workId": "we803e7",
   "kind": "OP",

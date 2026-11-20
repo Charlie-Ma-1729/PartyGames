@@ -17,10 +17,16 @@ const ONLY = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
 const HEADERS = { 'user-agent': UA, 'accept-language': 'ja,zh-TW;q=0.8,en;q=0.6', cookie: 'CONSENT=YES+1' };
 
-const BAD = /cover|カバー|歌ってみた|弾いてみた|piano|ピアノ|オルゴール|music ?box|karaoke|カラオケ|nightcore|reaction|リアクション|8d|slowed|reverb|remix|mashup|instrumental|off ?vocal|オフボーカル|tutorial|解説|ranking|medley|メドレー|loop|hours?|時間|amv|ギター|guitar|drum|ドラム|叩いてみた|tabs|cosplay|踊ってみた|dance|vocaloid|ボカロ|fanmade|fan made|english ver|eng ver|ver\.?\s*en|アレンジ|arrange|8bit|8-bit|chiptune|うたつなぎ|respect|tribute|トリビュート|リメイク|remake|フルコーラス歌ってみた|生演奏|演奏してみた|オーケストラ|orchestra|vocal cover|歌手|歌い手|inst|カラオケ|mv風|ミュージックビデオ風/i;
+const BAD_ALL = /cover|カバー|歌ってみた|弾いてみた|piano|ピアノ|オルゴール|music ?box|karaoke|カラオケ|nightcore|reaction|リアクション|8d|slowed|reverb|remix|mashup|instrumental|off ?vocal|オフボーカル|tutorial|解説|ranking|medley|メドレー|loop|hours?|時間|amv|ギター|guitar|drum|ドラム|叩いてみた|tabs|cosplay|踊ってみた|dance|vocaloid|ボカロ|fanmade|fan made|english ver|eng ver|ver\.?\s*en|アレンジ|arrange|8bit|8-bit|chiptune|うたつなぎ|respect|tribute|トリビュート|リメイク|remake|フルコーラス歌ってみた|生演奏|演奏してみた|オーケストラ|orchestra|vocal cover|歌手|歌い手|inst|カラオケ|mv風|ミュージックビデオ風/i;
+// VOCALOID 題庫的影片標題本來就會寫「VOCALOID」「ボカロ」，不能因此扣分
+const BAD = CAT === 'vocaloid' ? new RegExp(BAD_ALL.source.replace('|vocaloid|ボカロ', ''), 'i') : BAD_ALL;
+// VOCALOID 的官方來源：作者自己的頻道（頻道名含作者名，另外比對）、唱片公司與 Crypton
+const OFFICIAL_V = /karent|exit ?tunes|crypton|クリプトン|1st ?place|piapro|キャラクター・?ボーカル|ビクター|ソニー|ユニバーサル|ポニーキャニオン|キングレコード|avex|warner|ワーナー|vocaloid|ボカロ|ニコニコ|niconico/i;
 const LIVE = /live|ライブ|concert|コンサート|fes|festival|フェス|tour|ツアー|acoustic|アコースティック|session|ピアノ/i;
 // 不是「純音樂」的影片：預告、談話、劇情、集數、解說…… 開頭可能是對白而不是音樂
-const NOT_MUSIC = /予告|trailer|ティザー|teaser|\bpv\b|\bcm\b|スポット|トーク|talk|対談|インタビュー|interview|ラジオ|radio|実況|解説|メイキング|making|ドラマ|ショートフィルム|short ?film|コメント|舞台挨拶|特番|ダイジェスト|digest|名シーン|考察|紹介|解禁|告知|本編|第\s?\d+\s?話|episode|\bep\.?\s?\d+|#\d+|一挙|ハイライト|highlight|ノーカット|cut ver|カット|エピソード|あらすじ|感想|レビュー|review/i;
+const NOT_MUSIC_ALL = /予告|trailer|ティザー|teaser|\bpv\b|\bcm\b|スポット|トーク|talk|対談|インタビュー|interview|ラジオ|radio|実況|解説|メイキング|making|ドラマ|ショートフィルム|short ?film|コメント|舞台挨拶|特番|ダイジェスト|digest|名シーン|考察|紹介|解禁|告知|本編|第\s?\d+\s?話|episode|\bep\.?\s?\d+|#\d+|一挙|ハイライト|highlight|ノーカット|cut ver|カット|エピソード|あらすじ|感想|レビュー|review/i;
+// VOCALOID 的「オリジナルPV」「PV」是正常的作品影片，不是預告片
+const NOT_MUSIC = CAT === 'vocaloid' ? new RegExp(NOT_MUSIC_ALL.source.replace('|\\bpv\\b', ''), 'i') : NOT_MUSIC_ALL;
 // 一開始就是音樂的影片類型：歌詞版、ノンクレジット映像、官方音源、Topic 頻道
 const AUDIO_FIRST = /ノンクレ|non-?credit|クレジットなし|ノンテロップ|歌詞|lyric|audio|フル|full|op映像|ed映像|オープニング|エンディング|opening|ending/i;
 const MV_LIKE = /\bmv\b|music ?video|ミュージックビデオ|short ver|ショートver/i;
@@ -79,6 +85,7 @@ async function search(q) {
         for (const k in o) walk(o[k]);
       };
       walk(data);
+      if (!out.length) throw new Error('搜尋沒有結果（可能被限流），重試'); // YouTube 偶爾對同一個查詢回傳空結果，等一下再問
       return out;
     } catch (e) {
       if (attempt === 2) throw e;
@@ -115,10 +122,11 @@ function score(c, song) {
   const titleMatch = core.length > 0 && (vt.includes(core) || vt.includes(norm(song.title)) ||
     (song.alt || []).some((a) => norm(a).length > 0 && vt.includes(norm(a))));
   // J-POP：頻道名常是英文／羅馬字（例如 Fujii Kaze），所以歌手的英文名（作品標題括號內）也算比對字
-  const toks = [...artistTokens(song.artist), ...(isSong(song.kind) ? artistTokens(w.ja) : [])];
+  // VOCALOID：「歌手」欄是演唱的 VOCALOID（初音ミク…），頻道與作者比對要用作者（作品名）
+  const toks = song.kind === 'VOCALOID' ? [...artistTokens(w.zh), ...artistTokens(w.ja)] : [...artistTokens(song.artist), ...(isSong(song.kind) ? artistTokens(w.ja) : [])];
   const artistMatch = toks.some((t) => vt.includes(t) || ch.includes(t));
   const workMatch = [w.zh, w.ja].map(norm).some((x) => x.length >= 2 && vt.includes(x));
-  const official = (song.kind === 'TWPOP' || song.kind === 'ENPOP' ? OFFICIAL_SONG : OFFICIAL_CH).test(c.channel);
+  const official = (song.kind === 'TWPOP' || song.kind === 'ENPOP' ? OFFICIAL_SONG : song.kind === 'VOCALOID' ? OFFICIAL_V : OFFICIAL_CH).test(c.channel);
   let s = 0;
   if (titleMatch) s += 6;
   if (artistMatch) s += 4;
@@ -129,7 +137,7 @@ function score(c, song) {
   if (/- topic$/i.test(c.channel)) s += 1;
   // 【某某】開頭但不是官方標記 → 很可能是翻唱/二創（例如 VTuber）
   const br = c.title.match(/^[【\[]([^】\]]{1,20})[】\]]/);
-  if (br && !/mv|歌詞|lyric|公式|official|フル|full|アニメ|tv|op|ed|期間限定|映像|主題歌|挿入歌|ノンクレ|クレジットなし|ver|版/i.test(br[1])) s -= 8;
+  if (br && song.kind !== 'VOCALOID' && !/mv|歌詞|lyric|公式|official|フル|full|アニメ|tv|op|ed|期間限定|映像|主題歌|挿入歌|ノンクレ|クレジットなし|ver|版/i.test(br[1])) s -= 8;
   // 判斷「翻奏/現場/談話」前，先把歌名本身與作品名裡的字拿掉
   // （例如歌名 Sleep Walking Orchestra 含 orchestra、デート・ア・ライブ 含 ライブ，不是翻奏或現場）
   const strip = (str) => {
@@ -219,6 +227,7 @@ function pickStart(len, kind, peakMs) {
 function buildQuery(song) {
   if (song.query) return song.query;
   const w = song.workObj;
+  if (song.kind === 'VOCALOID') return `${song.title} ${song.workObj.zh} ${song.artist || ''}`.trim();
   const parts = [song.title];
   if (song.artist) parts.push(song.artist);
   if (!song.artist || song.kind === 'OST') parts.push(w.ja);
@@ -227,7 +236,7 @@ function buildQuery(song) {
 
 async function resolveOne(song) {
   const queries = [buildQuery(song)];
-  if (!song.query) queries.push(isSong(song.kind) ? `${song.title} ${song.workObj.zh} ${CAT === 'en' ? 'official video' : CAT === 'tw' ? '官方 MV' : '公式 MV'}` : `${song.title} ${song.workObj.ja} ${song.kind === 'OST' ? 'OST' : song.kind}`);
+  if (!song.query) queries.push(isSong(song.kind) ? `${song.title} ${song.workObj.zh} ${CAT === 'en' ? 'official video' : CAT === 'tw' ? '官方 MV' : CAT === 'vocaloid' ? 'MV' : '公式 MV'}` : `${song.title} ${song.workObj.ja} ${song.kind === 'OST' ? 'OST' : song.kind}`);
   const tried = [];
   const seen = new Set();
   for (const q of queries) {

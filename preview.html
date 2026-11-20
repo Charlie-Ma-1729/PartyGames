@@ -54,7 +54,7 @@ import { CATEGORIES, loadBank, loadBad, isSongKind } from './js/questions.js';
 const $ = (id) => document.getElementById(id);
 const LS = 'songguesser-overrides-v1';
 const PAGE = 300; // 一次最多列出幾首（全部題庫加起來有六千多首）
-const KIND_NAME = { OP: 'OP 片頭曲', ED: 'ED 片尾曲', INSERT: '插入曲', OST: 'OST 配樂', SONG: '電影歌曲', JPOP: '日本流行', TWPOP: '華語流行', ENPOP: '英語流行' };
+const KIND_NAME = { OP: 'OP 片頭曲', ED: 'ED 片尾曲', INSERT: '插入曲', OST: 'OST 配樂', SONG: '電影歌曲', JPOP: '日本流行', TWPOP: '華語流行', ENPOP: '英語流行', VOCALOID: 'VOCALOID' };
 
 let all = [];       // 所有題庫的題目（每題帶 _cat）
 let ov = {};        // id -> {start?, disabled?}

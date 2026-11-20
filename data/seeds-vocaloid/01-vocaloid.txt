@@ -1,0 +1,239 @@
+# VOCALOID 歌單：每位作者（P 主）是一個「作品」，歌曲一行。
+# 格式：# 作者顯示名（英文／別名） | 該作者第一首的年份
+#       VOCALOID | 歌名 | 演唱的 VOCALOID（不確定寫 ?） | y=發行年 d=難度（1 全民熟知／2 一般／3 冷門） t=別名/英文名（影片標題可能用的其他寫法）
+# 「作品」＝作者，所以猜歌手那一題問的是「作者（P 主）」，揭曉時另外顯示演唱的 VOCALOID。
+
+# supercell（ryo） | 2007
+VOCALOID | メルト | 初音ミク | y=2007 d=1 t=Melt
+VOCALOID | ワールドイズマイン | 初音ミク | y=2008 d=1 t=World is Mine/ワールドイズマイン
+VOCALOID | ブラック★ロックシューター | 初音ミク | y=2009 d=1 t=Black Rock Shooter/ブラックロックシューター
+VOCALOID | 恋は戦争 | 初音ミク | y=2008 d=2 t=Koi wa Sensou
+VOCALOID | ODDS&ENDS | 初音ミク | y=2009 d=2 t=Odds & Ends
+VOCALOID | 初めての恋が終わる時 | 初音ミク | y=2008 d=2 t=Hajimete no Koi ga Owaru Toki
+
+# 黒うさP（Kurousa-P） | 2008
+VOCALOID | 千本桜 | 初音ミク | y=2011 d=1 t=Senbonzakura
+VOCALOID | カンタレラ | KAITO・初音ミク | y=2008 d=2 t=Cantarella
+
+# wowaka | 2009
+VOCALOID | ローリンガール | 初音ミク | y=2010 d=1 t=Rolling Girl
+VOCALOID | 裏表ラバーズ | 初音ミク | y=2009 d=1 t=Ura-Omote Lovers/Uraomote Lovers
+VOCALOID | アンノウン・マザーグース | 初音ミク | y=2012 d=1 t=Unknown Mother-Goose/Unknown Mother Goose
+VOCALOID | アンハッピーリフレイン | 初音ミク | y=2011 d=2 t=Unhappy Refrain
+VOCALOID | ワールズエンド・ダンスホール | 初音ミク | y=2011 d=2 t=World's End Dancehall/Worlds End Dancehall
+
+# cosMo@暴走P（cosMo） | 2007
+VOCALOID | 初音ミクの消失 | 初音ミク | y=2008 d=1 t=The Disappearance of Hatsune Miku/Hatsune Miku no Shoushitsu
+VOCALOID | 初音ミクの激唱 | 初音ミク | y=2009 d=2 t=The Intense Voice of Hatsune Miku/Hatsune Miku no Gekishou
+VOCALOID | 初音ミクの分裂 | 初音ミク | y=2009 d=2 t=Hatsune Miku no Bunretsu/Hatsune Miku no Bunretsu→Hakai
+
+# ハチ（米津玄師） | 2009
+VOCALOID | マトリョシカ | 初音ミク | y=2010 d=1 t=Matryoshka
+VOCALOID | パンダヒーロー | 初音ミク | y=2010 d=2 t=Panda Hero
+VOCALOID | ゴーゴー幽霊船 | 初音ミク | y=2011 d=2 t=Go-Go Yuureisen/Go Go Ghost Ship
+VOCALOID | 結んで開いて羅刹と骸 | 初音ミク | y=2011 d=2 t=Musunde Hiraite Rasetsu to Mukuro
+VOCALOID | ドーナツホール | 初音ミク | y=2013 d=2 t=Donut Hole
+VOCALOID | ワンダーランドと羊の歌 | 初音ミク | y=2012 d=3 t=Wonderland to Hitsuji no Uta/Wonderland and the Sheep's Song
+
+# DECO*27 | 2008
+VOCALOID | ゴーストルール | 初音ミク | y=2016 d=1 t=Ghost Rule
+VOCALOID | ヴァンパイア | 初音ミク | y=2014 d=1 t=Vampire
+VOCALOID | ラビットホール | 初音ミク | y=2022 d=1 t=Rabbit Hole
+VOCALOID | アニマル | 初音ミク | y=2018 d=2 t=Animal
+VOCALOID | ヒバナ | 初音ミク | y=2012 d=2 t=Hibana
+VOCALOID | 乙女解剖 | 初音ミク | y=2012 d=2 t=Otome Kaibou/Maiden Anatomy
+VOCALOID | モザイクロール | 初音ミク | y=2012 d=1 t=Mosaic Roll
+VOCALOID | 弱虫モンブラン | 初音ミク | y=2012 d=3 t=Yowamushi Montblanc
+VOCALOID | 妄想感傷代償連盟 | 初音ミク | y=2012 d=2 t=Mousou Kanshou Daishou Renmei/Delusion Sentimental Compensation Union
+VOCALOID | ストリーミングハート | 初音ミク | y=2012 d=3 t=Streaming Heart
+
+# livetune（kz） | 2008
+VOCALOID | Tell Your World | 初音ミク | y=2011 d=1
+VOCALOID | Packaged | 初音ミク | y=2008 d=2
+VOCALOID | ストロボナイツ | 初音ミク | y=2011 d=2 t=Strobo Nights
+
+# doriko | 2009
+VOCALOID | ロミオとシンデレラ | 初音ミク | y=2009 d=1 t=Romeo and Cinderella
+VOCALOID | 歌に形はないけれど | 初音ミク | y=2011 d=2 t=Uta ni Katachi wa Nai Keredo
+
+# 40mP | 2010
+VOCALOID | 恋愛裁判 | 初音ミク | y=2010 d=1 t=Love Trial/Renai Saiban
+VOCALOID | トリノコシティ | 初音ミク | y=2011 d=2 t=Torinoko City
+VOCALOID | からくりピエロ | 初音ミク | y=2010 d=1 t=Karakuri Pierrot/Karakuri Pierro
+
+# halyosy | 2008
+VOCALOID | 桜ノ雨 | 初音ミク | y=2008 d=1 t=Sakura no Ame
+
+# kemu | 2012
+VOCALOID | 六兆年と一夜物語 | IA | y=2012 d=1 t=Rokuchounen to Ichiya Monogatari/Six Trillion Years and Overnight Story
+VOCALOID | 人生リセットボタン | GUMI | y=2012 d=2 t=Jinsei Reset Button/Life Reset Button
+
+# 164 | 2012
+VOCALOID | 天ノ弱 | GUMI | y=2012 d=1 t=Amanojaku/Ama no Jaku
+
+# sasakure.UK | 2009
+VOCALOID | ハロー、プラネット。 | 初音ミク | y=2012 d=2 t=Hello Planet/ハロー、プラネット
+VOCALOID | 39 | 初音ミク | y=2013 d=2 q=39 sasakure.UK DECO*27 初音ミク
+
+# れるりり（rerulili） | 2011
+VOCALOID | 脳漿炸裂ガール | 初音ミク・GUMI | y=2011 d=1 t=Nousyou Sakuretsu Girl/Brain Explosion Girl
+
+# mothy（悪ノP） | 2007
+VOCALOID | 悪ノ娘 | 鏡音リン | y=2007 d=1 t=Daughter of Evil
+VOCALOID | 悪ノ召使 | 鏡音レン | y=2008 d=1 t=Servant of Evil
+VOCALOID | リグレットメッセージ | 鏡音リン | y=2008 d=3 t=Regret Message
+
+# iroha（sasaki） | 2008
+VOCALOID | 炉心融解 | 鏡音リン | y=2008 d=1 t=Meltdown/Roshin Yuukai
+
+# トラボルタ | 2008
+VOCALOID | ココロ | 鏡音リン | y=2008 d=2 t=Kokoro
+
+# Neru | 2012
+VOCALOID | 東京テディベア | 鏡音リン | y=2012 d=1 t=Tokyo Teddy Bear
+VOCALOID | ロストワンの号哭 | 鏡音リン | y=2012 d=1 t=Lost One's Weeping/Lost Ones Weeping
+
+# じん（自然の敵P） | 2011
+VOCALOID | カゲロウデイズ | ? | y=2011 d=1 t=Kagerou Days
+VOCALOID | ヘッドフォンアクター | 初音ミク | y=2012 d=2 t=Headphone Actor
+VOCALOID | メカクシコード | 初音ミク | y=2012 d=2 t=Mekakushi Code
+VOCALOID | アヤノの幸福理論 | 初音ミク | y=2012 d=2 t=Ayano's Theory of Happiness
+VOCALOID | チルドレンレコード | 初音ミク | y=2012 d=2 t=Children Record
+VOCALOID | ロスタイムメモリー | IA | y=2013 d=3 t=Lost Time Memory
+VOCALOID | アウターサイエンス | IA | y=2013 d=2 t=Outer Science
+
+# みきとP（mikitoP） | 2013
+VOCALOID | ロキ | ? | y=2013 d=1 t=Roki/Loki
+VOCALOID | 少女レイ | 初音ミク | y=2013 d=1 t=Shoujo Rei/Girl Ray
+
+# ナユタン星人 | 2012
+VOCALOID | 太陽系デスコ | 初音ミク | y=2012 d=2 t=Taiyoukei Disco/Solar System Disco
+VOCALOID | エイリアンエイリアン | 初音ミク | y=2019 d=1 t=Alien Alien
+VOCALOID | ダンスロボットダンス | 初音ミク | y=2013 d=1 t=Dance Robot Dance
+
+# n-buna | 2013
+VOCALOID | ウミユリ海底譚 | 初音ミク | y=2013 d=2 t=Umiyuri Kaiteitan
+VOCALOID | メリュー | 初音ミク | y=2014 d=3 t=Meliew/Meru
+
+# Orangestar | 2018
+VOCALOID | アスノヨゾラ哨戒班 | IA | y=2018 d=1 t=DAYBREAK FRONTLINE/Asu no Yozora Shoukaihan
+
+# ピノキオピー（PinocchioP） | 2012
+VOCALOID | 神っぽいな | 初音ミク | y=2020 d=1 t=Kamippoina
+VOCALOID | すきなことだけでいいです | 初音ミク | y=2019 d=2 t=Sukina Koto Dake de Ii desu
+VOCALOID | 愛されなくても君がいる | 初音ミク | y=2016 d=2 t=Aisarenakutemo Kimi ga Iru
+VOCALOID | ノンブレス・オブリージュ | 初音ミク | y=2018 d=2 t=Nonbreath Oblige
+
+# ピノキオピー（PinocchioP） | 2012
+VOCALOID | すろぉもぉしょん | 初音ミク | y=2011 d=3 t=Slow Motion
+
+# syudou | 2020
+VOCALOID | ビターチョコデコレーション | 初音ミク | y=2020 d=1 t=Bitter Choco Decoration
+
+# Kikuo | 2016
+VOCALOID | 愛して愛して愛して | ? | y=2017 d=1 t=Aishite Aishite Aishite/Love Me, Love Me, Love Me
+
+# 柊キライ（Hiiragi Kirai） | 2016
+VOCALOID | ラブカ？ | flower | y=2016 d=1 t=Rabuka/Rabuka?/ラブカ
+
+# 日向電工（Hinata Denkou） | 2013
+VOCALOID | ブリキノダンス | ? | y=2013 d=1 t=Burikino Dance/Tin Dance
+
+# t.Komine | 2015
+VOCALOID | こちら、幸福安心委員会です。 | 初音ミク | y=2015 d=2 t=Kochira Koufuku Anshin Iinkai Desu/This is the Happiness Safety Committee
+
+# OSTER project | 2012
+VOCALOID | ミラクルペイント | 初音ミク | y=2012 d=2 t=Miracle Paint
+
+# GigaReol（Giga×Reol） | 2014
+VOCALOID | ヒビカセ | 初音ミク | y=2014 d=2 t=Hibikase
+
+# nyanyannya（大天才P） | 2011
+VOCALOID | ドクター＝ファンクビート | KAITO | y=2011 d=1 t=Doctor=Funk Beat/Doctor Funk Beat
+
+# koyori（電ポルP） | 2017
+VOCALOID | 独りんぼエンヴィー | 初音ミク | y=2017 d=1 t=Hitorinbo Envy/Hitorinbo Envy
+
+# 和田たけあき（WAT） | 2013
+VOCALOID | ブレス・ユア・ブレス | 初音ミク | y=2014 d=2 t=Bless Your Breath
+
+# 柊マグネタイト（Hiiragi Magnetite） | 2021
+VOCALOID | マーシャル・マキシマイザー | 可不 | y=2021 d=1 t=Marshall Maximizer
+
+# ryt | 2013
+VOCALOID | ネコミミアーカイブ | 初音ミク | y=2013 d=2 t=Nekomimi Archive/Cat Ears Archive
+
+# Omoi | 2018
+VOCALOID | グリーンライツ・セレナーデ | 初音ミク | y=2018 d=2 t=Greenlights Serenade
+
+# ぬゆり（Nuyuri） | 2020
+VOCALOID | ロウワー | ? | y=2020 d=1 t=Lower/Flower/Lower one's eyes
+
+# Last Note. | 2013
+VOCALOID | セツナトリップ | GUMI | y=2013 d=2 t=Setsuna Trip
+
+# Chinozo | 2020
+VOCALOID | グッバイ宣言 | 初音ミク | y=2021 d=1 t=Goodbye Declaration
+
+# ツミキ（TSUMIKI） | 2021
+VOCALOID | フォニイ | 可不 | y=2021 d=1 t=Phony
+
+# Kanaria | 2021
+VOCALOID | KING | GUMI | y=2021 d=1 q=KING Kanaria 可不
+VOCALOID | エンヴィーベイビー | GUMI | y=2020 d=1 t=Envy Baby
+
+# かいりきベア（Kairiki Bear） | 2016
+VOCALOID | アンヘル | ? | y=2019 d=2 t=Angel/Ángel
+VOCALOID | メロメロイド | 初音ミク | y=2018 d=3 t=Meromeroid
+VOCALOID | ベノム | flower | y=2018 d=1 t=Venom
+
+# すりぃ（Three） | 2014
+VOCALOID | ジャンキーナイトタウンオーケストラ | 鏡音レン | y=2015 d=2 t=Junky Night Town Orchestra
+VOCALOID | アンビバレンス | 初音ミク | y=2017 d=3 t=Ambivalence
+VOCALOID | ラヴィ | 鏡音レン | y=2014 d=3 t=Lavie
+VOCALOID | エゴロック | 鏡音レン | y=2014 d=3 t=Egorock
+VOCALOID | 限りなく灰色へ | 鏡音レン | y=2014 d=3 t=Kagirinaku Haiiro e
+
+# 八王子P（Hachioji-P） | 2013
+VOCALOID | Gimme×Gimme | 初音ミク・鏡音リン | y=2013 d=1 t=Gimme Gimme/ギミーギミー
+VOCALOID | Sweet Devil | 初音ミク | y=2013 d=2
+
+# 稲葉曇 | 2021
+VOCALOID | ロストアンブレラ | 歌愛ユキ | y=2022 d=2 t=Lost Umbrella
+VOCALOID | ラグトレイン | 歌愛ユキ | y=2021 d=2 t=Lag Train
+
+# Crusher-P | 2013
+VOCALOID | ECHO | GUMI | y=2013 d=1
+
+# ika | 2007
+VOCALOID | みくみくにしてあげる♪ | 初音ミク | y=2007 d=1 t=ミクミクにしてあげる/Miku Miku ni Shite Ageru
+
+# samfree | 2009
+VOCALOID | ルカルカ★ナイトフィーバー | 巡音ルカ | y=2009 d=1 t=Luka Luka Night Fever/ルカルカナイトフィーバー
+
+# Dixie Flatline | 2009
+VOCALOID | Just Be Friends | 巡音ルカ | y=2009 d=1
+
+# ゆうゆ（Yuyu） | 2011
+VOCALOID | 深海少女 | 初音ミク | y=2011 d=2 t=Shinkai Shoujo/Deep Sea Girl q=深海少女 ゆうゆ 初音ミク
+
+# 蝶々P | 2011
+VOCALOID | 心做し | GUMI | y=2011 d=2 t=Kokoronashi
+
+# EasyPop | 2010
+VOCALOID | ハッピーシンセサイザ | 巡音ルカ・GUMI | y=2010 d=1 t=Happy Synthesizer
+
+# malo | 2008
+VOCALOID | ハジメテノオト | 初音ミク | y=2008 d=2 t=Hajimete no Oto q=ハジメテノオト malo 初音ミク
+
+# Junky | 2012
+VOCALOID | メランコリック | 鏡音リン | y=2012 d=2 t=Melancholic
+
+# balloon（須田景凪） | 2012
+VOCALOID | シャルル | flower | y=2012 d=1 t=Charles
+
+# アゴアニキ | 2011
+VOCALOID | ダブルラリアット | 巡音ルカ | y=2011 d=2 t=Double Lariat
+
+# HoneyWorks | 2012
+VOCALOID | 告白予行練習 | GUMI | y=2012 d=2 t=Kokuhaku Yokou Renshuu/Confession Rehearsal

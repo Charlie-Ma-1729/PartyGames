@@ -3,6 +3,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CATEGORIES, SONG_CATS, choiceOf } from '../js/questions.js';
+import { applyToBank } from './songstats.mjs';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export { CATEGORIES };
@@ -84,6 +85,7 @@ export function loadBank() {
       index.push({ q, cat: c.id, hay: norm([a.title, a.artist, a.artistEn, a.work].filter(Boolean).join(' ')) });
     }
   }
+  applyToBank(nb); // 把累積的玩家統計（動態難度）套回重新載入的題目
   const n = Object.values(nb).reduce((s, a) => s + a.length, 0);
   console.log(`題庫載入：${CATEGORIES.map((c) => `${c.id} ${nb[c.id].length}`).join('、')}（共 ${n} 題）`);
 }

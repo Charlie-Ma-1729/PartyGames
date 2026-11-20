@@ -1,0 +1,155 @@
+# 第二批：大家都聽過的遊戲配樂（任天堂／日系／歐美／手遊／華人玩家熟悉的線上遊戲）
+# 格式同 01-games.txt：OST | 曲名 | 作曲／演出 | q=自訂搜尋字 d=難度（1 = 很多人聽過）
+
+# ===== 任天堂 =====
+
+# 超級瑪利歐兄弟3（Super Mario Bros. 3） | 1988
+OST | Overworld (Grass Land) | Koji Kondo | q=Super Mario Bros. 3 Overworld Grass Land Koji Kondo d=2
+
+# 瑪利歐賽車Wii（Mario Kart Wii） | 2008
+OST | Coconut Mall | Asuka Hayazaki | q=Mario Kart Wii Coconut Mall d=1
+
+# 超級瑪利歐奧德賽（Super Mario Odyssey） | 2017
+OST | Jump Up, Super Star! | Naoto Kubo | q=Super Mario Odyssey Jump Up Super Star d=1
+
+# 超級瑪利歐陽光（Super Mario Sunshine） | 2002
+OST | Delfino Plaza | Koji Kondo | q=Super Mario Sunshine Delfino Plaza d=2
+
+# 薩爾達傳說：黃昏公主（The Legend of Zelda: Twilight Princess） | 2006
+OST | Midna's Lament | Toru Minegishi | q=Twilight Princess Midna's Lament d=3
+
+# 寶可夢 金／銀（Pokémon Gold and Silver） | 1999
+OST | New Bark Town | Junichi Masuda | q=Pokemon Gold Silver New Bark Town d=2
+
+# 星之卡比（Kirby's Dream Land） | 1992
+OST | Green Greens | Jun Ishikawa | q=Kirby's Dream Land Green Greens d=1
+
+# 任天堂明星大亂鬥 特別版（Super Smash Bros. Ultimate） | 2018
+OST | Lifelight | Masahiro Sakurai | q=Super Smash Bros. Ultimate Lifelight d=2
+
+# 斯普拉遁2（Splatoon 2） | 2017
+OST | Calamari Inkantation | Off the Hook | q=Splatoon 2 Calamari Inkantation Off the Hook d=1
+
+# 星戰火狐64（Star Fox 64） | 1997
+OST | Corneria | Koji Kondo | q=Star Fox 64 Corneria d=2
+
+# Wii Sports（Wii Sports） | 2006
+OST | Wii Sports Theme | Kazumi Totaka | q=Wii Sports Theme Kazumi Totaka d=1
+
+# 雷頓教授（Professor Layton） | 2007
+OST | Professor Layton's Theme | Tomohito Nishiura | q=Professor Layton Theme Tomohito Nishiura d=2
+
+# ===== 日系遊戲 =====
+
+# 惡魔城 月下夜想曲（Castlevania: Symphony of the Night） | 1997
+OST | Dracula's Castle | Michiru Yamane | q=Castlevania Symphony of the Night Dracula's Castle d=3
+
+# 太空戰士XIV（Final Fantasy XIV） | 2013
+OST | Answers | Masayoshi Soken | q=Final Fantasy XIV Answers Masayoshi Soken d=3
+
+# 拳皇97（The King of Fighters '97） | 1997
+OST | Esaka | SNK Sound Team | q=King of Fighters 97 Esaka d=2
+
+# 越南大戰（Metal Slug） | 1996
+OST | Main Theme (Mission 1) | SNK Sound Team | q=Metal Slug 1 Main Theme Mission 1 d=2
+
+# 音速小子 冒險2（Sonic Adventure 2） | 2001
+OST | Live & Learn | Crush 40 | q=Sonic Adventure 2 Live and Learn Crush 40 d=1
+
+# 如龍（Yakuza） | 2005
+OST | Baka Mitai | RGG Studio | q=Yakuza Baka Mitai d=2
+
+# 惡魔獵人5（Devil May Cry 5） | 2019
+OST | Devil Trigger | Casey Edwards | q=Devil May Cry 5 Devil Trigger Casey Edwards d=2
+
+# 潛龍諜影 崛起（Metal Gear Rising: Revengeance） | 2013
+OST | Rules of Nature | Jamie Christopherson | q=Metal Gear Rising Revengeance Rules of Nature d=2
+
+# 泡泡龍（Bubble Bobble） | 1986
+OST | Main Theme | Tadashi Kimijima | q=Bubble Bobble Main Theme d=2
+
+# 跑車浪漫旅（Gran Turismo 2） | 1999
+OST | Moon Over the Castle | Masahiro Andoh | q=Gran Turismo 2 Moon Over the Castle d=3
+
+# 空戰奇兵5（Ace Combat 5: The Unsung War） | 2004
+OST | The Unsung War | Keiki Kobayashi | q=Ace Combat 5 The Unsung War d=3
+
+# ===== 歐美大作 =====
+
+# 俠盜獵車手：聖安地列斯（Grand Theft Auto: San Andreas） | 2004
+OST | Grand Theft Auto: San Andreas Theme | Michael Hunter | q=Grand Theft Auto San Andreas Theme Michael Hunter d=1
+
+# 俠盜獵車手IV（Grand Theft Auto IV） | 2008
+OST | Soviet Connection | Michael Hunter | q=Grand Theft Auto IV Soviet Connection d=1
+
+# 碧血狂殺2（Red Dead Redemption 2） | 2018
+OST | Unshaken | D'Angelo | q=Red Dead Redemption 2 Unshaken D'Angelo d=3
+
+# 決勝時刻：現代戰爭2（Call of Duty: Modern Warfare 2） | 2009
+OST | Modern Warfare 2 Main Theme | Hans Zimmer | q=Call of Duty Modern Warfare 2 Main Theme Hans Zimmer d=2
+
+# 最後生還者（The Last of Us） | 2013
+OST | The Last of Us Main Theme | Gustavo Santaolalla | q=The Last of Us Main Theme Gustavo Santaolalla d=1
+
+# 古惑狼（Crash Bandicoot） | 1996
+OST | N. Sanity Beach | Mark Mothersbaugh | q=Crash Bandicoot N. Sanity Beach d=2
+
+# 班卓熊（Banjo-Kazooie） | 1998
+OST | Spiral Mountain | Grant Kirkhope | q=Banjo-Kazooie Spiral Mountain Grant Kirkhope d=3
+
+# 上古卷軸3：魔龍島（The Elder Scrolls III: Morrowind） | 2002
+OST | Nerevar Rising | Jeremy Soule | q=Morrowind Nerevar Rising Jeremy Soule d=2
+
+# 博德之門3（Baldur's Gate 3） | 2023
+OST | Down by the River | Borislav Slavov | q=Baldur's Gate 3 Down by the River Borislav Slavov d=3
+
+# ===== 線上遊戲／競技 =====
+
+# 英雄聯盟（League of Legends） | 2009
+OST | Legends Never Die | Against The Current | q=League of Legends Legends Never Die Against The Current d=1
+
+# 鬥陣特攻（Overwatch） | 2016
+OST | Overture (Main Theme) | Derek Duke | t=Overwatch Main Theme q=Overwatch Overture Main Theme d=1
+
+# 爐石戰記（Hearthstone） | 2014
+OST | Pull Up A Chair (Main Title) | Peter McConnell | q=Hearthstone Pull Up A Chair Main Title Peter McConnell d=2
+
+# 星海爭霸（StarCraft） | 1998
+OST | Terran Theme 1 | Glenn Stafford | q=StarCraft Terran Theme 1 Glenn Stafford d=3
+
+# 魔獸爭霸III（Warcraft III: Reign of Chaos） | 2002
+OST | Reign of Chaos | Blizzard Entertainment | q=Warcraft III Reign of Chaos Main Screen d=2
+
+# 原神（Genshin Impact） | 2020
+OST | Genshin Impact Main Theme | HOYO-MiX | q=Genshin Impact Main Theme HOYO-MiX d=2
+
+# 楓之谷（MapleStory） | 2003
+OST | Floral Life (Henesys) | Nexon | t=Henesys q=MapleStory Henesys Floral Life d=1
+
+# 仙劍奇俠傳（Chinese Paladin: Sword and Fairy） | 1995
+OST | 蝶戀 | 大宇資訊 | q=仙劍奇俠傳 蝶戀 d=3
+
+# ===== 手機遊戲／休閒小品 =====
+
+# 憤怒鳥（Angry Birds） | 2009
+OST | Angry Birds Theme | Ari Pulkkinen | q=Angry Birds Theme Ari Pulkkinen d=1
+
+# 植物大戰殭屍（Plants vs. Zombies） | 2009
+OST | Grasswalk | Laura Shigihara | q=Plants vs. Zombies Grasswalk Laura Shigihara d=1
+
+# Among Us（Among Us） | 2018
+OST | Among Us Theme | Innersloth | q=Among Us Theme Innersloth d=1
+
+# 幾何衝刺（Geometry Dash） | 2013
+OST | Stereo Madness | ForeverBound | q=Geometry Dash Stereo Madness ForeverBound d=2
+
+# ===== 獨立遊戲／近年話題作 =====
+
+# Balatro（Balatro） | 2024
+OST | Main Theme | LouisF | q=Balatro Main Theme LouisF d=2
+
+# 33號遠征隊（Clair Obscur: Expedition 33） | 2025
+OST | Lumière | Lorien Testard | q=Clair Obscur Expedition 33 Lumiere Lorien Testard d=2
+
+# 黑神話：悟空（Black Myth: Wukong） | 2024
+OST | Wukong | Zhang Yao | q=Black Myth Wukong OST Wukong theme d=2

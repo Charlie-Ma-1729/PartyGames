@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../server/room.mjs';
 import { cleanSettings } from '../server/games/songguess.mjs';
+import { getStats } from '../server/songstats.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FAST = { preloadMs: 60, goDelayMs: 10, lagMs: 60, staleMs: 80, lobbyDropMs: 100, dropMs: 400 };
@@ -68,6 +69,22 @@ test('全員 ready → 開播；全員鎖定 → 提早揭曉並計分', async (
   assert.equal(byId[players[1].id].points, 0);
   assert.ok(byId[players[0].id].points > byId[players[2].id].points, '越快分數越高');
   assert.equal(rv.ranking[0].id, players[0].id);
+});
+
+test('揭曉時會把這題的作答記進歌曲難度統計', () => {
+  const { room, conns } = setup(3);
+  start(room, conns); readyAll(room, conns);
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx; const bad = (ok + 1) % 8;
+  const q = room.game.g.q;
+  assert.equal(getStats(q.id), null);
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: bad, elapsedMs: 0 });
+  G(room, conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 5000 });
+  assert.equal(ph(room), 'reveal');
+  const e = getStats(q.id);
+  assert.equal(e.attempts, 3);
+  assert.equal(e.correct, 2);
+  assert.equal(q.difficulty, q.baseDifficulty ?? q.difficulty, '樣本不足不換區');
 });
 
 test('過半鎖定 → 開始倒數且只觸發一次；倒數結束揭曉', async () => {
@@ -157,23 +174,6 @@ test('房主很快重連（重新整理）會拿回房主；太久才回來則�
   assert.equal(room.hostId, players[0].id, '馬上回來 → 還給房主');
 });
 
-test('斷線重連：用同一個 playerId 回座並保留分數', async () => {
-  const { room, conns, players } = setup(2);
-  start(room, conns); readyAll(room, conns);
-  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
-  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  const score = seat(room, players[0]).score;
-  assert.ok(score > 0);
-  room.disconnect(conns[0]);
-  const c2 = fakeConn();
-  const r = room.join(c2, { playerId: players[0].id, nick: '別的名字' });
-  assert.equal(r.player.id, players[0].id);
-  assert.equal(seat(room, r.player).score, score);
-  assert.equal(r.player.nick, 'P1');
-  assert.ok(c2.last('reveal'), '重連後補送目前的揭曉畫面');
-  assert.equal(room.players.size, 2);
-});
 test('原房主離線期間別人陸續重連，原房主稍後回來仍拿回房主', () => {
   const { room, conns, players } = setup(3, {}, { hostReturnMs: 5000 });
   const r2 = Room.restore(JSON.parse(JSON.stringify(room.serialize())), {}, { hostReturnMs: 5000 }); // 伺服器重啟
@@ -215,6 +215,23 @@ test('轉移房主：只有房主能轉、只能轉給在線上的人、轉出�
   assert.equal(room.hostId, players[1].id);
 });
 
+test('斷線重連：用同一個 playerId 回座並保留分數', async () => {
+  const { room, conns, players } = setup(2);
+  start(room, conns); readyAll(room, conns);
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  const score = seat(room, players[0]).score;
+  assert.ok(score > 0);
+  room.disconnect(conns[0]);
+  const c2 = fakeConn();
+  const r = room.join(c2, { playerId: players[0].id, nick: '別的名字' });
+  assert.equal(r.player.id, players[0].id);
+  assert.equal(seat(room, r.player).score, score);
+  assert.equal(r.player.nick, 'P1');
+  assert.ok(c2.last('reveal'), '重連後補送目前的揭曉畫面');
+  assert.equal(room.players.size, 2);
+});
 
 test('離線超過 staleMs 不算進鎖定分母：剩下的人都鎖定就揭曉', async () => {
   const { room, conns } = setup(3, { quorumMode: 'off' });
@@ -668,4 +685,62 @@ test('出題者模式：出題者離開 → 改隨機；設定夾限', () => {
   assert.equal(s.questionSource, 'random');
   assert.equal(s.setterId, null);
   assert.equal(s.pickSecs, 180);
+});
+
+// ===== VOCALOID 題庫：作品＝作者（P 主），猜歌手那題問的是作者 =====
+import { askPrompt, CATEGORIES } from '../js/questions.js';
+const hasVocaloid = (bank.vocaloid || []).length >= 20;
+
+test('VOCALOID 已登錄為題庫；猜作者的題目文字與其他流行歌不同', () => {
+  assert.ok(CATEGORIES.some((c) => c.id === 'vocaloid'));
+  assert.equal(askPrompt('VOCALOID', 'artist'), '這首歌的作者（P 主）是誰？');
+  assert.equal(askPrompt('VOCALOID', 'title'), '這首歌的歌名是？');
+  assert.equal(askPrompt('JPOP', 'artist'), '這首歌是哪位歌手唱的？');
+  const ov = assignAsk([{ kind: 'VOCALOID', prompt: 'x' }, { kind: 'VOCALOID', prompt: 'x' }], 'artist');
+  assert.ok(ov.every((q) => q.prompt === '這首歌的作者（P 主）是誰？'));
+});
+
+test('VOCALOID 題庫：每題有影片、作者、歌名；選項互不重複；不受歌曲類型勾選影響', { skip: !hasVocaloid }, () => {
+  for (const q of bank.vocaloid) {
+    assert.match(q.ytId, /^[\w-]{11}$/);
+    assert.equal(q.kind, 'VOCALOID');
+    assert.ok(q.answer.title && q.answer.artist, q.id);
+  }
+  assert.equal(new Set(bank.vocaloid.map((q) => q.id)).size, bank.vocaloid.length, '題目編號不重複');
+  assert.equal(new Set(bank.vocaloid.map((q) => q.ytId)).size, bank.vocaloid.length, '同一支影片不出現兩次');
+  const q = bank.vocaloid[0];
+  for (const ask of ['title', 'artist']) {
+    const ch = buildChoices(q, bank.vocaloid, 'vocaloid', { ask });
+    assert.equal(ch.length, 8);
+    assert.equal(new Set(ch.map((c) => c.main)).size, 8);
+    assert.equal(ch.filter((c) => c.correct).length, 1);
+  }
+  const { room, conns } = setup(2, { categories: ['vocaloid'], kinds: ['OP'], jpopAsk: 'artist' });
+  start(room, conns);
+  assert.equal(ph(room), 'preload');
+  const m = conns[0].last('question');
+  assert.equal(m.prompt, '這首歌的作者（P 主）是誰？');
+  assert.equal(m.kind, 'VOCALOID');
+  room.destroy();
+});
+
+// ===== 遊戲 OST 題庫：猜「這段配樂來自哪款遊戲」，一款遊戲一題 =====
+const hasOst = (bank.ost || []).length >= 100;
+
+test('遊戲 OST 題庫：每題有影片、遊戲名、曲名；一款遊戲只出現一次；影片不重複', { skip: !hasOst }, () => {
+  for (const q of bank.ost) {
+    assert.match(q.ytId, /^[\w-]{11}$/);
+    assert.equal(q.kind, 'OST');
+    assert.ok(q.answer.work && q.answer.title, q.id);
+  }
+  assert.equal(new Set(bank.ost.map((q) => q.ytId)).size, bank.ost.length, '同一支影片不出現兩次');
+  assert.equal(new Set(bank.ost.map((q) => q.workId)).size, bank.ost.length, '同一款遊戲不出現兩次');
+  const works = bank.ost.map((q) => q.answer.work).join('\n');
+  for (const must of ['Pokémon', 'Minecraft', 'Super Mario Bros.', 'Genshin Impact', 'League of Legends', 'Plants vs. Zombies']) assert.ok(works.includes(must), `缺少 ${must}`);
+});
+
+test('鎖定倒數：沒有「全員」選項（全員鎖定本來就立刻揭曉）；舊的 all 設定視為不倒數', () => {
+  assert.equal(cleanSettings({ quorumMode: 'all' }).quorumMode, 'off');
+  assert.equal(cleanSettings({ quorumMode: 'half' }).quorumMode, 'half');
+  assert.equal(cleanSettings({ quorumMode: 'n' }).quorumMode, 'n');
 });

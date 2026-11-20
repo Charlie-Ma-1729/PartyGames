@@ -8,6 +8,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer } from 'ws';
 import { ROOT, bank } from './bank.mjs';
+import { loadStats, saveStats, applyToBank } from './songstats.mjs';
 import { Room } from './room.mjs';
 import { parseMsg, normCode, randomCode, cleanNick } from './protocol.mjs';
 import { handleDubbingHttp, cleanupOld } from './media.mjs';
@@ -21,6 +22,8 @@ const CREATE_PASSWORD = process.env.CREATE_PASSWORD || ''; // 空 = 任何人都
 // 房間狀態存檔：伺服器重啟（systemctl restart、更新程式、當機）後把房間還原，玩家的瀏覽器會自動重連、接回原本的座位與分數
 const STATE_FILE = process.env.STATE_FILE || path.join(ROOT, 'state', 'rooms.json');
 const STATE_SAVE_MS = Number(process.env.STATE_SAVE_MS || 2000);
+// 猜歌動態難度的統計（每首歌的難度分）。只有直接執行 server.mjs 時才讀寫檔案，測試不會碰到
+const STATS_FILE = process.env.SONGSTATS_FILE || path.join(ROOT, 'state', 'songstats.json');
 
 const log = (...a) => console.log(new Date().toISOString(), ...a);
 
@@ -30,7 +33,7 @@ export const rooms = new Map();
 // ===== 靜態檔（只開放白名單路徑）=====
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const ALLOW_PATH = [
-  /^\/$/, /^\/index\.html$/, /^\/css\/[\w.-]+\.css$/, /^\/js\/(?:[\w-]+\/)*[\w.-]+\.js$/, /^\/data\/(?:anime|song|tw|en|ost|movie)\.json$/, /^\/preview\.html$/,
+  /^\/$/, /^\/index\.html$/, /^\/css\/[\w.-]+\.css$/, /^\/js\/(?:[\w-]+\/)*[\w.-]+\.js$/, /^\/data\/(?:anime|song|tw|en|vocaloid|ost|movie)\.json$/, /^\/preview\.html$/,
 ];
 const fileCache = new Map(); // path → {mtime, raw, gz}
 
@@ -217,6 +220,7 @@ export function loadState() {
 function shutdown(sig) {
   log(`收到 ${sig}，存檔後關閉（玩家會自動重連）`);
   saveState();
+  saveStats(STATS_FILE);
   for (const ws of wss.clients) { try { ws.close(1012, 'server restarting'); } catch { /* ignore */ } }
   setTimeout(() => process.exit(0), 300);
 }
@@ -228,6 +232,9 @@ export function listen(port = PORT, host = HOST) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   loadState();
   setInterval(saveState, STATE_SAVE_MS);
+  log(`已載入 ${loadStats(STATS_FILE)} 首歌的難度統計`);
+  applyToBank(bank);
+  setInterval(() => saveStats(STATS_FILE), STATE_SAVE_MS);
   cleanupOld();
   setInterval(cleanupOld, 3600 * 1000).unref();
   process.on('SIGTERM', () => shutdown('SIGTERM'));

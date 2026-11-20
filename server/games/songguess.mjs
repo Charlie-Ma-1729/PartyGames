@@ -1,8 +1,9 @@
 // 猜歌大賽（伺服器權威的回合狀態機）
 // 階段：preload → playing → reveal → (preload …) → final。大廳／房主／踢人／重連由房間（server/room.mjs）處理。
-import { buildQueue, buildChoices, pickAsk, ASK_PROMPT, SONG_CATS, CATEGORIES } from '../../js/questions.js';
+import { buildQueue, buildChoices, pickAsk, askPrompt, SONG_CATS, CATEGORIES } from '../../js/questions.js';
 import { scoreAnswer, rankPlayers, SCORE_MODES } from '../../js/scoring.js';
 import { bank, works, keyOf, byId, searchBank } from '../bank.mjs';
+import { recordRound } from '../songstats.mjs';
 import { MAX_PLAYERS, cleanId, num, oneOf, subset } from '../protocol.mjs';
 import { GameBase } from './base.mjs';
 
@@ -47,7 +48,8 @@ export function cleanSettings(input, prev = DEFAULT_SETTINGS) {
     jpopAsk: oneOf(s.jpopAsk ?? p.jpopAsk, ['mixed', 'title', 'artist'], p.jpopAsk),
     answerMode: oneOf(s.answerMode ?? p.answerMode, ['choice', 'typing'], p.answerMode),
     playMode: oneOf(s.playMode ?? p.playMode, ['own', 'screen'], p.playMode),
-    quorumMode: oneOf(s.quorumMode ?? p.quorumMode, ['off', 'half', 'all', 'n'], p.quorumMode),
+    // 「全員」= 全員鎖定就立刻揭曉，倒數永遠不會啟動，跟 off 一樣；舊存檔的 'all' 轉成 off
+    quorumMode: oneOf(s.quorumMode === 'all' ? 'off' : (s.quorumMode ?? p.quorumMode), ['off', 'half', 'n'], p.quorumMode),
     quorumN: num(s.quorumN ?? p.quorumN, 1, MAX_PLAYERS, p.quorumN),
     quorumSecs: num(s.quorumSecs ?? p.quorumSecs, 3, 60, p.quorumSecs),
     graceSecs: num(s.graceSecs ?? p.graceSecs, 0, 30, p.graceSecs),
@@ -347,7 +349,7 @@ export class SongGame extends GameBase {
     g.qMsg = {
       t: 'question', idx: g.idx, total: g.total, ytId: q.ytId,
       start: (s.fromMiddle && q.mid != null ? q.mid : q.start) || 0,
-      duration: s.duration, graceSecs: s.graceSecs, kind: q.kind, ask, prompt: ask === 'work' ? q.prompt : ASK_PROMPT[ask],
+      duration: s.duration, graceSecs: s.graceSecs, kind: q.kind, ask, prompt: ask === 'work' ? q.prompt : askPrompt(q.kind, ask),
       choices: choices ? choices.map(({ main, sub }) => ({ main, sub })) : null,
       answerMode: s.answerMode, playMode: s.playMode,
       setter: this._setterInfo(),
@@ -460,9 +462,7 @@ export class SongGame extends GameBase {
     if (locked === act.length) return this._reveal('all');
     const s = this.settings;
     if (g.quorumEndsAt || s.quorumMode === 'off' || locked === 0) return;
-    const need = s.quorumMode === 'all' ? act.length
-      : s.quorumMode === 'half' ? Math.floor(act.length / 2) + 1
-        : Math.min(s.quorumN, act.length);
+    const need = s.quorumMode === 'half' ? Math.floor(act.length / 2) + 1 : Math.min(s.quorumN, act.length);
     if (locked >= need) {
       g.quorumEndsAt = Date.now() + s.quorumSecs * 1000;
       this.after('quorum', s.quorumSecs * 1000, () => this._reveal('quorum'));
@@ -492,6 +492,7 @@ export class SongGame extends GameBase {
       }
       rows.push({ id: p.id, nick: p.nick, answered, correct, failed: p.failed, points, total: p.score, streak: p.streak, pick: pick ? this._label(pick) : null, ms: answered ? Math.round(elapsed) : null });
     }
+    try { recordRound(g.q, rows, g.windowMs); } catch (e) { console.error('歌曲統計記錄失敗（不影響遊戲）', e && e.message); }
     const ranking = this._ranking();
     this.phase = 'reveal';
     this.lastReveal = {

@@ -54,6 +54,8 @@ for (const w of works) {
         work: workName,
         // J-POP：「作品」就是歌手；artist 放顯示名稱、artistEn 放英文／羅馬字名（選項小字用）
         artist: SC ? w.zh : pick(s.artist, cr.artist),
+        // VOCALOID：作品＝作者（P 主），歌單那一欄寫的是演唱的 VOCALOID，揭曉時另外顯示
+        vocal: CAT === 'vocaloid' ? s.artist || undefined : undefined,
         artistEn: SC && w.ja !== w.zh ? w.ja : undefined, // 副標：英文名（日／華語）或中文名（英語歌）
         lyricist: pick(s.lyricist, cr.lyricist),
         composer: pick(s.composer, cr.composer),

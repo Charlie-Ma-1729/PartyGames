@@ -9,14 +9,15 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const _ci = process.argv.indexOf('--cat');
 export const CAT = _ci >= 0 ? process.argv[_ci + 1] : 'anime';
 // --cat jpop：讀 data/seeds-jpop（日本流行歌，每位歌手是一個「作品」）→ data/song.json
-// 歌名／歌手類題庫（一曲兩用）：--cat jpop | tw | en
+// 歌名／歌手類題庫（一曲兩用）：--cat jpop | tw | en | vocaloid
 export const SONG_CAT = {
   jpop: { dir: 'seeds-jpop', file: 'song', prefix: 'j-', kind: 'JPOP' }, // 日本流行歌
   tw: { dir: 'seeds-tw', file: 'tw', prefix: 't-', kind: 'TWPOP' }, // 台灣華語流行歌
   en: { dir: 'seeds-en', file: 'en', prefix: 'e-', kind: 'ENPOP' }, // 英語流行歌
+  vocaloid: { dir: 'seeds-vocaloid', file: 'vocaloid', prefix: 'v-', kind: 'VOCALOID' }, // VOCALOID（作品＝作者 P 主）
 };
 export const SC = SONG_CAT[CAT] || null;
-export const SONG_KINDS = ['JPOP', 'TWPOP', 'ENPOP'];
+export const SONG_KINDS = ['JPOP', 'TWPOP', 'ENPOP', 'VOCALOID'];
 export const SEED_DIR = path.join(ROOT, 'data', SC ? SC.dir : CAT === 'movie' ? 'seeds-movie' : CAT === 'ost' ? 'seeds-ost' : 'seeds');
 export const CACHE_DIR = path.join(ROOT, 'data', 'cache');
 
@@ -30,7 +31,7 @@ export function norm(s) {
     .replace(/[\s　"'`~!@#$%^&*()_+=\[\]{}|\\:;,.<>?/·・「」『』（）【】〈〉《》、。~〜～\-–—]/g, '');
 }
 
-const KINDS = ['OP', 'ED', 'INSERT', 'OST', 'JPOP', 'TWPOP', 'ENPOP'];
+const KINDS = ['OP', 'ED', 'INSERT', 'OST', 'JPOP', 'TWPOP', 'ENPOP', 'VOCALOID'];
 
 /** 解析 data/seeds/*.txt → [{ work, zh, ja, year, workId, songs:[...] }] */
 export function parseSeeds({ exclude = [] } = {}) {

@@ -52,7 +52,7 @@ test('joined 帶遊戲清單；房主選遊戲、改設定，其他人不能', (
   const s = conns[1].last('hub').settings;
   assert.equal(s.duration, 180, '夾限');
   assert.equal(s.rounds, 2);
-  assert.equal(s.category, '__all__', '不存在的分類被擋掉');
+  assert.equal(s.category, '__pick__', '不存在的分類被擋掉（維持預設：每輪自選）');
   // 各遊戲的設定各存各的
   room.handle(conns[0], { t: 'pick', game: 'songguess' });
   assert.ok(conns[0].last('hub').settings.categories);
@@ -133,7 +133,7 @@ function startHeadsUp(n, settings = {}) {
   const ctx = setup(n);
   const { room, conns } = ctx;
   room.handle(conns[0], { t: 'pick', game: 'headsup' });
-  room.handle(conns[0], { t: 'settings', settings: { duration: 20, ...settings } });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'pair', category: '__all__', duration: 20, ...settings } });
   room.handle(conns[0], { t: 'start' });
   return ctx;
 }
@@ -178,7 +178,7 @@ test('你說我猜：只有出題者拿得到題目；答對／跳過換下一�
   // 自動換下一輪（出題者換人）
   await sleep(120);
   assert.equal(g.turn.idx, 2);
-  assert.notEqual(g.turn.d, st.d.id);
+  assert.notEqual(g.turn.ds[0], st.d.id);
   room.destroy();
 });
 
@@ -209,7 +209,7 @@ test('你說我猜：出題者斷線超過寬限 → 結束該輪；人數不足
   const { room, conns, players } = startHeadsUp(3);
   const g = room.game;
   await sleep(60);
-  const d = g.turn.d;
+  const d = g.turn.ds[0];
   const dc = byId(players, conns, d);
   room.disconnect(dc);
   const c2 = fakeConn();
@@ -227,10 +227,10 @@ test('你說我猜：出題者斷線超過寬限 → 結束該輪；人數不足
   room.destroy();
 });
 
-test('你說我猜：指定猜題者模式——其他人輪流出題、同一個人猜；猜題者必須在線', async () => {
+test('你說我猜（一對一）：指定猜題者模式——其他人輪流出題、同一個人猜；猜題者必須在線', async () => {
   const { room, conns, players } = setup(4);
   room.handle(conns[0], { t: 'pick', game: 'headsup' });
-  room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', duration: 20 } });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'pair', category: '__all__', guesserMode: 'fixed', duration: 20 } });
   room.handle(conns[0], { t: 'start' });
   assert.equal(conns[0].last('error').code, 'NO_GUESSER', '還沒指定猜題者');
   room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', guesserId: players[2].id, rounds: 2 } });
@@ -247,18 +247,207 @@ test('你說我猜：指定猜題者模式——其他人輪流出題、同一�
   const g = room.game;
   assert.equal(g.turns.length, 6, '3 位出題者 × 2 次');
   assert.ok(g.turns.every((t) => t.g === players[2].id), '每一輪都是同一個人猜');
-  assert.ok(g.turns.every((t) => t.d !== players[2].id), '猜題者自己不出題');
-  const ds = g.turns.slice(0, 3).map((t) => t.d);
+  assert.ok(g.turns.every((t) => t.ds[0] !== players[2].id), '猜題者自己不出題');
+  const ds = g.turns.slice(0, 3).map((t) => t.ds[0]);
   assert.equal(new Set(ds).size, 3, '三位出題者各一次');
   room.destroy();
 });
 
-test('你說我猜：兩個人的指定模式就是經典的「一人說、一人猜」', () => {
+test('你說我猜（一對一）：兩個人的指定模式就是「一人說、一人猜」', () => {
   const { room, conns, players } = setup(2);
   room.handle(conns[0], { t: 'pick', game: 'headsup' });
-  room.handle(conns[0], { t: 'settings', settings: { guesserMode: 'fixed', guesserId: players[1].id } });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'pair', category: '__all__', guesserMode: 'fixed', guesserId: players[1].id } });
   room.handle(conns[0], { t: 'start' });
-  assert.deepEqual(room.game.turns, [{ d: players[0].id, g: players[1].id }]);
+  assert.deepEqual(room.game.turns, [{ mode: 'pair', g: players[1].id, ds: [players[0].id] }]);
+  room.destroy();
+});
+
+test('你說我猜：設定夾限——玩法與「每輪自選」都合法；不存在的分類被擋', () => {
+  const { room, conns } = setup(2);
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  const s0 = conns[0].last('hub').settings;
+  assert.equal(s0.mode, 'team', '預設是經典玩法：一人猜、其他人描述');
+  assert.equal(s0.category, '__pick__', '預設每輪由猜題者自選');
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'race', category: '寶可夢' } });
+  assert.equal(conns[0].last('hub').settings.mode, 'race');
+  assert.equal(conns[0].last('hub').settings.category, '寶可夢');
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'bad', category: '不存在的分類' } });
+  assert.equal(conns[0].last('hub').settings.mode, 'race', '不合法的玩法被擋');
+  assert.equal(conns[0].last('hub').settings.category, '寶可夢', '不存在的分類被擋');
+  room.destroy();
+});
+
+// ----- 經典：一人猜、其他人一起描述 -----
+test('你說我猜（經典）：所有描述的人都拿到題目、猜題者沒有；只有操作者能按；只有猜題者得分', async () => {
+  const { room, conns, players } = startHeadsUp(4, { mode: 'team' });
+  const g = room.game;
+  assert.equal(g.turns.length, 4, '4 人 1 輪 = 每個人猜一次');
+  assert.ok(g.turns.every((t) => t.g && t.ds.length === 3 && !t.ds.includes(t.g)), '每輪 1 人猜、其他 3 人描述');
+  const st = conns[0].last('state');
+  assert.equal(st.mode, 'team'); assert.equal(st.ds.length, 3);
+  await sleep(60);
+  assert.equal(g.phase, 'play');
+  const gConn = byId(players, conns, st.g.id);
+  const dConns = st.ds.map((x) => byId(players, conns, x.id));
+  assert.ok(!gConn.last('word'), '猜題者拿不到題目');
+  assert.ok(dConns.every((c) => c.last('word') && c.last('word').seq === 1), '每位描述的人都拿到題目');
+  assert.equal(new Set(dConns.map((c) => c.last('word').word)).size, 1, '大家看到同一題');
+  assert.ok(st.ds.some((x) => x.id === st.op.id), '操作者是描述的人之一');
+  const opConn = byId(players, conns, st.op.id);
+  const notOp = dConns.filter((c) => c !== opConn);
+  G(room, gConn, { t: 'mark', seq: 1, type: 'correct' });
+  assert.equal(g.turn.correct, 0, '猜題者自己不能按');
+  G(room, notOp[0], { t: 'mark', seq: 1, type: 'correct' });
+  G(room, notOp[1], { t: 'mark', seq: 1, type: 'pass' });
+  assert.equal(g.turn.correct, 0, '其他描述的人不是操作者，不能按（避免打架）');
+  assert.equal(g.turn.passed, 0);
+  G(room, opConn, { t: 'mark', seq: 1, type: 'correct' });
+  assert.equal(g.turn.correct, 1, '只有操作者能按');
+  G(room, opConn, { t: 'mark', seq: 1, type: 'correct' });
+  assert.equal(g.turn.correct, 1, '同一題重複按會被忽略（seq 已經換了）');
+  assert.ok(dConns.every((c) => c.last('word').seq === 2), '換題後每位描述的人都拿到新題');
+  G(room, opConn, { t: 'mark', seq: 2, type: 'correct' });
+  G(room, conns[0], { t: 'skip' });
+  const te = conns[0].last('turnEnd');
+  assert.equal(te.correct, 2);
+  const score = (id) => g.seats.get(id).score;
+  assert.equal(score(st.g.id), 2, '猜題者 +2');
+  assert.ok(st.ds.every((x) => score(x.id) === 0), '描述的人不得分');
+  room.destroy();
+});
+
+test('你說我猜（經典）：操作者每輪隨機從描述的人裡挑；離開／離線後換另一位接手', async () => {
+  const seen = new Set();
+  for (let i = 0; i < 12; i++) { // 隨機：多開幾局，應該不會永遠是同一個人
+    const { room } = startHeadsUp(4, { mode: 'team' });
+    assert.ok(room.game.turn.ds.includes(room.game.turn.op) && room.game.turn.op !== room.game.turn.g);
+    seen.add(room.game.turn.op);
+    room.destroy();
+  }
+  assert.ok(seen.size > 1, '操作者是隨機的');
+
+  const { room, conns, players } = startHeadsUp(4, { mode: 'team' });
+  const g = room.game;
+  await sleep(60);
+  const op = g.turn.op;
+  if (op === room.hostId) { room.destroy(); return; } // 房主不能離開（會換房主），這種情況下略過
+  room.handle(byId(players, conns, op), { t: 'leave' });
+  assert.equal(g.phase, 'play', '還有其他描述的人，這一輪繼續');
+  assert.notEqual(g.turn.op, op, '操作者離開 → 換人');
+  assert.ok(g.turn.ds.includes(g.turn.op) && g.seats.has(g.turn.op));
+  assert.equal(conns[0].last('state').op.id, g.turn.op, '大家都收到新的操作者');
+  const newOp = byId(players, conns, g.turn.op);
+  G(room, newOp, { t: 'mark', seq: g.turn.seq, type: 'correct' });
+  assert.equal(g.turn.correct, 1, '新的操作者能按');
+  room.destroy();
+});
+
+test('你說我猜（經典）：指定一位猜題者 → 其他人全部一起描述，重複 rounds 次', () => {
+  const { room, conns, players } = setup(3);
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'team', category: '__all__', guesserMode: 'fixed', guesserId: players[1].id, rounds: 2 } });
+  room.handle(conns[0], { t: 'start' });
+  const g = room.game;
+  assert.equal(g.turns.length, 2);
+  assert.ok(g.turns.every((t) => t.g === players[1].id && t.ds.length === 2 && !t.ds.includes(players[1].id)));
+  room.destroy();
+});
+
+test('你說我猜（經典）：一位描述的人離開，其他人繼續；猜題者離開 → 結束該輪', async () => {
+  const { room, conns, players } = startHeadsUp(4, { mode: 'team' });
+  const g = room.game;
+  await sleep(60);
+  assert.equal(g.phase, 'play');
+  const leaver = g.turn.ds.find((id) => id !== room.hostId);
+  room.handle(byId(players, conns, leaver), { t: 'leave' });
+  assert.equal(g.phase, 'play', '還有其他描述的人，這一輪繼續');
+  assert.equal(g.turn.ds.filter((id) => g.seats.has(id)).length, 2);
+  if (g.turn.g !== room.hostId) {
+    room.handle(byId(players, conns, g.turn.g), { t: 'leave' });
+    assert.notEqual(g.phase, 'play', '猜題者離開，這一輪結束');
+  }
+  room.destroy();
+});
+
+// ----- 搶答 -----
+test('你說我猜（搶答）：出題者指定第一個答對的人，答對的人與出題者各 +1；其他人不能按', async () => {
+  const { room, conns, players } = startHeadsUp(3, { mode: 'race' });
+  const g = room.game;
+  assert.equal(g.turns.length, 3, '每個人當一次出題者');
+  const st = conns[0].last('state');
+  assert.equal(st.g, null); assert.equal(st.ds.length, 1);
+  const dId = st.d.id;
+  const dConn = byId(players, conns, dId);
+  const others = players.filter((p) => p.id !== dId);
+  await sleep(60);
+  const w1 = dConn.last('word');
+  assert.ok(w1);
+  assert.equal(conns.filter((c) => c !== dConn && c.last('word')).length, 0, '題目只給出題者');
+  G(room, byId(players, conns, others[0].id), { t: 'mark', seq: w1.seq, type: 'correct', who: others[0].id });
+  assert.equal(g.turn.correct, 0, '搶答的人自己不能按');
+  G(room, dConn, { t: 'mark', seq: w1.seq, type: 'correct' });
+  assert.equal(g.turn.correct, 0, '沒指定是誰答對 → 不算');
+  G(room, dConn, { t: 'mark', seq: w1.seq, type: 'correct', who: dId });
+  assert.equal(g.turn.correct, 0, '不能指定自己');
+  G(room, dConn, { t: 'mark', seq: w1.seq, type: 'correct', who: '../bad' });
+  assert.equal(g.turn.correct, 0, '不存在的人');
+  G(room, dConn, { t: 'mark', seq: w1.seq, type: 'correct', who: others[1].id });
+  assert.equal(g.turn.correct, 1);
+  G(room, dConn, { t: 'mark', seq: dConn.last('word').seq, type: 'pass' });
+  G(room, dConn, { t: 'mark', seq: dConn.last('word').seq, type: 'correct', who: others[0].id });
+  G(room, conns[0], { t: 'skip' });
+  const te = conns[0].last('turnEnd');
+  assert.equal(te.correct, 2); assert.equal(te.passed, 1);
+  assert.equal(te.words[0].by, others[1].nick, '結果會列出是誰答對的');
+  const score = (id) => g.seats.get(id).score;
+  assert.equal(score(others[1].id), 1); assert.equal(score(others[0].id), 1);
+  assert.equal(score(dId), 2, '出題者每個被猜中的題目 +1');
+  room.destroy();
+});
+
+// ----- 每輪自選主題 -----
+test('你說我猜（每輪自選）：先進選主題階段，只有當輪猜題者能選；選了才開始、題目來自該分類；逾時自動全部混合', async () => {
+  const { room, conns, players } = setup(3, { pickMs: 120 });
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'team', category: '__pick__', duration: 20 } });
+  room.handle(conns[0], { t: 'start' });
+  const g = room.game;
+  assert.equal(g.phase, 'pick');
+  const st = conns[0].last('state');
+  assert.equal(st.chooser.id, st.g.id, '經典玩法由猜題者選主題');
+  assert.ok(st.pickEndsAt > Date.now());
+  const gConn = byId(players, conns, st.g.id);
+  const dConn = byId(players, conns, st.ds[0].id);
+  G(room, dConn, { t: 'pick', cat: '寶可夢' });
+  assert.equal(g.phase, 'pick', '別人不能選');
+  G(room, gConn, { t: 'pick', cat: '不存在的分類' });
+  assert.equal(g.phase, 'pick', '不存在的分類不算');
+  G(room, gConn, { t: 'pick', cat: '寶可夢' });
+  assert.equal(g.phase, 'intro');
+  assert.equal(conns[0].last('state').cat, '寶可夢');
+  await sleep(60);
+  assert.equal(g.phase, 'play');
+  const { bank } = await import('../server/games/headsup.mjs');
+  assert.ok(bank['寶可夢'].includes(dConn.last('word').word), '題目來自選的分類');
+  // 下一輪：沒人選 → 逾時自動全部混合
+  G(room, conns[0], { t: 'skip' });
+  G(room, conns[0], { t: 'next' });
+  assert.equal(g.phase, 'pick');
+  assert.notEqual(g.turn.g, st.g.id, '換人猜、換人選');
+  await sleep(160);
+  assert.notEqual(g.phase, 'pick', '逾時自動往下');
+  assert.equal(g.turn.cat, '__all__');
+  room.destroy();
+});
+
+test('你說我猜（每輪自選）：搶答模式由出題者選主題', () => {
+  const { room, conns } = setup(3);
+  room.handle(conns[0], { t: 'pick', game: 'headsup' });
+  room.handle(conns[0], { t: 'settings', settings: { mode: 'race', category: '__pick__' } });
+  room.handle(conns[0], { t: 'start' });
+  const st = conns[0].last('state');
+  assert.equal(st.phase, 'pick');
+  assert.equal(st.chooser.id, st.d.id);
   room.destroy();
 });
 

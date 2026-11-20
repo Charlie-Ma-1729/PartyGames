@@ -23,6 +23,7 @@ export const TIMING = {
   // 你說我猜
   introMs: 5000, // 每輪開始前的準備時間
   turnEndMs: 12000, // 本輪結果停留多久後自動換下一輪
+  pickMs: 20000, // 「每輪自選」時，選主題的時間（逾時自動選「全部混合」）
 };
 
 const newId = () => randomBytes(12).toString('base64url');

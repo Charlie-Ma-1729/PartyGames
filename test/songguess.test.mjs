@@ -174,6 +174,47 @@ test('斷線重連：用同一個 playerId 回座並保留分數', async () => {
   assert.ok(c2.last('reveal'), '重連後補送目前的揭曉畫面');
   assert.equal(room.players.size, 2);
 });
+test('原房主離線期間別人陸續重連，原房主稍後回來仍拿回房主', () => {
+  const { room, conns, players } = setup(3, {}, { hostReturnMs: 5000 });
+  const r2 = Room.restore(JSON.parse(JSON.stringify(room.serialize())), {}, { hostReturnMs: 5000 }); // 伺服器重啟
+  r2.join(fakeConn(), { playerId: players[1].id });
+  assert.equal(r2.hostId, players[1].id, '先連上的人暫代房主');
+  r2.join(fakeConn(), { playerId: players[2].id });
+  assert.equal(r2.hostId, players[1].id);
+  r2.join(fakeConn(), { playerId: players[0].id });
+  assert.equal(r2.hostId, players[0].id, '原房主晚一步回來，還是拿回房主');
+});
+
+test('原房主太久沒回來（超過時限）就不再歸還', async () => {
+  const { room, players } = setup(2, {}, { hostReturnMs: 40 });
+  const r2 = Room.restore(JSON.parse(JSON.stringify(room.serialize())), {}, { hostReturnMs: 40 });
+  r2.join(fakeConn(), { playerId: players[1].id });
+  await new Promise((r) => setTimeout(r, 80));
+  r2.join(fakeConn(), { playerId: players[0].id });
+  assert.equal(r2.hostId, players[1].id);
+});
+
+test('轉移房主：只有房主能轉、只能轉給在線上的人、轉出去後原房主失去權限', () => {
+  const { room, conns, players } = setup(3);
+  room.handle(conns[1], { t: 'host', id: players[2].id });
+  assert.equal(room.hostId, players[0].id, '非房主不能轉');
+  room.handle(conns[0], { t: 'host', id: players[0].id });
+  room.handle(conns[0], { t: 'host', id: 'nobody' });
+  assert.equal(room.hostId, players[0].id, '轉給自己／不存在的人無效');
+  room.disconnect(conns[2]);
+  room.handle(conns[0], { t: 'host', id: players[2].id });
+  assert.equal(room.hostId, players[0].id, '離線的人不能接');
+  room.handle(conns[0], { t: 'host', id: players[1].id });
+  assert.equal(room.hostId, players[1].id);
+  assert.equal(conns[0].last('hub').hostId, players[1].id, '大家都收到新房主');
+  room.handle(conns[0], { t: 'start' });
+  assert.equal(ph(room), 'lobby', '原房主不能再開始遊戲');
+  // 主動交棒的人重新整理後不會自動搶回
+  room.disconnect(conns[0]);
+  room.join(fakeConn(), { playerId: players[0].id });
+  assert.equal(room.hostId, players[1].id);
+});
+
 
 test('離線超過 staleMs 不算進鎖定分母：剩下的人都鎖定就揭曉', async () => {
   const { room, conns } = setup(3, { quorumMode: 'off' });

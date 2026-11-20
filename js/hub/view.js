@@ -28,13 +28,19 @@ export function renderRoles(box, roles, current, onPick) {
   });
 }
 
-export function renderPlayers(hub, meId, isHost, onKick) {
+export function renderPlayers(hub, meId, isHost, onKick, onTransfer) {
   const box = $('l-players');
   box.replaceChildren();
   hub.players.forEach((p) => {
     const chip = el('span', 'pchip' + (p.id === meId ? ' me' : '') + (p.connected ? '' : ' off'));
     const ri = p.role && p.role !== 'player' ? `${ROLE_INFO[p.role].icon} ` : '';
     chip.append((p.id === hub.hostId ? '👑 ' : '') + ri + p.nick);
+    if (isHost && p.id !== meId && p.connected && onTransfer) {
+      const t = el('button', 'transfer', '👑');
+      t.title = '把房主交給他';
+      t.addEventListener('click', () => onTransfer(p.id, p.nick));
+      chip.append(t);
+    }
     if (isHost && p.id !== meId) {
       const b = el('button', null, '✕');
       b.title = '移出房間';

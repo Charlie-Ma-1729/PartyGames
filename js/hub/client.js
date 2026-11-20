@@ -175,7 +175,8 @@ function exitGame() {
 function renderLobby() {
   const m = H.hub;
   const host = isHost();
-  renderPlayers(m, H.pid, host, (id, nick) => { if (confirm(`要把「${nick}」移出房間嗎？`)) api.sendHub({ t: 'kick', id }); });
+  renderPlayers(m, H.pid, host, (id, nick) => { if (confirm(`要把「${nick}」移出房間嗎？`)) api.sendHub({ t: 'kick', id }); },
+  (id, nick) => { if (confirm(`要把房主交給「${nick}」嗎？交出去後你就不能操作房主功能了。`)) api.sendHub({ t: 'host', id }); });
   renderGameCards($('l-games'), H.games, m.gameId, host, (id) => api.sendHub({ t: 'pick', game: id }));
   $('l-pickhint').textContent = host ? '（點一個選擇，下面可以調整規則）' : '（由房主選擇）';
 

@@ -3,7 +3,7 @@
 // 遊戲本身的規則在 server/games/*.mjs（介面見 games/base.mjs），這裡完全不知道各遊戲的細節。
 //
 // 傳輸協定（JSON）：
-//   用戶端 → 伺服器  create / join / leave / kick{id} / pick{game} / role{role} / settings{settings} / start / lobby / g{m:遊戲訊息}
+//   用戶端 → 伺服器  create / join / leave / kick{id} / host{id}（轉移房主）/ pick{game} / role{role} / settings{settings} / start / lobby / g{m:遊戲訊息}
 //   伺服器 → 用戶端  joined / hub（房間狀態）/ g{g:遊戲代號, m:遊戲訊息} / error / kicked
 import { randomBytes } from 'node:crypto';
 import { GAMES, DEFAULT_GAME, gameList, gameInfo } from './games/index.mjs';
@@ -65,8 +65,10 @@ export class Room {
     if (p) { // 重連
       if (p.conn && p.conn !== conn) { try { p.conn.kicked = true; p.conn.close(); } catch { /* ignore */ } }
       p.conn = conn; p.connected = true; p.lastSeen = Date.now();
-      if (this.prevHost && this.prevHost.id === p.id && Date.now() - this.prevHost.at < this.T.hostReturnMs) this.hostId = p.id;
-      this.prevHost = null;
+      if (this.prevHost && this.prevHost.id === p.id) { // 原房主回來：時限內還給他
+        if (Date.now() - this.prevHost.at < this.T.hostReturnMs) this.hostId = p.id;
+        this.prevHost = null;
+      } else if (this.prevHost && Date.now() - this.prevHost.at >= this.T.hostReturnMs) this.prevHost = null; // 別人重連不會清掉原房主的回座資格，只有過期才清
     } else {
       if (id && this.banned.has(id)) return { error: { code: 'BANNED', msg: '你已被房主移出這個房間' } };
       const name = cleanNick(nick);
@@ -116,7 +118,8 @@ export class Room {
     if (h && h.connected) return;
     const next = [...this.players.values()].filter((p) => p.connected).sort((a, b) => a.joinedAt - b.joinedAt)[0];
     if (next && next.id !== this.hostId) {
-      if (h) this.prevHost = { id: h.id, at: Date.now() }; // 原房主若很快回來（例如重新整理），把房主還給他
+      // 原房主若很快回來（重新整理、伺服器重啟），把房主還給他；已經在計時就不重算
+      if (h && !(this.prevHost && this.prevHost.id === h.id)) this.prevHost = { id: h.id, at: Date.now() };
       this.hostId = next.id;
     }
   }
@@ -171,6 +174,7 @@ export class Room {
       case 'start': if (isHost && !this.game) this._start(conn); break;
       case 'lobby': if (isHost && this.game) this._toLobby(); break;
       case 'kick': if (isHost) this._kick(String(msg.id || '')); break;
+      case 'host': if (isHost) this._transferHost(String(msg.id || '')); break;
       case 'leave': this._remove(p.id); break;
       default: break;
     }
@@ -222,6 +226,15 @@ export class Room {
     this._remove(p.id);
   }
 
+  /** 房主把房主交給房裡另一位目前在線上的人（任何身分都可以；遊戲中也可以） */
+  _transferHost(id) {
+    const p = this.players.get(id);
+    if (!p || p.id === this.hostId || !p.connected) return;
+    this.hostId = p.id;
+    this.prevHost = null; // 這是主動交棒，不是斷線代理，原房主不能自動拿回
+    this._broadcastHub();
+  }
+
   _remove(id) {
     const p = this.players.get(id);
     if (!p) return;
@@ -257,6 +270,7 @@ export class Room {
   static restore(d, env = {}, timing = {}) {
     const r = new Room(d.code, timing);
     r.hostId = d.hostId;
+    r.prevHost = d.hostId ? { id: d.hostId, at: Date.now() } : null; // 重啟後誰先連上都先代理，原房主一回來（時限內）就拿回房主
     r.gameId = GAMES[d.gameId] ? d.gameId : DEFAULT_GAME;
     for (const [id, s] of Object.entries(d.settings || {})) if (GAMES[id]) r.settings[id] = GAMES[id].clean(s, GAMES[id].defaults);
     r.banned = new Set(d.banned || []);

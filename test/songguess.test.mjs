@@ -1,14 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Room } from '../server/room.mjs';
-import { cleanSettings } from '../server/protocol.mjs';
+import { cleanSettings } from '../server/games/songguess.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const FAST = { preloadMs: 60, goDelayMs: 10, lagMs: 60, staleMs: 80, lobbyDropMs: 100, dropMs: 400 };
 
+// 遊戲訊息包在 {t:'g', m}；測試用的假連線把它拆開，方便用 last('question') 這種寫法
 function fakeConn() {
-  return { sent: [], kicked: false, send(m) { this.sent.push(m); }, close() { this.closed = true; }, last(t) { return [...this.sent].reverse().find((m) => m.t === t); }, all(t) { return this.sent.filter((m) => m.t === t); } };
+  return { sent: [], kicked: false, send(m) { this.sent.push(m.t === 'g' ? m.m : m); }, close() { this.closed = true; }, last(t) { return [...this.sent].reverse().find((m) => m.t === t); }, all(t) { return this.sent.filter((m) => m.t === t); } };
 }
+const G = (room, conn, m) => room.handle(conn, { t: 'g', m });
+const ph = (room) => (room.game ? room.game.phase : 'lobby'); // 遊戲內的階段；沒有遊戲 = lobby
+const seat = (room, p) => room.game.seats.get(p.id);
 
 /** 建一個房間並加入 n 位玩家；回傳 { room, conns, players } */
 function setup(n, settings = {}, timing = {}) {
@@ -20,11 +24,12 @@ function setup(n, settings = {}, timing = {}) {
     assert.ok(r.player, r.error && r.error.msg);
     conns.push(c); players.push(r.player);
   }
-  room.settings = { ...cleanSettings({ categories: ['anime'], count: 3, ...settings }), ...settings };
+  room.gameId = 'songguess';
+  room.settings.songguess = { ...cleanSettings({ categories: ['anime'], count: 3, ...settings }), ...settings };
   return { room, conns, players };
 }
 const start = (room, conns) => room.handle(conns[0], { t: 'start' });
-const readyAll = (room, conns) => { const idx = room.game.idx; conns.forEach((c) => room.handle(c, { t: 'ready', idx })); };
+const readyAll = (room, conns) => { const idx = room.game.g.idx; conns.forEach((c) => G(room, c, { t: 'ready', idx })); };
 
 test('暱稱重名會自動加數字、第一位是房主', () => {
   const room = new Room('T1', FAST);
@@ -39,22 +44,22 @@ test('暱稱重名會自動加數字、第一位是房主', () => {
 test('全員 ready → 開播；全員鎖定 → 提早揭曉並計分', async () => {
   const { room, conns, players } = setup(3);
   start(room, conns);
-  assert.equal(room.phase, 'preload');
+  assert.equal(ph(room), 'preload');
   const q = conns[0].last('question');
   assert.equal(q.choices.length, 8);
   assert.equal(q.choices.some((c) => 'correct' in c), false, '選項不能洩漏正解');
   assert.equal('answer' in q, false, '題目訊息不應包含答案卡');
   assert.equal('correct' in q, false);
   readyAll(room, conns);
-  assert.equal(room.phase, 'playing');
+  assert.equal(ph(room), 'playing');
   assert.ok(conns[1].last('go').startAt);
-  const idx = room.game.idx; const ok = room.game.correctIdx; const bad = (ok + 1) % 8;
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: bad, elapsedMs: 0 });
-  assert.equal(room.phase, 'playing');
-  assert.equal(conns[2].last('room').locked, 2);
-  room.handle(conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 5000 });
-  assert.equal(room.phase, 'reveal');
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx; const bad = (ok + 1) % 8;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: bad, elapsedMs: 0 });
+  assert.equal(ph(room), 'playing');
+  assert.equal(conns[2].last('state').locked, 2);
+  G(room, conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 5000 });
+  assert.equal(ph(room), 'reveal');
   const rv = conns[0].last('reveal');
   assert.equal(rv.reason, 'all');
   assert.equal(rv.correct.index, ok);
@@ -68,15 +73,15 @@ test('全員 ready → 開播；全員鎖定 → 提早揭曉並計分', async (
 test('過半鎖定 → 開始倒數且只觸發一次；倒數結束揭曉', async () => {
   const { room, conns } = setup(4, { quorumMode: 'half', quorumSecs: 0.15 });
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx;
-  room.handle(conns[0], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
+  const idx = room.game.g.idx;
+  G(room, conns[0], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
   assert.equal(conns[3].all('quorum').length, 0, '2/4 還沒過半');
-  room.handle(conns[2], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
+  G(room, conns[2], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
   assert.equal(conns[3].all('quorum').length, 1, '3/4 過半 → 開始倒數');
-  assert.equal(room.phase, 'playing');
+  assert.equal(ph(room), 'playing');
   await sleep(250);
-  assert.equal(room.phase, 'reveal');
+  assert.equal(ph(room), 'reveal');
   assert.equal(conns[3].last('reveal').reason, 'quorum');
   assert.equal(conns[3].all('quorum').length, 1);
 });
@@ -84,12 +89,12 @@ test('過半鎖定 → 開始倒數且只觸發一次；倒數結束揭曉', asy
 test('門檻「關閉」時不倒數；已選未鎖定的在揭曉時以最慢速度計入', () => {
   const { room, conns, players } = setup(3, { quorumMode: 'off', scoreMode: 'speed' });
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx; const ok = room.game.correctIdx;
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'select', idx, choice: ok }); // 只選未鎖
-  room.handle(conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'select', idx, choice: ok }); // 只選未鎖
+  G(room, conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
   assert.equal(conns[0].all('quorum').length, 0);
-  room.handle(conns[0], { t: 'forceReveal', idx });
+  G(room, conns[0], { t: 'forceReveal', idx });
   const rv = conns[0].last('reveal');
   const r1 = rv.rows.find((r) => r.id === players[1].id);
   assert.equal(r1.correct, true);
@@ -98,49 +103,48 @@ test('門檻「關閉」時不倒數；已選未鎖定的在揭曉時以最慢�
 
 test('硬性截止：沒人作答也會揭曉', async () => {
   const { room, conns } = setup(2, { duration: 0.05, graceSecs: 0 });
-  room.settings.duration = 0.05;
   start(room, conns); readyAll(room, conns);
   await sleep(250);
-  assert.equal(room.phase, 'reveal');
+  assert.equal(ph(room), 'reveal');
   assert.equal(conns[0].last('reveal').reason, 'time');
 });
 
 test('預載逾時也會開播（有人沒 ready）', async () => {
   const { room, conns } = setup(2);
   start(room, conns);
-  room.handle(conns[0], { t: 'ready', idx: room.game.idx });
-  assert.equal(room.phase, 'preload');
+  G(room, conns[0], { t: 'ready', idx: room.game.g.idx });
+  assert.equal(ph(room), 'preload');
   await sleep(120);
-  assert.equal(room.phase, 'playing');
+  assert.equal(ph(room), 'playing');
 });
 
 test('elapsed 會被夾在伺服器看到的時間以內（不能亂報超快）', () => {
   const { room, conns, players } = setup(2, { scoreMode: 'speed' });
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx; const ok = room.game.correctIdx;
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: -99999 });
-  room.handle(conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 99999999 });
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: -99999 });
+  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 99999999 });
   const rv = conns[0].last('reveal');
   const a = rv.rows.find((r) => r.id === players[0].id);
   const b = rv.rows.find((r) => r.id === players[1].id);
   assert.ok(a.ms >= 0);
-  assert.ok(b.ms <= room.game.windowMs);
+  assert.ok(b.ms <= room.game.g.windowMs);
 });
 
 test('錯誤的題號、錯誤的選項索引會被忽略', () => {
   const { room, conns } = setup(2);
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx;
-  room.handle(conns[0], { t: 'lock', idx: idx + 5, choice: 0 });
-  room.handle(conns[0], { t: 'lock', idx, choice: 99 });
-  room.handle(conns[0], { t: 'lock', idx, choice: 'x' });
-  assert.equal(conns[1].last('room').locked, 0);
+  const idx = room.game.g.idx;
+  G(room, conns[0], { t: 'lock', idx: idx + 5, choice: 0 });
+  G(room, conns[0], { t: 'lock', idx, choice: 99 });
+  G(room, conns[0], { t: 'lock', idx, choice: 'x' });
+  assert.equal(conns[1].last('state').locked, 0);
 });
 
 test('非房主不能開始／跳題；房主離線後移轉', () => {
   const { room, conns, players } = setup(3);
   room.handle(conns[1], { t: 'start' });
-  assert.equal(room.phase, 'lobby');
+  assert.equal(ph(room), 'lobby');
   room.disconnect(conns[0]);
   assert.equal(room.hostId, players[1].id);
 });
@@ -156,16 +160,16 @@ test('房主很快重連（重新整理）會拿回房主；太久才回來則�
 test('斷線重連：用同一個 playerId 回座並保留分數', async () => {
   const { room, conns, players } = setup(2);
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx; const ok = room.game.correctIdx;
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  const score = players[0].score;
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  const score = seat(room, players[0]).score;
   assert.ok(score > 0);
   room.disconnect(conns[0]);
   const c2 = fakeConn();
   const r = room.join(c2, { playerId: players[0].id, nick: '別的名字' });
   assert.equal(r.player.id, players[0].id);
-  assert.equal(r.player.score, score);
+  assert.equal(seat(room, r.player).score, score);
   assert.equal(r.player.nick, 'P1');
   assert.ok(c2.last('reveal'), '重連後補送目前的揭曉畫面');
   assert.equal(room.players.size, 2);
@@ -174,27 +178,27 @@ test('斷線重連：用同一個 playerId 回座並保留分數', async () => {
 test('離線超過 staleMs 不算進鎖定分母：剩下的人都鎖定就揭曉', async () => {
   const { room, conns } = setup(3, { quorumMode: 'off' });
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx;
+  const idx = room.game.g.idx;
   room.disconnect(conns[2]);
-  room.handle(conns[0], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
-  assert.equal(room.phase, 'playing', '剛離線 10 秒內仍算在分母');
+  G(room, conns[0], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: 0, elapsedMs: 0 });
+  assert.equal(ph(room), 'playing', '剛離線 10 秒內仍算在分母');
   await sleep(120);
   room.tick();
-  assert.equal(room.phase, 'reveal');
+  assert.equal(ph(room), 'reveal');
 });
 
 test('影片無法播放：個人略過不計分；多數失敗 → 換下一題', () => {
   const { room, conns, players } = setup(3);
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx;
-  room.handle(conns[2], { t: 'playError', idx });
-  assert.equal(room.phase, 'playing');
-  assert.equal(players[2].failed, true);
-  room.handle(conns[1], { t: 'playError', idx });
+  const idx = room.game.g.idx;
+  G(room, conns[2], { t: 'playError', idx });
+  assert.equal(ph(room), 'playing');
+  assert.equal(seat(room, players[2]).failed, true);
+  G(room, conns[1], { t: 'playError', idx });
   assert.ok(conns[0].last('skipped'));
-  assert.equal(room.game.idx, idx, '換備用題，題號不增加');
-  assert.equal(room.phase, 'preload');
+  assert.equal(room.game.g.idx, idx, '換備用題，題號不增加');
+  assert.equal(ph(room), 'preload');
 });
 
 test('打字搜尋模式：以 key 判分', () => {
@@ -203,9 +207,9 @@ test('打字搜尋模式：以 key 判分', () => {
   assert.ok(conns[0].last('works').list.length > 10);
   assert.equal(conns[0].last('question').choices, null);
   readyAll(room, conns);
-  const idx = room.game.idx;
-  room.handle(conns[0], { t: 'lock', idx, key: room.game.correctKey, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, key: 'nope', elapsedMs: 0 });
+  const idx = room.game.g.idx;
+  G(room, conns[0], { t: 'lock', idx, key: room.game.g.correctKey, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, key: 'nope', elapsedMs: 0 });
   const rv = conns[0].last('reveal');
   assert.equal(rv.rows.find((r) => r.id === players[0].id).correct, true);
   assert.equal(rv.rows.find((r) => r.id === players[1].id).correct, false);
@@ -213,26 +217,25 @@ test('打字搜尋模式：以 key 判分', () => {
 
 test('完整一局：揭曉 → 下一題 → 最終排行 → 再來一局', () => {
   const { room, conns, players } = setup(2, { count: 3 });
-  room.settings.count = 3;
   start(room, conns);
   for (let i = 0; i < 3; i++) {
     readyAll(room, conns);
-    const idx = room.game.idx; const ok = room.game.correctIdx;
-    room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 1000 });
-    room.handle(conns[1], { t: 'lock', idx, choice: (ok + 1) % 8, elapsedMs: 1000 });
-    assert.equal(room.phase, 'reveal');
+    const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+    G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 1000 });
+    G(room, conns[1], { t: 'lock', idx, choice: (ok + 1) % 8, elapsedMs: 1000 });
+    assert.equal(ph(room), 'reveal');
     assert.equal(conns[0].last('reveal').last, i === 2);
-    room.handle(conns[1], { t: 'next' }); // 非房主，無效
-    assert.equal(room.phase, 'reveal');
-    room.handle(conns[0], { t: 'next' });
+    G(room, conns[1], { t: 'next' }); // 非房主，無效
+    assert.equal(ph(room), 'reveal');
+    G(room, conns[0], { t: 'next' });
   }
-  assert.equal(room.phase, 'final');
+  assert.equal(ph(room), 'final');
   const f = conns[0].last('final');
   assert.equal(f.ranking[0].id, players[0].id);
   assert.equal(f.ranking[0].correct, 3);
-  room.handle(conns[0], { t: 'again' });
-  assert.equal(room.phase, 'lobby');
-  assert.equal(players[0].score, 0);
+  room.handle(conns[0], { t: 'lobby' });
+  assert.equal(ph(room), 'lobby');
+  assert.equal(room.game, null, '回到大廳，遊戲物件已丟掉');
 });
 
 test('踢人：被踢者不能再用同一 id 加入', () => {
@@ -248,11 +251,11 @@ test('中途加入：先觀戰，下一題才參與；房主可關閉', () => {
   start(room, conns); readyAll(room, conns);
   const late = fakeConn();
   const lp = room.join(late, { nick: '遲到' }).player;
-  assert.equal(lp.spectator, true);
+  assert.equal(seat(room, lp).spectator, true);
   assert.ok(late.last('question'), '補送目前題目');
-  room.handle(late, { t: 'lock', idx: room.game.idx, choice: 0 });
-  assert.equal(lp.lock, null, '觀戰者不能作答');
-  room.settings.allowLateJoin = false;
+  G(room, late, { t: 'lock', idx: room.game.g.idx, choice: 0 });
+  assert.equal(seat(room, lp).lock, null, '觀戰者不能作答');
+  room.settings.songguess.allowLateJoin = false;
   assert.equal(room.join(fakeConn(), { nick: '再遲到' }).error.code, 'STARTED');
 });
 
@@ -269,31 +272,31 @@ test('設定夾限：不合法的值會被修正', () => {
 test('主畫面模式：沒有主畫面不能開始；以主畫面的 ready 為準', () => {
   const { room, conns } = setup(2, { playMode: 'screen' });
   start(room, conns);
-  assert.equal(room.phase, 'lobby');
+  assert.equal(ph(room), 'lobby');
   assert.equal(conns[0].last('error').code, 'NO_SCREEN');
   const sc = fakeConn();
   room.joinScreen(sc);
   start(room, conns);
-  assert.equal(room.phase, 'preload');
-  room.handle(sc, { t: 'ready', idx: room.game.idx });
-  assert.equal(room.phase, 'playing', '手機不用 ready');
-  room.handle(sc, { t: 'playing', idx: room.game.idx });
+  assert.equal(ph(room), 'preload');
+  G(room, sc, { t: 'ready', idx: room.game.g.idx });
+  assert.equal(ph(room), 'playing', '手機不用 ready');
+  G(room, sc, { t: 'playing', idx: room.game.g.idx });
   assert.ok(sc.last('t0').t0 > 0);
 });
 
 test('分頁被關掉：用同暱稱重新加入，接回離線的座位（保留分數、不會變成「名2」）', () => {
   const { room, conns, players } = setup(2);
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx; const ok = room.game.correctIdx;
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  const score = players[1].score;
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  const score = seat(room, players[1]).score;
   assert.ok(score > 0);
   room.disconnect(conns[1]); // 手機把網頁殺掉
   const c2 = fakeConn();
   const r = room.join(c2, { nick: 'p2' }); // 沒有 playerId，只有暱稱（大小寫不拘）
   assert.equal(r.player.id, players[1].id);
-  assert.equal(r.player.score, score);
+  assert.equal(seat(room, r.player).score, score);
   assert.equal(room.players.size, 2);
   assert.equal(c2.last('joined').playerId, players[1].id);
   // 對方還在線上時，同暱稱不能搶座位
@@ -315,31 +318,30 @@ test('離線玩家保留很久（大廳 10 分鐘、遊戲中 1 小時），不�
 
 import { bank } from '../server/bank.mjs';
 const idMap = () => { const m = new Map(); for (const l of Object.values(bank)) for (const q of l) m.set(q.id, q); return m; };
-const roundtrip = (room, timing = FAST) => Room.restore(JSON.parse(JSON.stringify(room.serialize())), idMap(), timing);
+const roundtrip = (room, timing = FAST) => Room.restore(JSON.parse(JSON.stringify(room.serialize())), { idMap: idMap() }, timing);
 
 test('伺服器重啟：房間存檔還原後，玩家用 playerId 重連，分數／鎖定／題目都在，遊戲可以繼續', () => {
   const { room, conns, players } = setup(3, { quorumMode: 'off', count: 3 });
-  room.settings.count = 3;
   start(room, conns); readyAll(room, conns);
-  let idx = room.game.idx; let ok = room.game.correctIdx;
+  let idx = room.game.g.idx; let ok = room.game.g.correctIdx;
   // 第 1 題：兩個人答，一個人沒答 → 手動揭曉，累積分數
-  room.handle(conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
-  room.handle(conns[1], { t: 'lock', idx, choice: (ok + 1) % 8, elapsedMs: 0 });
-  room.handle(conns[0], { t: 'forceReveal', idx });
-  room.handle(conns[0], { t: 'next' });
+  G(room, conns[0], { t: 'lock', idx, choice: ok, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx, choice: (ok + 1) % 8, elapsedMs: 0 });
+  G(room, conns[0], { t: 'forceReveal', idx });
+  G(room, conns[0], { t: 'next' });
   readyAll(room, conns);
-  idx = room.game.idx; ok = room.game.correctIdx;
-  room.handle(conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 1000 }); // 第 2 題進行中，只有 P3 鎖定
-  const score0 = players[0].score; assert.ok(score0 > 0);
+  idx = room.game.g.idx; ok = room.game.g.correctIdx;
+  G(room, conns[2], { t: 'lock', idx, choice: ok, elapsedMs: 1000 }); // 第 2 題進行中，只有 P3 鎖定
+  const score0 = seat(room, players[0]).score; assert.ok(score0 > 0);
 
   const r2 = roundtrip(room); // ← 伺服器重啟
-  assert.equal(r2.phase, 'playing');
-  assert.equal(r2.game.idx, idx);
+  assert.equal(ph(r2), 'playing');
+  assert.equal(r2.game.g.idx, idx);
   assert.equal(r2.hostId, players[0].id);
-  assert.equal(r2.players.get(players[0].id).score, score0, '分數保留');
-  assert.ok(r2.players.get(players[2].id).lock, '已鎖定的答案保留');
+  assert.equal(r2.game.seats.get(players[0].id).score, score0, '分數保留');
+  assert.ok(r2.game.seats.get(players[2].id).lock, '已鎖定的答案保留');
   assert.equal(r2.players.get(players[0].id).connected, false, '還原後先視為離線');
-  assert.equal(r2.game.correctIdx, ok, '正解索引保留（選項順序一致）');
+  assert.equal(r2.game.g.correctIdx, ok, '正解索引保留（選項順序一致）');
 
   // 玩家重連
   const nc = [fakeConn(), fakeConn(), fakeConn()];
@@ -348,34 +350,34 @@ test('伺服器重啟：房間存檔還原後，玩家用 playerId 重連，分�
   assert.equal(nc[2].last('you').locked, true);
   assert.equal(r2.hostId, players[0].id);
   // 繼續玩：其他人鎖定 → 全員鎖定 → 揭曉 → 下一題 → 結束
-  r2.handle(nc[0], { t: 'lock', idx, choice: ok, elapsedMs: 500 });
-  r2.handle(nc[1], { t: 'lock', idx, choice: ok, elapsedMs: 500 });
-  assert.equal(r2.phase, 'reveal');
+  G(r2, nc[0], { t: 'lock', idx, choice: ok, elapsedMs: 500 });
+  G(r2, nc[1], { t: 'lock', idx, choice: ok, elapsedMs: 500 });
+  assert.equal(ph(r2), 'reveal');
   assert.ok(nc[0].last('reveal').rows.find((r) => r.id === players[0].id).total > score0, '還原後分數持續累加');
-  r2.handle(nc[0], { t: 'next' });
-  r2.game.idx; readyAll(r2, nc);
-  const i3 = r2.game.idx;
-  nc.forEach((c) => r2.handle(c, { t: 'lock', idx: i3, choice: 0, elapsedMs: 0 }));
-  r2.handle(nc[0], { t: 'next' });
-  assert.equal(r2.phase, 'final');
+  G(r2, nc[0], { t: 'next' });
+  r2.game.g.idx; readyAll(r2, nc);
+  const i3 = r2.game.g.idx;
+  nc.forEach((c) => G(r2, c, { t: 'lock', idx: i3, choice: 0, elapsedMs: 0 }));
+  G(r2, nc[0], { t: 'next' });
+  assert.equal(ph(r2), 'final');
   r2.destroy();
 });
 
 test('還原：揭曉中與最終排行榜階段也能接回', () => {
   const { room, conns } = setup(2, { quorumMode: 'off' });
   start(room, conns); readyAll(room, conns);
-  const idx = room.game.idx; const ok = room.game.correctIdx;
-  conns.forEach((c) => room.handle(c, { t: 'lock', idx, choice: ok, elapsedMs: 0 }));
-  assert.equal(room.phase, 'reveal');
+  const idx = room.game.g.idx; const ok = room.game.g.correctIdx;
+  conns.forEach((c) => G(room, c, { t: 'lock', idx, choice: ok, elapsedMs: 0 }));
+  assert.equal(ph(room), 'reveal');
   const r2 = roundtrip(room);
-  assert.equal(r2.phase, 'reveal');
+  assert.equal(ph(r2), 'reveal');
   const c = fakeConn();
   r2.join(c, { playerId: [...r2.players.keys()][0], nick: 'x' });
   assert.ok(c.last('reveal'), '重連後補送揭曉畫面');
   r2.destroy();
-  room.handle(conns[0], { t: 'end' });
+  G(room, conns[0], { t: 'end' });
   const r3 = roundtrip(room);
-  assert.equal(r3.phase, 'final');
+  assert.equal(ph(r3), 'final');
   r3.destroy();
 });
 
@@ -383,9 +385,84 @@ test('還原：題庫更新讓那一題不見 → 安全地回到大廳（不當
   const { room, conns } = setup(2);
   start(room, conns); readyAll(room, conns);
   const data = JSON.parse(JSON.stringify(room.serialize()));
-  const r2 = Room.restore(data, new Map(), FAST); // 空題庫
-  assert.equal(r2.phase, 'lobby');
+  const r2 = Room.restore(data, { idMap: new Map() }, FAST); // 空題庫
+  assert.equal(ph(r2), 'lobby');
   assert.equal(r2.game, null);
   assert.equal(r2.players.size, 2);
   r2.destroy();
+});
+
+// ===== J-POP「一曲兩用」（猜歌名／猜歌手）=====
+import { choiceOf, buildChoices, ASK_PROMPT, assignAsk } from '../js/questions.js';
+const hasJpop = new Set((bank.song || []).map((q) => q.answer.artist)).size >= 12; // 需要夠多歌手才湊得出 8 個不重複選項
+
+test('J-POP 選項：猜歌名＝歌名（小字歌手）；猜歌手＝歌手（小字英文名）', { skip: !hasJpop }, () => {
+  const q = bank.song.find((x) => x.answer.artistEn) || bank.song[0];
+  assert.deepEqual(choiceOf(q, 'song', 'title'), { main: q.answer.title, sub: q.answer.artist });
+  assert.deepEqual(choiceOf(q, 'song', 'artist'), { main: q.answer.artist, sub: q.answer.artistEn || '' });
+  for (const ask of ['title', 'artist']) {
+    const ch = buildChoices(q, bank.song, 'song', { ask });
+    assert.equal(ch.length, 8);
+    assert.equal(new Set(ch.map((c) => c.main)).size, 8, '選項互不重複');
+    assert.equal(ch.filter((c) => c.correct).length, 1);
+    assert.equal(ch.find((c) => c.correct).main, choiceOf(q, 'song', ask).main);
+  }
+});
+
+test('J-POP 單人：assignAsk 依模式指定猜法並換掉 prompt', { skip: !hasJpop }, () => {
+  const qs = bank.song.slice(0, 40);
+  assert.ok(assignAsk(qs, 'title').every((q) => q.ask === 'title' && q.prompt === ASK_PROMPT.title));
+  assert.ok(assignAsk(qs, 'artist').every((q) => q.ask === 'artist' && q.prompt === ASK_PROMPT.artist));
+  const mixed = assignAsk(qs, 'mixed');
+  assert.ok(mixed.some((q) => q.ask === 'title') && mixed.some((q) => q.ask === 'artist'), '混合會兩種都出現');
+  const anime = assignAsk([{ kind: 'OP', prompt: 'x' }], 'artist');
+  assert.equal(anime[0].ask, undefined, '非 J-POP 題目不受影響');
+});
+
+test('J-POP 多人（8 選 1）：每題帶 ask 與對應 prompt，正解索引判分', { skip: !hasJpop }, () => {
+  const { room, conns, players } = setup(2, { categories: ['song'], jpopAsk: 'mixed', quorumMode: 'off', count: 4 });
+  start(room, conns);
+  const seen = new Set();
+  for (let i = 0; i < 4; i++) {
+    readyAll(room, conns);
+    const q = conns[0].last('question');
+    assert.ok(['title', 'artist'].includes(q.ask));
+    assert.equal(q.prompt, ASK_PROMPT[q.ask]);
+    assert.equal(q.choices.length, 8);
+    seen.add(q.ask);
+    const ok = room.game.g.correctIdx;
+    const gold = room.game.g.q.answer;
+    assert.equal(q.choices[ok].main, q.ask === 'artist' ? gold.artist : gold.title, '正解選項顯示的是歌手／歌名');
+    G(room, conns[0], { t: 'lock', idx: q.idx, choice: ok, elapsedMs: 0 });
+    G(room, conns[1], { t: 'lock', idx: q.idx, choice: (ok + 1) % 8, elapsedMs: 0 });
+    const rv = conns[0].last('reveal');
+    assert.equal(rv.answer.title, gold.title, '揭曉時歌名與歌手都帶出');
+    assert.equal(rv.answer.artist, gold.artist);
+    assert.equal(rv.rows.find((r) => r.id === players[0].id).correct, true);
+    G(room, conns[0], { t: 'next' });
+  }
+  assert.equal(ph(room), 'final');
+});
+
+test('J-POP 多人（打字搜尋）：猜歌手用 a: 鍵、猜歌名用 t: 鍵；候選清單分兩份', { skip: !hasJpop }, () => {
+  const { room, conns, players } = setup(2, { categories: ['song'], jpopAsk: 'artist', answerMode: 'typing', quorumMode: 'off' });
+  start(room, conns);
+  const wa = conns[0].all('works');
+  assert.deepEqual(wa.map((m) => m.ask), ['artist'], 'jpopAsk=artist 只送歌手清單');
+  assert.ok(wa[0].list.length >= 10 && wa[0].list[0].k.startsWith('a:'));
+  readyAll(room, conns);
+  const q = conns[0].last('question');
+  assert.equal(q.ask, 'artist'); assert.equal(q.choices, null);
+  G(room, conns[0], { t: 'lock', idx: q.idx, key: room.game.g.correctKey, elapsedMs: 0 });
+  G(room, conns[1], { t: 'lock', idx: q.idx, key: 'a:不存在的歌手', elapsedMs: 0 });
+  const rv = conns[0].last('reveal');
+  assert.equal(rv.rows.find((r) => r.id === players[0].id).correct, true);
+  assert.equal(rv.rows.find((r) => r.id === players[1].id).correct, false);
+  assert.ok(rv.rows.find((r) => r.id === players[0].id).pick, '揭曉列出你選的是什麼（由候選清單查出）');
+});
+
+test('J-POP 不受「歌曲類型」勾選影響（沒有 OP/ED 概念）', { skip: !hasJpop }, () => {
+  const { room, conns } = setup(1, { categories: ['song'], kinds: ['OP'] });
+  start(room, conns);
+  assert.equal(ph(room), 'preload', '只勾 OP 也能出 J-POP');
 });

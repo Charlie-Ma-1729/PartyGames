@@ -1,0 +1,37 @@
+/* 你說我猜 */
+.hu { max-width: 760px; }
+.hu-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 18px; }
+.hu-chip { background: var(--card); border-radius: 999px; padding: 6px 16px; }
+.hu-timer { font-size: clamp(40px, 12vw, 72px); font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1; min-width: 2.2em; }
+.hu-timer.low { color: #ff6b81; animation: hupulse 0.8s ease-in-out infinite; }
+@keyframes hupulse { 50% { transform: scale(1.12); } }
+.hu-roles { color: var(--muted); font-size: 17px; margin: 14px 0 4px; }
+.hu-roles b { color: var(--text); }
+.hu-panel { margin: 14px 0; }
+.hu-big { font-size: clamp(28px, 7vw, 46px); font-weight: 800; margin: 18px 0 8px; }
+.hu-tip { color: var(--muted); font-size: 16px; line-height: 1.6; }
+.hu-caption { color: var(--muted); font-size: 16px; }
+.hu-count { font-size: clamp(90px, 28vw, 200px); font-weight: 900; line-height: 1; margin: 8px 0; color: #ffd166; text-shadow: 0 6px 40px rgba(255, 209, 102, 0.35); }
+#hu-describer .hu-word {
+  display: flex; align-items: center; justify-content: center; min-height: 34vh; margin: 12px 0 18px; padding: 10px 14px; border-radius: 24px;
+  background: linear-gradient(135deg, #2a1f5c, #6b2a7a 55%, #b0306a); font-weight: 900; line-height: 1.25; word-break: break-word; overflow-wrap: anywhere;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+.hu-btns { display: grid; grid-template-columns: 1fr 1.6fr; gap: 14px; }
+.hu-btn { font-size: clamp(22px, 6vw, 34px); font-weight: 800; padding: 22px 10px; border-radius: 20px; color: #fff; }
+.hu-btn.ok { background: linear-gradient(135deg, #1fa971, #3ddc97); color: #06231a; box-shadow: 0 8px 24px rgba(61, 220, 151, 0.35); }
+.hu-btn.pass { background: #3a3d70; }
+.hu-btn:disabled { opacity: 0.5; }
+.hu-btn:active:not(:disabled) { transform: translateY(2px); }
+.hu-words { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0 18px; }
+.hu-w { padding: 6px 14px; border-radius: 999px; background: #25274a; border: 1px solid #3a3d70; font-size: 16px; }
+.hu-w.ok { background: rgba(61, 220, 151, 0.2); border-color: var(--ok); }
+.hu-w.no { opacity: 0.6; }
+#hu-result h3 { color: var(--muted); font-size: 15px; margin: 14px 0 6px; }
+#hu-result .rank-table { margin: 0 auto 14px; }
+.hu-host { margin-top: 26px; }
+.hu-how { line-height: 1.7; }
+@media (max-width: 800px) {
+  .hu-btns { position: sticky; bottom: 8px; }
+  #hu-describer .hu-word { min-height: 30vh; }
+}

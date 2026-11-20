@@ -1,5 +1,6 @@
-// 猜歌大賽多人伺服器：靜態檔（白名單）+ WebSocket（/ws）+ /healthz
-// 環境變數：PORT（6713）、HOST（0.0.0.0）、ALLOWED_ORIGINS（逗號分隔，例如 https://yourname.github.io）、MAX_ROOMS（200）
+// 派對遊戲伺服器：靜態檔（白名單）+ WebSocket（/ws）+ 配音大師的檔案 API（/api/dubbing、/media/dubbing）+ /healthz
+// 環境變數：PORT（6713）、HOST（0.0.0.0）、ALLOWED_ORIGINS（逗號分隔，例如 https://yourname.github.io）、MAX_ROOMS（200）、
+//          CREATE_PASSWORD（設了之後，開房間要輸入這組密碼）、DUBBING_DIR、DUBBING_KEEP_HOURS、FFMPEG_PATH
 import http from 'node:http';
 import { readFileSync, statSync, writeFileSync, renameSync, mkdirSync, existsSync } from 'node:fs';
 import { gzipSync } from 'node:zlib';
@@ -9,12 +10,14 @@ import { WebSocketServer } from 'ws';
 import { ROOT, bank } from './bank.mjs';
 import { Room } from './room.mjs';
 import { parseMsg, normCode, randomCode, cleanNick } from './protocol.mjs';
+import { handleDubbingHttp, cleanupOld } from './media.mjs';
 
 const PORT = Number(process.env.PORT || 6713);
 const HOST = process.env.HOST || '0.0.0.0';
 const MAX_ROOMS = Number(process.env.MAX_ROOMS || 200);
 const ALLOWED = (process.env.ALLOWED_ORIGINS || '').split(',').map((s) => s.trim()).filter(Boolean);
 const ROOM_IDLE_MS = 30 * 60 * 1000;
+const CREATE_PASSWORD = process.env.CREATE_PASSWORD || ''; // 空 = 任何人都能開房間
 // 房間狀態存檔：伺服器重啟（systemctl restart、更新程式、當機）後把房間還原，玩家的瀏覽器會自動重連、接回原本的座位與分數
 const STATE_FILE = process.env.STATE_FILE || path.join(ROOT, 'state', 'rooms.json');
 const STATE_SAVE_MS = Number(process.env.STATE_SAVE_MS || 2000);
@@ -27,20 +30,23 @@ export const rooms = new Map();
 // ===== 靜態檔（只開放白名單路徑）=====
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 const ALLOW_PATH = [
-  /^\/$/, /^\/index\.html$/, /^\/css\/[\w.-]+\.css$/, /^\/js\/(?:multi\/)?[\w.-]+\.js$/, /^\/data\/(?:anime|song|ost|movie)\.json$/,
+  /^\/$/, /^\/index\.html$/, /^\/css\/[\w.-]+\.css$/, /^\/js\/(?:[\w-]+\/)*[\w.-]+\.js$/, /^\/data\/(?:anime|song|tw|en|ost|movie)\.json$/, /^\/preview\.html$/,
 ];
 const fileCache = new Map(); // path → {mtime, raw, gz}
 
 function serveStatic(req, res) {
   let url;
   try { url = new URL(req.url, 'http://x'); } catch { res.writeHead(400).end(); return; }
-  let p = decodeURIComponent(url.pathname);
+  let p;
+  try { p = decodeURIComponent(url.pathname); } catch { res.writeHead(400).end(); return; }
   if (url.pathname === '/healthz') {
     let players = 0;
     for (const r of rooms.values()) players += r.players.size;
     res.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({ ok: true, rooms: rooms.size, players, questions: Object.values(bank).reduce((s, a) => s + a.length, 0) }));
     return;
   }
+  if (p === '/api/config') { res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' }).end(JSON.stringify({ needPassword: !!CREATE_PASSWORD })); return; }
+  if ((p.startsWith('/api/') || p.startsWith('/media/')) && handleDubbingHttp(req, res, url, rooms)) return;
   if (!ALLOW_PATH.some((re) => re.test(p))) { res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }).end('Not found'); return; }
   if (p === '/') p = '/index.html';
   const file = path.join(ROOT, p);
@@ -65,7 +71,7 @@ function serveStatic(req, res) {
 const server = http.createServer(serveStatic);
 
 // ===== WebSocket =====
-const wss = new WebSocketServer({ noServer: true, maxPayload: 4096 });
+const wss = new WebSocketServer({ noServer: true, maxPayload: 16384 });
 
 function originOk(req) {
   const origin = req.headers.origin;
@@ -120,6 +126,7 @@ wss.on('connection', (ws) => {
       return;
     }
     if (msg.t === 'create') {
+      if (CREATE_PASSWORD && msg.password !== CREATE_PASSWORD) { conn.send({ t: 'error', code: 'PASSWORD', msg: '開房間的密碼不正確' }); return; }
       if (!cleanNick(msg.nick)) { conn.send({ t: 'error', code: 'NICK', msg: '請輸入暱稱' }); return; }
       const room = newRoom();
       if (!room) { conn.send({ t: 'error', code: 'BUSY', msg: '伺服器房間已滿，請稍後再試' }); return; }
@@ -194,10 +201,11 @@ export function loadState() {
     const d = JSON.parse(readFileSync(STATE_FILE, 'utf8'));
     const idMap = new Map();
     for (const list of Object.values(bank)) for (const q of list) idMap.set(q.id, q);
+    const env = { idMap };
     for (const rd of d.rooms || []) {
       try {
         if (!rd.players || !rd.players.length || rooms.has(rd.code)) continue;
-        rooms.set(rd.code, Room.restore(rd, idMap));
+        rooms.set(rd.code, Room.restore(rd, env));
         n++;
       } catch (e) { log(`還原房間 ${rd && rd.code} 失敗，略過`, e && e.stack ? e.stack : e); }
     }
@@ -220,7 +228,9 @@ export function listen(port = PORT, host = HOST) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   loadState();
   setInterval(saveState, STATE_SAVE_MS);
+  cleanupOld();
+  setInterval(cleanupOld, 3600 * 1000).unref();
   process.on('SIGTERM', () => shutdown('SIGTERM'));
   process.on('SIGINT', () => shutdown('SIGINT'));
-  listen().then(() => console.log(`猜歌大賽伺服器已啟動：http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}（WebSocket 路徑 /ws）`));
+  listen().then(() => console.log(`派對遊戲伺服器已啟動：http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}（WebSocket 路徑 /ws）`));
 }

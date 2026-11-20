@@ -2,3 +2,7 @@ node_modules/
 *.log
 data/cache/*.log
 state/
+# 配音大師：錄音與合成成品是暫存檔；影片素材很大，放在伺服器上就好，不進 git
+data/dubbing/temp_audio/
+data/dubbing/outputs/
+data/dubbing/videos/

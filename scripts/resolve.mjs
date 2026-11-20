@@ -3,12 +3,14 @@
 //  - 結果寫入 data/cache/resolved.json（下次只處理沒處理過的）
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
-import { parseSeeds, allSongs, norm, CACHE_DIR } from './lib.mjs';
+import { parseSeeds, allSongs, norm, CACHE_DIR, CAT, SONG_KINDS } from './lib.mjs';
+const isSong = (k) => SONG_KINDS.includes(k); // 歌名／歌手類題庫（J-POP、華語、英語）
 
 const args = process.argv.slice(2);
 const FORCE = args.includes('--force');
 const RETRY = args.includes('--retry-failed');
 const REDO_WEAK = args.includes('--redo-weak');
+const REDO_SUS = args.includes('--redo-sus'); // 重查翻唱／非官方頻道的歌
 const LIMIT = args.includes('--limit') ? Number(args[args.indexOf('--limit') + 1]) : Infinity;
 const ONLY = args.includes('--only') ? args[args.indexOf('--only') + 1] : null;
 
@@ -24,7 +26,11 @@ const AUDIO_FIRST = /ノンクレ|non-?credit|クレジットなし|ノンテロ
 const MV_LIKE = /\bmv\b|music ?video|ミュージックビデオ|short ver|ショートver/i;
 // 現場版、演唱會、帶日期的場次、生日派對、樂團/管弦翻奏：一律不要（開頭常有 MC 談話或觀眾聲）
 const LIVE_HARD = /\b(19|20)\d{2}[.\/-]\d{1,2}[.\/-]\d{1,2}\b|台北|taipei|台湾|from .*(party|live|tour|concert)|birthday|周年|anniversary live|ライブ映像|live ?ver|ライブ ?ver|\blive\b|ライブ|concert|コンサート|brass|オルケスター|ブラス|吹奏楽|演奏|バンドで|粗品|流田|fes\b|弦オケ|オケ|オーケストラ|strings|draft|編曲[)）]|大学|研究会|サークル|吹奏|アンサンブル|ensemble|quartet|カルテット/i;
-const OFFICIAL_CH = /official|公式|topic|lantis|aniplex|king ?records|sony ?music|avex|victor|warner|universal|pony ?canyon|toho|kadokawa|bandai|flying ?dog|columbia|nippon|テレビ|東宝|スタジオジブリ|ジブリ|tv ?asahi|テレ朝|テレビ朝日|avex|epic|toy'?s|ミュージック|music|records|レコード/i;
+// 華語／英語歌的官方頻道：只認唱片公司、官方、Topic（自動產生的官方音源）；頻道名只有「Music／音樂」的歌詞頻道常是翻唱，不算
+const OFFICIAL_SONG = /official|官方|公式|vevo|- topic$|warner|華納|rock records|滾石|相信音樂|bin music|杰威爾|jvr|sony|索尼|universal|環球|\bemi\b|華研|himusic|艾迴|avex|種子音樂|seed music|福茂|飛碟|科藝|寬宏|eternal|republic|atlantic|columbia|interscope|capitol|rca|island records|def jam|epic|parlophone|polydor|geffen|virgin|mercury/i;
+// 翻唱、現場、伴奏、演奏版的標記（標題出現就大幅扣分）
+const COVER_MARK = /原唱|翻唱|翻自|翻奏|\bcovers?\b|\bcovered\b|カバー|歌ってみた|弾いてみた|\bver\.? by\b|重新演繹|致敬|伴奏|karaoke|卡拉|\blive\b|演唱會|演唱会|現場|ライブ|音樂節|remix|nightcore|\b8d\b|slowed|sped up|reverb|acoustic|tribute|dance practice|reaction/i;
+const OFFICIAL_CH = /official|公式|音樂|唱片|娛樂|vevo|topic|lantis|aniplex|king ?records|sony ?music|avex|victor|warner|universal|pony ?canyon|toho|kadokawa|bandai|flying ?dog|columbia|nippon|テレビ|東宝|スタジオジブリ|ジブリ|tv ?asahi|テレ朝|テレビ朝日|avex|epic|toy'?s|ミュージック|music|records|レコード/i;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -47,7 +53,7 @@ function parseViews(t) {
 }
 
 async function search(q) {
-  const url = 'https://www.youtube.com/results?hl=ja&gl=JP&search_query=' + encodeURIComponent(q);
+  const url = `https://www.youtube.com/results?hl=${CAT === 'tw' ? 'zh-TW' : CAT === 'en' ? 'en' : 'ja'}&gl=${CAT === 'tw' ? 'TW' : CAT === 'en' ? 'US' : 'JP'}&search_query=` + encodeURIComponent(q);
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
       const res = await fetch(url, { headers: HEADERS });
@@ -108,10 +114,11 @@ function score(c, song) {
   const core = norm(coreTitle(song.title));
   const titleMatch = core.length > 0 && (vt.includes(core) || vt.includes(norm(song.title)) ||
     (song.alt || []).some((a) => norm(a).length > 0 && vt.includes(norm(a))));
-  const toks = artistTokens(song.artist);
+  // J-POP：頻道名常是英文／羅馬字（例如 Fujii Kaze），所以歌手的英文名（作品標題括號內）也算比對字
+  const toks = [...artistTokens(song.artist), ...(isSong(song.kind) ? artistTokens(w.ja) : [])];
   const artistMatch = toks.some((t) => vt.includes(t) || ch.includes(t));
   const workMatch = [w.zh, w.ja].map(norm).some((x) => x.length >= 2 && vt.includes(x));
-  const official = OFFICIAL_CH.test(c.channel);
+  const official = (song.kind === 'TWPOP' || song.kind === 'ENPOP' ? OFFICIAL_SONG : OFFICIAL_CH).test(c.channel);
   let s = 0;
   if (titleMatch) s += 6;
   if (artistMatch) s += 4;
@@ -139,6 +146,20 @@ function score(c, song) {
   const audioFirst = topic || AUDIO_FIRST.test(ct);
   if (audioFirst) s += 4; // 遊戲從影片開頭播，優先選一開始就是音樂的影片
   if (MV_LIKE.test(ct) && !audioFirst) s -= 2;
+  if (isSong(song.kind)) {
+    // J-POP：要「官方頻道」的 MV／官方音源／歌詞版；粉絲上傳的歌詞版、THE FIRST TAKE、一發錄音一律往後排
+    const strongCh = official || chArtist;
+    if (!strongCh) s -= 12;
+    // 翻唱／現場／伴奏：標題有這些字（例如「某某 - 歌名（原唱：本尊）」）一律不要
+    if (COVER_MARK.test(c.title) && !COVER_MARK.test(song.title)) s -= 40;
+    // 標題開頭是「別人的名字 - 歌名」→ 多半是別人翻唱的歌詞版
+    const lead = c.title.match(/^\s*([^-–—「『【\[（(]{1,24}?)\s*[-–—]\s+/);
+    if (lead && !toks.some((t) => norm(lead[1]).includes(t)) && !/- topic$/i.test(c.channel)) s -= 12;
+    if (/the first take|home take|tiny desk|ワンカット|一発撮り|歌詞|lyric|意味|解釈|和訳|中文|字幕|reaction|考察/i.test(ct) && !strongCh) s -= 14;
+    if (/the first take|home take|tiny desk/i.test(ct)) s -= 8;
+    if (MV_LIKE.test(ct) && strongCh) s += 4; // 官方 MV
+    if (/official (audio|lyric)|audio|lyric video|visualizer/i.test(ct) && strongCh) s += 2;
+  }
   if (BAD.test(ct) || BAD.test(cc)) s -= 20;
   if (LIVE_HARD.test(ct) || LIVE_HARD.test(cc)) s -= 30;
   if (LIVE.test(ct)) s -= 4;
@@ -206,7 +227,7 @@ function buildQuery(song) {
 
 async function resolveOne(song) {
   const queries = [buildQuery(song)];
-  if (!song.query) queries.push(`${song.title} ${song.workObj.ja} ${song.kind === 'OST' ? 'OST' : song.kind}`);
+  if (!song.query) queries.push(isSong(song.kind) ? `${song.title} ${song.workObj.zh} ${CAT === 'en' ? 'official video' : CAT === 'tw' ? '官方 MV' : '公式 MV'}` : `${song.title} ${song.workObj.ja} ${song.kind === 'OST' ? 'OST' : song.kind}`);
   const tried = [];
   const seen = new Set();
   for (const q of queries) {
@@ -273,12 +294,14 @@ async function main() {
   const cache = existsSync(file) ? JSON.parse(readFileSync(file, 'utf8')) : {};
   let songs = allSongs(parseSeeds());
   if (ONLY) songs = songs.filter((s) => s.key.includes(ONLY));
-  const todo = songs.filter((s) => FORCE || !cache[s.key] || (RETRY && cache[s.key].fail) || (REDO_WEAK && !cache[s.key].fail && !cache[s.key].official)).slice(0, LIMIT);
+  const strongChannel = (s, ch) => OFFICIAL_SONG.test(ch || '') || (OFFICIAL_CH.test(ch || '') && s.kind === 'JPOP') || [...artistTokens(s.artist), ...artistTokens(s.workObj.ja)].some((t) => norm(ch || '').includes(t));
+  const sus = (s, r) => r && !r.fail && isSong(s.kind) && ((COVER_MARK.test(r.videoTitle || '') && !COVER_MARK.test(s.title)) || !strongChannel(s, r.channel));
+  const todo = songs.filter((s) => FORCE || (REDO_SUS && sus(s, cache[s.key])) || !cache[s.key] || (RETRY && cache[s.key].fail) || (REDO_WEAK && !cache[s.key].fail && !cache[s.key].official)).slice(0, LIMIT);
   console.log(`共 ${songs.length} 首，待處理 ${todo.length} 首`);
 
   let done = 0;
   let okCount = 0;
-  const CONC = 3;
+  const CONC = Number(process.env.RESOLVE_CONC || 3);
   let idx = 0;
   const worker = async () => {
     while (idx < todo.length) {
@@ -286,6 +309,7 @@ async function main() {
       let r = await resolveOne(song);
       const prev = cache[song.key];
       if (REDO_WEAK && prev && !prev.fail && (r.fail || !r.official)) r = { ...prev, official: false, checked: true };
+      if (REDO_SUS && prev && sus(song, prev) && (r.fail || sus(song, r))) r = { ...prev, bad: true, checked: true }; // 找不到更好的 → 標記不用（建置時排除）
       cache[song.key] = r;
       done++;
       if (!r.fail) okCount++;

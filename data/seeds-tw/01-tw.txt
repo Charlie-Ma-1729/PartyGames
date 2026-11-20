@@ -1,0 +1,384 @@
+# 由 tw-src.txt 轉出：華語流行歌（台灣市場：經典＋熱門）（每位歌手一個「作品」，歌曲一行）
+
+# 周杰倫（Jay Chou） | 2003
+TWPOP | 晴天 | 周杰倫 | y=2003 d=1
+TWPOP | 七里香 | 周杰倫 | y=2004 d=1
+TWPOP | 稻香 | 周杰倫 | y=2008 d=1
+TWPOP | 告白氣球 | 周杰倫 | y=2016 d=1
+TWPOP | 夜曲 | 周杰倫 | y=2005 d=1
+TWPOP | 青花瓷 | 周杰倫 | y=2007 d=1
+TWPOP | 以父之名 | 周杰倫 | y=2003 d=1
+TWPOP | 簡單愛 | 周杰倫 | y=2001 d=1
+TWPOP | 彩虹 | 周杰倫 | y=2007 d=1
+TWPOP | 愛在西元前 | 周杰倫 | y=2001 d=1
+TWPOP | 安靜 | 周杰倫 | y=2001 d=1
+TWPOP | 聽媽媽的話 | 周杰倫 | y=2004 d=1
+TWPOP | 蒲公英的約定 | 周杰倫 | y=2007 d=1
+TWPOP | 龍捲風 | 周杰倫 | y=2000 d=1
+TWPOP | 雙截棍 | 周杰倫 | y=2001 d=1
+TWPOP | 菊花台 | 周杰倫 | y=2006 d=1
+TWPOP | 千里之外 | 周杰倫 | y=2006 d=1
+TWPOP | 擱淺 | 周杰倫 | y=2004 d=1
+TWPOP | 說好的幸福呢 | 周杰倫 | y=2008 d=1
+TWPOP | 不能說的秘密 | 周杰倫 | y=2007 d=1
+TWPOP | 等你下課 | 周杰倫 | y=2018 d=1
+TWPOP | 一路向北 | 周杰倫 | y=2005 d=1
+TWPOP | 髮如雪 | 周杰倫 | y=2005 d=1
+TWPOP | 東風破 | 周杰倫 | y=2003 d=1
+TWPOP | 退後 | 周杰倫 | y=2005 d=2
+TWPOP | 開不了口 | 周杰倫 | y=2002 d=2
+TWPOP | 星晴 | 周杰倫 | y=2000 d=2
+TWPOP | 反方向的鐘 | 周杰倫 | y=2000 d=2
+TWPOP | 可愛女人 | 周杰倫 | y=2000 d=2
+TWPOP | 黑色幽默 | 周杰倫 | y=2000 d=2
+TWPOP | 本草綱目 | 周杰倫 | y=2006 d=2
+TWPOP | 說好不哭 | 周杰倫 | y=2019 d=1
+TWPOP | Mojito | 周杰倫 | y=2020 d=1
+TWPOP | 夜的第七章 | 周杰倫 | y=2005 d=2
+TWPOP | 手寫的從前 | 周杰倫 | y=2008 d=2
+TWPOP | 我不配 | 周杰倫 | y=2008 d=2
+TWPOP | 暗號 | 周杰倫 | y=2002 d=2
+
+# 五月天（Mayday） | 2004
+TWPOP | 倔強 | 五月天 | y=2004 d=1
+TWPOP | 突然好想你 | 五月天 | y=2008 d=1
+TWPOP | 知足 | 五月天 | y=2005 d=1
+TWPOP | 擁抱 | 五月天 | y=2006 d=1
+TWPOP | 後來的我們 | 五月天 | y=2016 d=1
+TWPOP | 離開地球表面 | 五月天 | y=2008 d=2
+TWPOP | 乾杯 | 五月天 | y=2004 d=2
+TWPOP | 派對動物 | 五月天 | y=2005 d=2
+TWPOP | 溫柔 | 五月天 | y=2000 d=1
+TWPOP | 少年他的奇幻漂流 | 五月天 | y=2011 d=2
+TWPOP | 我不願讓你一個人 | 五月天 | y=2011 d=2
+TWPOP | 孫悟空 | 五月天 | y=2010 d=2
+TWPOP | 笑忘書 | 五月天 | y=2011 d=2
+TWPOP | 私奔到月球 | 五月天 | y=2005 d=2
+TWPOP | 志明與春嬌 | 五月天 | y=2011 d=2
+TWPOP | 戀愛ING | 五月天 | y=2004 d=2
+TWPOP | 如煙 | 五月天 | y=2003 d=2
+TWPOP | 憨人 | 五月天 | y=2004 d=2
+TWPOP | 諾亞方舟 | 五月天 | y=2008 d=2
+TWPOP | 盛夏光年 | 五月天 | y=2006 d=2
+TWPOP | 洋蔥 | 五月天 | y=2008 d=2
+TWPOP | 你不是真正的快樂 | 五月天 | y=2008 d=2
+TWPOP | 人生海海 | 五月天 | y=2016 d=2
+TWPOP | 愛情萬歲 | 五月天 | y=2002 d=2
+TWPOP | 任意門 | 五月天 | y=2011 d=2
+
+# 蔡依林（Jolin Tsai） | 2006
+TWPOP | 日不落 | 蔡依林 | y=2006 d=1
+TWPOP | 舞孃 | 蔡依林 | y=2004 d=1
+TWPOP | 倒帶 | 蔡依林 | y=2005 d=1
+TWPOP | 說愛你 | 蔡依林 | y=2004 d=2
+TWPOP | 看我72變 | 蔡依林 | y=2006 d=2
+TWPOP | 玩美 | 蔡依林 | y=2007 d=2
+TWPOP | 怪美的 | 蔡依林 | y=2008 d=2
+TWPOP | 愛無赦 | 蔡依林 | y=2012 d=2
+TWPOP | Play我呸 | 蔡依林 | y=2014 d=2
+TWPOP | 馬德里不思議 | 蔡依林 | y=2007 d=2
+TWPOP | 幸福額度 | 蔡依林 | y=2014 d=2
+TWPOP | Ugly Beauty | 蔡依林 | y=2018 d=2
+
+# 田馥甄（Hebe Tien） | 2015
+TWPOP | 小幸運 | 田馥甄 | y=2015 d=1
+TWPOP | 魚仔 | 田馥甄 | y=2013 d=2
+TWPOP | 寂寞寂寞就好 | 田馥甄 | y=2010 d=2
+TWPOP | 你就不要想起我 | 田馥甄 | y=2011 d=2
+TWPOP | 還是要幸福 | 田馥甄 | y=2012 d=2
+TWPOP | 渺小 | 田馥甄 | y=2013 d=2
+TWPOP | 愛了很久的朋友 | 田馥甄 | y=2016 d=2
+TWPOP | 如果可以 | 田馥甄 | y=2017 d=2
+
+# S.H.E | 2002
+TWPOP | 不想長大 | S.H.E | y=2002 d=1
+TWPOP | 中國話 | S.H.E | y=2004 d=1
+TWPOP | Super Star | S.H.E | y=2004 d=1
+TWPOP | 戀人未滿 | S.H.E | y=2003 d=2
+TWPOP | 美麗新世界 | S.H.E | y=2005 d=2
+TWPOP | 熱帶雨林 | S.H.E | y=2004 d=2
+TWPOP | 候鳥 | S.H.E | y=2004 d=2
+
+# 陳綺貞（Cheer Chen） | 2004
+TWPOP | 旅行的意義 | 陳綺貞 | y=2004 d=1
+TWPOP | 魚 | 陳綺貞 | y=2005 d=2
+
+# 張惠妹（A-Mei） | 1997
+TWPOP | 聽海 | 張惠妹 | y=1997 d=1
+TWPOP | 姐妹 | 張惠妹 | y=1996 d=1
+TWPOP | 我可以抱你嗎 | 張惠妹 | y=1996 d=1
+TWPOP | 剪愛 | 張惠妹 | y=1999 d=2
+TWPOP | 三天三夜 | 張惠妹 | y=1996 d=2
+TWPOP | 記得 | 張惠妹 | y=1996 d=2
+
+# 王心凌（Cyndi Wang） | 2004
+TWPOP | 愛你 | 王心凌 | y=2004 d=1
+TWPOP | 睫毛彎彎 | 王心凌 | y=2005 d=2
+
+# 伍佰 & China Blue（Wu Bai & China Blue） | 1996
+TWPOP | 浪人情歌 | 伍佰 & China Blue | y=1996 d=1
+TWPOP | 愛情的盡頭 | 伍佰 & China Blue | y=1997 d=1
+TWPOP | 挪威的森林 | 伍佰 & China Blue | y=1996 d=2
+TWPOP | 被動 | 伍佰 & China Blue | y=1998 d=2
+
+# 張雨生（Tom Chang） | 1992
+TWPOP | 大海 | 張雨生 | y=1992 d=1
+TWPOP | 我的未來不是夢 | 張雨生 | y=1989 d=2
+
+# 李宗盛（Jonathan Lee） | 2013
+TWPOP | 山丘 | 李宗盛 | y=2013 d=2
+TWPOP | 鬼迷心竅 | 李宗盛 | y=1993 d=2
+
+# 羅大佑（Lo Ta-yu） | 1982
+TWPOP | 童年 | 羅大佑 | y=1982 d=2
+TWPOP | 之乎者也 | 羅大佑 | y=1982 d=2
+
+# 蘇打綠（Sodagreen） | 2006
+TWPOP | 小情歌 | 蘇打綠 | y=2006 d=1
+TWPOP | 我好想你 | 蘇打綠 | y=2005 d=2
+TWPOP | 再見 | 蘇打綠 | y=2008 d=2
+TWPOP | 日光 | 蘇打綠 | y=2006 d=2
+
+# 信樂團（Shin Band） | 2005
+TWPOP | 死了都要愛 | 信樂團 | y=2005 d=1
+TWPOP | 離歌 | 信樂團 | y=2005 d=2
+TWPOP | 天高地厚 | 信樂團 | y=2006 d=2
+
+# 動力火車（Power Station） | 2000
+TWPOP | 當 | 動力火車 | y=2000 d=1
+TWPOP | 背叛情歌 | 動力火車 | y=2000 d=2
+TWPOP | 忠孝東路走九遍 | 動力火車 | y=2000 d=2
+
+# 林宥嘉（Yoga Lin） | 2008
+TWPOP | 說謊 | 林宥嘉 | y=2008 d=1
+TWPOP | 浪費 | 林宥嘉 | y=2009 d=2
+TWPOP | 殘酷月光 | 林宥嘉 | y=2008 d=2
+TWPOP | 想自由 | 林宥嘉 | y=2010 d=2
+
+# 蕭敬騰（Jam Hsiao） | 2008
+TWPOP | 王妃 | 蕭敬騰 | y=2008 d=2
+TWPOP | 阿飛的小蝴蝶 | 蕭敬騰 | y=2010 d=2
+TWPOP | 新不了情 | 蕭敬騰 | y=2009 d=2
+
+# 楊丞琳（Rainie Yang） | 2008
+TWPOP | 雨愛 | 楊丞琳 | y=2008 d=2
+TWPOP | 曖昧 | 楊丞琳 | y=2009 d=2
+
+# 盧廣仲（Crowd Lu） | 2020
+TWPOP | 刻在我心底的名字 | 盧廣仲 | y=2020 d=1
+TWPOP | 幾分之幾 | 盧廣仲 | y=2011 d=2
+
+# 告五人（Accusefive） | 2020
+TWPOP | 披星戴月的想你 | 告五人 | y=2020 d=1
+TWPOP | 愛人錯過 | 告五人 | y=2019 d=2
+TWPOP | 唯一 | 告五人 | y=2020 d=2
+
+# 茄子蛋（EggPlantEgg） | 2021
+TWPOP | 浪流連 | 茄子蛋 | y=2021 d=2
+
+# A-Lin | 2008
+TWPOP | 給我一個理由忘記 | A-Lin | y=2008 d=2
+
+# 徐佳瑩（LaLa Hsu） | 2010
+TWPOP | 身騎白馬 | 徐佳瑩 | y=2010 d=2
+TWPOP | 失落沙洲 | 徐佳瑩 | y=2009 d=2
+
+# 陶喆（David Tao） | 1999
+TWPOP | 愛很簡單 | 陶喆 | y=1999 d=1
+TWPOP | 普通朋友 | 陶喆 | y=1999 d=2
+
+# 王力宏（Leehom Wang） | 2004
+TWPOP | 唯一 | 王力宏 | y=2004 d=1
+TWPOP | 大城小愛 | 王力宏 | y=2006 d=2
+TWPOP | 心中的日月 | 王力宏 | y=2008 d=2
+
+# F4 | 2001
+TWPOP | 流星雨 | F4 | y=2001 d=1
+
+# 任賢齊（Richie Jen） | 1996
+TWPOP | 心太軟 | 任賢齊 | y=1996 d=1
+TWPOP | 對面的女孩看過來 | 任賢齊 | y=1996 d=2
+
+# 齊秦（Chyi Chin） | 1988
+TWPOP | 外面的世界 | 齊秦 | y=1988 d=2
+TWPOP | 大約在冬季 | 齊秦 | y=1987 d=2
+
+# 鄭智化（Jeff Cheng） | 1991
+TWPOP | 水手 | 鄭智化 | y=1991 d=2
+
+# 黃品源（Huang Pin Yuan） | 1995
+TWPOP | 小薇 | 黃品源 | y=1995 d=2
+
+# 童安格（Tong An Ge） | 1990
+TWPOP | 其實你不懂我的心 | 童安格 | y=1990 d=2
+
+# 蔡琴（Tsai Chin） | 1980
+TWPOP | 恰似你的溫柔 | 蔡琴 | y=1980 d=2
+
+# 鄧麗君（Teresa Teng） | 1977
+TWPOP | 月亮代表我的心 | 鄧麗君 | y=1977 d=1
+TWPOP | 甜蜜蜜 | 鄧麗君 | y=1979 d=1
+TWPOP | 小城故事 | 鄧麗君 | y=1979 d=1
+TWPOP | 我只在乎你 | 鄧麗君 | y=1987 d=1
+TWPOP | 在水一方 | 鄧麗君 | y=1975 d=2
+
+# 費玉清（Fei Yu-ching） | 1980
+TWPOP | 一剪梅 | 費玉清 | y=1980 d=2
+
+# 鳳飛飛（Feng Fei Fei） | 1980
+TWPOP | 掌聲響起 | 鳳飛飛 | y=1980 d=2
+TWPOP | 追夢人 | 鳳飛飛 | y=1987 d=2
+
+# 劉若英（Rene Liu） | 1999
+TWPOP | 後來 | 劉若英 | y=1999 d=1
+TWPOP | 很愛很愛你 | 劉若英 | y=2000 d=2
+TWPOP | 成全 | 劉若英 | y=1999 d=2
+
+# 辛曉琪（Winnie Hsin） | 1995
+TWPOP | 領悟 | 辛曉琪 | y=1995 d=2
+
+# 陳淑樺（Sarah Chen） | 1989
+TWPOP | 夢醒時分 | 陳淑樺 | y=1989 d=2
+
+# 邰正宵（Tai Zheng Xiao） | 1999
+TWPOP | 九百九十九朵玫瑰 | 邰正宵 | y=1999 d=2
+
+# 張信哲（Jeff Chang） | 1998
+TWPOP | 愛如潮水 | 張信哲 | y=1998 d=1
+
+# 林志炫（Terry Lin） | 1992
+TWPOP | 單身情歌 | 林志炫 | y=1992 d=2
+
+# 小虎隊（Little Tigers） | 1989
+TWPOP | 青蘋果樂園 | 小虎隊 | y=1989 d=2
+TWPOP | 愛 | 小虎隊 | y=1989 d=2
+
+# 周興哲（Eric Chou） | 2016
+TWPOP | 怎麼了 | 周興哲 | y=2016 d=1
+TWPOP | 你，好不好？ | 周興哲 | y=2017 d=2
+
+# 韋禮安（Weibird Wei） | 2014
+TWPOP | 還是會 | 韋禮安 | y=2014 d=2
+
+# 張震嶽（Chang Chen Yue） | 2004
+TWPOP | 愛我別走 | 張震嶽 | y=2004 d=2
+
+# 江蕙（Jody Chiang） | 1998
+TWPOP | 家後 | 江蕙 | y=1998 d=2
+
+# 黃小琥（Tiger Huang） | 2005
+TWPOP | 沒那麼簡單 | 黃小琥 | y=2005 d=2
+
+# 彭佳慧（Peng Chia Hui） | 2000
+TWPOP | 相見恨晚 | 彭佳慧 | y=2000 d=2
+
+# 5566 | 2003
+TWPOP | 我難過 | 5566 | y=2003 d=2
+
+# 飛輪海（Fahrenheit） | 2007
+TWPOP | 絕對感動 | 飛輪海 | y=2007 d=2
+
+# 孫燕姿（Stefanie Sun） | 2003
+TWPOP | 遇見 | 孫燕姿 | y=2003 d=1
+TWPOP | 天黑黑 | 孫燕姿 | y=2000 d=1
+TWPOP | 綠光 | 孫燕姿 | y=2003 d=2
+TWPOP | 開始懂了 | 孫燕姿 | y=2003 d=2
+TWPOP | 逆光 | 孫燕姿 | y=2007 d=2
+TWPOP | 我懷念的 | 孫燕姿 | y=2003 d=2
+TWPOP | 風箏 | 孫燕姿 | y=2002 d=2
+TWPOP | 神奇 | 孫燕姿 | y=2002 d=2
+
+# 梁靜茹（Fish Leong） | 2004
+TWPOP | 勇氣 | 梁靜茹 | y=2004 d=1
+TWPOP | 暖暖 | 梁靜茹 | y=2003 d=1
+TWPOP | 可惜不是你 | 梁靜茹 | y=2006 d=2
+TWPOP | 分手快樂 | 梁靜茹 | y=2005 d=2
+TWPOP | 會呼吸的痛 | 梁靜茹 | y=2006 d=2
+TWPOP | 情歌 | 梁靜茹 | y=2007 d=2
+TWPOP | 崇拜 | 梁靜茹 | y=2007 d=2
+TWPOP | 寧夏 | 梁靜茹 | y=2006 d=2
+
+# 林俊傑（JJ Lin） | 2004
+TWPOP | 江南 | 林俊傑 | y=2004 d=1
+TWPOP | 曹操 | 林俊傑 | y=2006 d=1
+TWPOP | 學不會 | 林俊傑 | y=2006 d=1
+TWPOP | 修煉愛情 | 林俊傑 | y=2013 d=2
+TWPOP | 那些你很冒險的夢 | 林俊傑 | y=2014 d=2
+TWPOP | 不為誰而作的歌 | 林俊傑 | y=2015 d=2
+TWPOP | 可惜沒如果 | 林俊傑 | y=2015 d=2
+TWPOP | 一千年以後 | 林俊傑 | y=2004 d=2
+TWPOP | 她說 | 林俊傑 | y=2010 d=2
+TWPOP | 美人魚 | 林俊傑 | y=2013 d=2
+
+# 張學友（Jacky Cheung） | 1993
+TWPOP | 吻別 | 張學友 | y=1993 d=1
+TWPOP | 一千個傷心的理由 | 張學友 | y=1993 d=2
+
+# 周華健（Wakin Chau） | 1997
+TWPOP | 朋友 | 周華健 | y=1997 d=1
+TWPOP | 花心 | 周華健 | y=1993 d=2
+TWPOP | 讓我歡喜讓我憂 | 周華健 | y=1996 d=2
+
+# 陳奕迅（Eason Chan） | 2003
+TWPOP | 十年 | 陳奕迅 | y=2003 d=1
+TWPOP | 富士山下 | 陳奕迅 | y=2006 d=1
+TWPOP | 浮誇 | 陳奕迅 | y=2005 d=1
+TWPOP | 愛情轉移 | 陳奕迅 | y=2007 d=1
+TWPOP | 好久不見 | 陳奕迅 | y=2007 d=1
+TWPOP | K歌之王 | 陳奕迅 | y=2000 d=2
+TWPOP | 淘汰 | 陳奕迅 | y=2007 d=2
+TWPOP | 孤勇者 | 陳奕迅 | y=2021 d=1
+
+# 王菲（Faye Wong） | 1998
+TWPOP | 紅豆 | 王菲 | y=1998 d=1
+TWPOP | 容易受傷的女人 | 王菲 | y=1992 d=2
+TWPOP | 我願意 | 王菲 | y=1994 d=2
+TWPOP | 因為愛情 | 王菲 | y=2000 d=2
+TWPOP | 夢中人 | 王菲 | y=1994 d=2
+
+# 莫文蔚（Karen Mok） | 2000
+TWPOP | 盛夏的果實 | 莫文蔚 | y=2000 d=1
+TWPOP | 陰天 | 莫文蔚 | y=1999 d=2
+TWPOP | 慢慢喜歡你 | 莫文蔚 | y=2017 d=2
+
+# 鄧紫棋（G.E.M.） | 2016
+TWPOP | 光年之外 | 鄧紫棋 | y=2016 d=1
+TWPOP | 泡沫 | 鄧紫棋 | y=2012 d=1
+TWPOP | 喜歡你 | 鄧紫棋 | y=2012 d=2
+TWPOP | 倒數 | 鄧紫棋 | y=2015 d=2
+
+# 李榮浩（Li Ronghao） | 2016
+TWPOP | 李白 | 李榮浩 | y=2016 d=2
+TWPOP | 模特 | 李榮浩 | y=2014 d=2
+TWPOP | 年少有為 | 李榮浩 | y=2018 d=2
+
+# 薛之謙（Joker Xue） | 2015
+TWPOP | 演員 | 薛之謙 | y=2015 d=1
+TWPOP | 丑八怪 | 薛之謙 | y=2013 d=2
+TWPOP | 你還要我怎樣 | 薛之謙 | y=2014 d=2
+TWPOP | 認真的雪 | 薛之謙 | y=2016 d=2
+
+# 毛不易（Mao Buyi） | 2017
+TWPOP | 消愁 | 毛不易 | y=2017 d=2
+
+# 周深（Zhou Shen） | 2016
+TWPOP | 大魚 | 周深 | y=2016 d=2
+
+# 劉德華（Andy Lau） | 1994
+TWPOP | 忘情水 | 劉德華 | y=1994 d=1
+TWPOP | 冰雨 | 劉德華 | y=1999 d=2
+
+# 張國榮（Leslie Cheung） | 1992
+TWPOP | 當愛已成往事 | 張國榮 | y=1992 d=2
+
+# Beyond | 1993
+TWPOP | 海闊天空 | Beyond | y=1993 d=1
+TWPOP | 光輝歲月 | Beyond | y=1990 d=2
+TWPOP | 真的愛你 | Beyond | y=1989 d=2
+
+# 蔡健雅（Tanya Chua） | 2005
+TWPOP | 紅色高跟鞋 | 蔡健雅 | y=2005 d=2
+
+# 光良（Michael Wong） | 2005
+TWPOP | 童話 | 光良 | y=2005 d=1
+TWPOP | 第一次 | 光良 | y=2005 d=2

@@ -8,7 +8,16 @@ export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 // --cat movie：讀 data/seeds-movie → data/movie.json；--cat ost：讀 data/seeds-ost（遊戲 OST）→ data/ost.json；預設 anime
 const _ci = process.argv.indexOf('--cat');
 export const CAT = _ci >= 0 ? process.argv[_ci + 1] : 'anime';
-export const SEED_DIR = path.join(ROOT, 'data', CAT === 'movie' ? 'seeds-movie' : CAT === 'ost' ? 'seeds-ost' : 'seeds');
+// --cat jpop：讀 data/seeds-jpop（日本流行歌，每位歌手是一個「作品」）→ data/song.json
+// 歌名／歌手類題庫（一曲兩用）：--cat jpop | tw | en
+export const SONG_CAT = {
+  jpop: { dir: 'seeds-jpop', file: 'song', prefix: 'j-', kind: 'JPOP' }, // 日本流行歌
+  tw: { dir: 'seeds-tw', file: 'tw', prefix: 't-', kind: 'TWPOP' }, // 台灣華語流行歌
+  en: { dir: 'seeds-en', file: 'en', prefix: 'e-', kind: 'ENPOP' }, // 英語流行歌
+};
+export const SC = SONG_CAT[CAT] || null;
+export const SONG_KINDS = ['JPOP', 'TWPOP', 'ENPOP'];
+export const SEED_DIR = path.join(ROOT, 'data', SC ? SC.dir : CAT === 'movie' ? 'seeds-movie' : CAT === 'ost' ? 'seeds-ost' : 'seeds');
 export const CACHE_DIR = path.join(ROOT, 'data', 'cache');
 
 export const hash = (s, n = 8) => createHash('sha1').update(s).digest('hex').slice(0, n);
@@ -21,7 +30,7 @@ export function norm(s) {
     .replace(/[\s　"'`~!@#$%^&*()_+=\[\]{}|\\:;,.<>?/·・「」『』（）【】〈〉《》、。~〜～\-–—]/g, '');
 }
 
-const KINDS = ['OP', 'ED', 'INSERT', 'OST'];
+const KINDS = ['OP', 'ED', 'INSERT', 'OST', 'JPOP', 'TWPOP', 'ENPOP'];
 
 /** 解析 data/seeds/*.txt → [{ work, zh, ja, year, workId, songs:[...] }] */
 export function parseSeeds({ exclude = [] } = {}) {
@@ -71,7 +80,7 @@ export function parseSeeds({ exclude = [] } = {}) {
       const title = fields[1];
       const rest = fields.slice(2).join(' ');
       // 解析 key=value（q 的值可含空白，直到下一個 key）
-      const re = /(?:^|\s)([lcaqdtv])=/g;
+      const re = /(?:^|\s)([lcaqdtvy])=/g;
       const marks = [];
       let m;
       while ((m = re.exec(rest))) marks.push({ key: m[1], idx: m.index, end: re.lastIndex });
@@ -95,6 +104,7 @@ export function parseSeeds({ exclude = [] } = {}) {
         alt: kv.t ? kv.t.split('/').map((x) => x.trim()).filter(Boolean) : [],
         difficulty: kv.d ? Number(kv.d) : 1,
         vocal: kv.v === '1', // 有人聲的歌（電影題庫用來和純配樂區分）
+        year: kv.y ? Number(kv.y) : null, // 這首歌自己的發行年（J-POP 用；沒填就用作品標題的年份）
       });
     });
   }

@@ -1,10 +1,12 @@
 {
-  "name": "songguesser",
+  "name": "partygames",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "猜歌大賽：單人（純靜態）與多人（Node 伺服器）",
-  "engines": { "node": ">=20" },
+  "description": "派對遊戲：一個房間、選你要玩的遊戲（猜歌大賽、配音大師、你說我猜）",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node server/server.mjs",
     "test": "node --test test/*.test.mjs",

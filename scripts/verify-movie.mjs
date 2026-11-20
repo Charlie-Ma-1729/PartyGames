@@ -4,14 +4,15 @@
 //  - 判定：film = 影片資訊含作品名；artist = 影片標題／頻道含演唱者；兩者都沒有 → 可疑
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
-import { ROOT, CACHE_DIR, CAT, norm } from './lib.mjs';
+import { ROOT, CACHE_DIR, CAT, SC, norm } from './lib.mjs';
 
 const REDO = process.argv.includes('--redo');
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const HEADERS = { 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36', 'accept-language': 'en;q=0.9', cookie: 'CONSENT=YES+1' };
 
-const qs = JSON.parse(readFileSync(path.join(ROOT, 'data', (CAT === 'ost' ? 'ost' : 'movie') + '.json'), 'utf8'));
-const cacheFile = path.join(CACHE_DIR, `verify-${CAT === 'ost' ? 'ost' : 'movie'}.json`);
+const TAG = SC ? CAT : CAT === 'ost' ? 'ost' : 'movie';
+const qs = JSON.parse(readFileSync(path.join(ROOT, 'data', (SC ? SC.file : TAG) + '.json'), 'utf8'));
+const cacheFile = path.join(CACHE_DIR, `verify-${TAG}.json`);
 const cache = existsSync(cacheFile) && !REDO ? JSON.parse(readFileSync(cacheFile, 'utf8')) : {};
 
 async function info(id) {
@@ -65,13 +66,23 @@ let ok = 0;
 for (const q of qs) {
   const c = cache[q.id];
   const hay = norm(`${q.video} ${q.channel} ${c?.title || ''} ${c?.desc || ''}`);
-  const film = names(q.answer.work).some((x) => hay.includes(x));
-  const who = (q.answer.artist || '').split(/[&,/、]|feat\.?/i).map((x) => norm(x)).filter((x) => x.length >= 2);
-  const artist = who.some((x) => hay.includes(x));
+  let film; let artist;
+  if (SC) {
+    // J-POP：影片資訊（標題／頻道／說明）要同時有「歌名」與「歌手」
+    const t = norm(q.answer.title.replace(/[（(].*?[）)]/g, '').replace(/\s*feat\..*$/i, ''));
+    film = t.length > 0 && hay.includes(t);
+    const toks = [q.answer.artist, q.answer.artistEn].filter(Boolean).flatMap((x) => x.split(/[\s&×/・.]+/)).map(norm).filter((x) => x.length >= 2);
+    artist = toks.some((x) => hay.includes(x));
+    if (!artist) film = false; // 歌名有、歌手沒有 → 也算可疑
+  } else {
+    film = names(q.answer.work).some((x) => hay.includes(x));
+    const who = (q.answer.artist || '').split(/[&,/、]|feat\.?/i).map((x) => norm(x)).filter((x) => x.length >= 2);
+    artist = who.some((x) => hay.includes(x));
+  }
   if (film) ok++;
   else bad.push({ id: q.id, work: q.answer.work.split('（')[0], song: q.answer.title, artist, video: q.video, channel: q.channel, yt: q.ytId });
 }
 console.log(`\n作品名有出現在影片資訊：${ok} / ${qs.length}`);
 console.log(`找不到作品名（需人工確認）：${bad.length}`);
 for (const b of bad) console.log(`${b.artist ? '○' : '✗'} ${b.work} / ${b.song} → [${b.channel}] ${b.video.slice(0, 70)} (${b.yt})`);
-writeFileSync(path.join(CACHE_DIR, `verify-${CAT === 'ost' ? 'ost' : 'movie'}-suspects.json`), JSON.stringify(bad, null, 1));
+writeFileSync(path.join(CACHE_DIR, `verify-${TAG}-suspects.json`), JSON.stringify(bad, null, 1));

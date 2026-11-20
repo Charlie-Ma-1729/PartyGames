@@ -160,12 +160,12 @@ kbd {
 .note { color: var(--muted); font-size: 14px; font-weight: 400; margin: 0; }
 .check { flex-direction: row; align-items: center; gap: 8px; font-size: 14px; }
 .multi-entry { margin-top: 12px; display: block; width: 100%; max-width: 420px; margin-left: auto; margin-right: auto; }
-input[type=text], #m-nick, #m-code, #mtype-input {
+input[type=text], input[type=password], input[type=number], #h-nick, #h-code, #mtype-input {
   font: inherit; font-size: 18px; color: var(--text); background: #25274a; border: 1px solid #3a3d70; border-radius: 10px; padding: 12px 14px; width: 100%;
 }
 .code-input { text-transform: uppercase; letter-spacing: 0.3em; text-align: center; font-weight: 800; font-size: 26px !important; }
 .code { background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 14px; padding: 0 18px; letter-spacing: 0.15em; }
-#screen-mlobby h1 { margin-bottom: 10px; }
+#screen-lobby h1 { margin-bottom: 10px; }
 .toast.warn:empty { display: none; }
 
 /* 大廳玩家 */
@@ -174,8 +174,8 @@ input[type=text], #m-nick, #m-code, #mtype-input {
 .pchip.off { opacity: 0.45; }
 .pchip button { background: none; color: var(--muted); padding: 0 4px; font-size: 16px; line-height: 1; }
 .pchip button:hover { color: #ff6b81; }
-#l-settings.readonly select, #l-settings.readonly input { pointer-events: none; opacity: 0.75; }
-#l-settings.readonly .chip { pointer-events: none; }
+#l-settings .readonly select, #l-settings .readonly input { pointer-events: none; opacity: 0.75; }
+#l-settings .readonly .chip { pointer-events: none; }
 .chips.kinds { margin-top: 10px; }
 
 /* 遊戲中（多人） */
@@ -256,17 +256,9 @@ body.multi.is-screen #btn-main { display: none; }
 .cover.tap { cursor: pointer; animation: tappulse 1.2s ease-in-out infinite; }
 @keyframes tappulse { 50% { filter: brightness(1.25); } }
 
-/* 電腦／投影機（寬螢幕）：大廳左側玩家、右側規則；遊戲中選項放寬 */
+/* 電腦／投影機（寬螢幕）：遊戲中選項放寬（大廳版面見 hub.css） */
 @media (min-width: 1100px) {
-  #screen-mlobby { max-width: 1200px; }
-  #screen-mlobby.active { display: grid; grid-template-columns: 320px 1fr; column-gap: 20px; align-items: start; }
-  #screen-mlobby > h1, #screen-mlobby > .row { grid-column: 1 / -1; }
-  #screen-mlobby > .card:first-of-type { grid-column: 1; grid-row: 3 / span 4; }
-  #l-settings { grid-column: 2; grid-row: 3; }
-  #l-start { grid-column: 2; grid-row: 4; justify-self: center; }
-  #l-wait { grid-column: 2; grid-row: 5; }
-  #l-msg { grid-column: 2; grid-row: 6; }
-  #screen-mjoin { max-width: 860px; }
+  #screen-home { max-width: 860px; }
 }
 .stage.mp.mc:not(.revealed) .video-box { width: min(100%, 480px); }
 

@@ -3,16 +3,57 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>猜歌大賽</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎵</text></svg>">
+  <title>派對遊戲</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎉</text></svg>">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/hub.css">
+  <link rel="stylesheet" href="css/dubbing.css">
+  <link rel="stylesheet" href="css/headsup.css">
 </head>
 <body>
   <div id="netbar" class="netbar hidden">⚠ 連線中斷，正在重新連線…（你的座位和分數都會保留）</div>
+  <div id="gtoast" class="gtoast" role="status"></div>
 
-  <!-- 設定畫面 -->
-  <main id="screen-setup" class="screen active">
-    <h1>🎵 猜歌大賽</h1>
+  <!-- 首頁：暱稱、開房間／加入房間 -->
+  <main id="screen-home" class="screen active">
+    <h1>🎉 派對遊戲</h1>
+    <p class="sub">開一個房間、邀請朋友，進去之後再決定要玩什麼！</p>
+
+    <section class="card">
+      <label>你的暱稱
+        <input id="h-nick" maxlength="12" placeholder="最多 12 個字" autocomplete="off">
+      </label>
+    </section>
+    <div class="cols2">
+      <section class="card">
+        <h2>建立房間</h2>
+        <p class="note">你會成為房主，由你選遊戲、調規則。</p>
+        <label id="h-passwrap" class="hidden">開房間密碼
+          <input id="h-pass" type="password" autocomplete="off" placeholder="這台伺服器需要密碼才能開房間">
+        </label>
+        <button id="h-create" class="big primary">建立房間</button>
+      </section>
+      <section class="card">
+        <h2>加入房間</h2>
+        <label>房間代碼
+          <input id="h-code" class="code-input" maxlength="4" placeholder="AB3K" autocapitalize="characters" autocomplete="off" spellcheck="false">
+        </label>
+        <button id="h-join" class="big primary">加入</button>
+        <label class="check"><input type="checkbox" id="h-asscreen"> 作為「主畫面」（不參賽，只負責播放，目前給猜歌大賽用）</label>
+      </section>
+    </div>
+    <p id="h-msg" class="toast warn"></p>
+
+    <section class="card">
+      <h2>這裡有哪些遊戲</h2>
+      <div id="h-games" class="gamegrid"></div>
+    </section>
+    <button id="btn-solo" class="ghost">🎵 只想自己玩？單人猜歌（不用開房間）</button>
+  </main>
+
+  <!-- 單人猜歌：設定畫面 -->
+  <main id="screen-setup" class="screen">
+    <h1>🎵 猜歌大賽・單人</h1>
     <p class="sub">聽音樂，猜出它來自哪一部作品！</p>
 
     <section class="card">
@@ -60,6 +101,13 @@
           <option value="1">開啟（8 選 1）</option>
         </select>
       </label>
+      <label>流行歌（日本／華語／英語）的猜法
+        <select id="opt-jpopask">
+          <option value="mixed" selected>混合（一曲兩用，每題隨機猜歌名或猜歌手）</option>
+          <option value="title">只猜歌名</option>
+          <option value="artist">只猜歌手</option>
+        </select>
+      </label>
       <label>難度
         <select id="opt-difficulty">
           <option value="1">簡單（大家都聽過）</option>
@@ -92,53 +140,33 @@
     </section>
 
     <button id="btn-start" class="big primary" disabled>載入題庫中…</button>
-    <button id="btn-multi" class="big ghost multi-entry">👥 多人模式（開房間邀請朋友）</button>
+    <button id="btn-home" class="big ghost multi-entry">← 回派對首頁（開房間和朋友一起玩）</button>
     <p class="tip">操作：<kbd>空白鍵</kbd> 揭曉／下一題　<kbd>R</kbd> 重播　<kbd>→</kbd> 跳過　<kbd>1</kbd>–<kbd>8</kbd> 標記選項（選擇題模式）　<kbd>↑</kbd><kbd>↓</kbd> 音量　<kbd>M</kbd> 靜音　<kbd>X</kbd> 回報問題（開頭不是音樂時用）</p>
   </main>
 
-  <!-- 多人：加入／建立 -->
-  <main id="screen-mjoin" class="screen">
-    <h1>👥 多人模式</h1>
-    <p class="sub">開房間邀請朋友，或輸入代碼加入。大家各自作答，最後比分數！</p>
-    <section class="card">
-      <label>你的暱稱
-        <input id="m-nick" maxlength="12" placeholder="最多 12 個字" autocomplete="off">
-      </label>
-    </section>
-    <div class="cols2">
-      <section class="card">
-        <h2>建立房間</h2>
-        <p class="note">你會成為房主，可以決定規則。</p>
-        <button id="m-create" class="big primary">建立房間</button>
-      </section>
-      <section class="card">
-        <h2>加入房間</h2>
-        <label>房間代碼
-          <input id="m-code" class="code-input" maxlength="4" placeholder="AB3K" autocapitalize="characters" autocomplete="off" spellcheck="false">
-        </label>
-        <button id="m-join" class="big primary">加入</button>
-        <label class="check"><input type="checkbox" id="m-asscreen"> 作為「主畫面」（不參賽，負責播音樂給大家看）</label>
-      </section>
-    </div>
-    <p id="m-msg" class="toast warn"></p>
-    <button id="m-back" class="ghost">← 回單人模式</button>
-  </main>
-
-  <!-- 多人：大廳 -->
-  <main id="screen-mlobby" class="screen">
+  <!-- 房間大廳：玩家、選遊戲、遊戲規則 -->
+  <main id="screen-lobby" class="screen">
     <h1>房間 <span id="l-code" class="code">----</span></h1>
     <div class="row">
       <button id="l-copy" class="ghost">📋 複製邀請連結</button>
-      <button id="l-screen" class="ghost">🖥 開啟主畫面</button>
+      <button id="l-screen" class="ghost hidden">🖥 開啟主畫面</button>
       <button id="l-leave" class="ghost">離開房間</button>
     </div>
-    <section class="card">
-      <h2>玩家 <span id="l-count"></span></h2>
-      <div id="l-players" class="chips"></div>
-    </section>
-    <section class="card" id="l-settings">
-      <h2>遊戲規則 <span id="l-lockhint" class="note"></span></h2>
-      <div id="f-categories" class="chips"></div>
+    <div class="lobby-cols">
+      <section class="card lobby-players">
+        <h2>玩家 <span id="l-count"></span></h2>
+        <div id="l-players" class="chips"></div>
+      </section>
+      <div class="lobby-main">
+        <section class="card">
+          <h2>要玩什麼 <span id="l-pickhint" class="note"></span></h2>
+          <div id="l-games" class="gamegrid"></div>
+        </section>
+        <div id="l-settings">
+          <!-- 猜歌大賽的規則 -->
+          <section class="card gset hidden" id="set-songguess">
+            <h2>猜歌大賽規則 <span id="l-lockhint" class="note"></span></h2>
+<div id="f-categories" class="chips"></div>
       <div id="f-kinds" class="chips kinds">
         <label class="chip"><input type="checkbox" value="OP"> OP 片頭曲</label>
         <label class="chip"><input type="checkbox" value="ED"> ED 片尾曲</label>
@@ -153,6 +181,7 @@
         <label>作答方式<select data-k="answerMode"><option value="choice">8 選 1</option><option value="typing">打字搜尋（較難）</option></select></label>
         <label>播放方式<select data-k="playMode"><option value="own">各自播放（每人自己的裝置）</option><option value="screen">主畫面播放（手機只作答）</option></select></label>
         <label>起播位置<select data-k="fromMiddle"><option value="false">從頭播放</option><option value="true">從中間播放（接近高潮處）</option></select></label>
+        <label>流行歌（日本／華語／英語）的猜法<select data-k="jpopAsk"><option value="mixed">混合（一曲兩用，每題隨機）</option><option value="title">只猜歌名</option><option value="artist">只猜歌手</option></select></label>
         <label>難度<select data-k="difficulty"><option value="1">簡單（大家都聽過）</option><option value="2">普通</option><option value="3">困難（含冷門）</option></select></label>
         <label>同一部作品最多<select data-k="perWork"><option value="1">1 首</option><option value="2">2 首</option><option value="3">3 首</option><option value="99">不限</option></select></label>
         <label>幾位玩家鎖定後倒數<select data-k="quorumMode"><option value="half">過半玩家</option><option value="all">全員</option><option value="n">指定人數</option><option value="off">不倒數（等全員／時間到）</option></select></label>
@@ -163,7 +192,11 @@
         <label>揭曉後<select data-k="autoNext"><option value="0">房主按下一題</option><option value="5">5 秒後自動下一題</option><option value="10">10 秒後自動下一題</option><option value="15">15 秒後自動下一題</option></select></label>
         <label>遊戲中途加入<select data-k="allowLateJoin"><option value="true">允許（下一題起參賽）</option><option value="false">不允許</option></select></label>
       </div>
-    </section>
+          </section>
+          <!-- 其他遊戲的規則由 js/games/*.js 放進來 -->
+        </div>
+      </div>
+    </div>
     <button id="l-start" class="big primary">開始遊戲 ▶</button>
     <p id="l-wait" class="tip">等待房主開始遊戲…</p>
     <p id="l-msg" class="toast warn"></p>
@@ -225,6 +258,7 @@
         <button id="btn-mforce" class="ghost host-only">⏩ 強制揭曉</button>
         <button id="btn-mskip" class="ghost host-only">⤼ 跳過本題</button>
         <button id="btn-mend" class="ghost host-only">■ 結束遊戲</button>
+        <button id="btn-mlobby" class="ghost host-only">⌂ 回大廳</button>
       </div>
       <p id="toast" class="toast"></p>
     </div>
@@ -237,7 +271,7 @@
     <div id="f-podium" class="podium"></div>
     <div id="f-table" class="rank-table"></div>
     <div class="row">
-      <button id="f-again" class="big primary">再來一局</button>
+      <button id="f-lobby" class="big primary">回房間大廳</button>
       <button id="f-leave" class="ghost">離開房間</button>
     </div>
     <p id="f-wait" class="tip"></p>

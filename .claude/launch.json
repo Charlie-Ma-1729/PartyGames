@@ -1,6 +1,7 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "songguesser", "runtimeExecutable": "npx", "runtimeArgs": ["--yes", "serve", ".", "-l", "5173"], "port": 5173 }
+    { "name": "partygames", "runtimeExecutable": "node", "runtimeArgs": ["server/server.mjs"], "port": 6713 },
+    { "name": "songguesser-solo", "runtimeExecutable": "npx", "runtimeArgs": ["--yes", "serve", ".", "-l", "5173"], "port": 5173 }
   ]
 }

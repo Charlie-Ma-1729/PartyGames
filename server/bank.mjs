@@ -2,19 +2,19 @@
 import { readFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CATEGORIES, choiceOf } from '../js/questions.js';
+import { CATEGORIES, SONG_CATS, choiceOf } from '../js/questions.js';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export { CATEGORIES };
 
 /** { [catId]: Question[] } */
 export let bank = {};
-/** { [catId]: {k, main, sub}[] }：每個題庫的作品清單（打字搜尋用） */
+/** { [catId]: { [ask]: {k, main, sub}[] } }：打字搜尋用的候選清單。一般題庫 ask = 'work'；J-POP 有 'title'（歌名）與 'artist'（歌手）兩份 */
 export let works = {};
 
-/** 作品的唯一鍵：歌名題庫用「歌名|歌手」，其他用 workId */
-export function keyOf(q, cat) {
-  if (cat === 'song') return `${q.answer?.title || ''}|${q.answer?.artist || ''}`;
+/** 答案的唯一鍵：J-POP 猜歌名用 t:歌名、猜歌手用 a:歌手；其他題庫用 workId */
+export function keyOf(q, cat, ask = 'work') {
+  if (SONG_CATS.includes(cat)) return ask === 'artist' ? `a:${q.answer?.artist || ''}` : `t:${q.answer?.title || ''}`;
   return q.workId;
 }
 
@@ -26,14 +26,17 @@ export function loadBank() {
     let list = [];
     try { if (existsSync(file)) list = JSON.parse(readFileSync(file, 'utf8')); } catch (e) { console.error('讀取題庫失敗', c.file, e.message); }
     nb[c.id] = list.filter((q) => !q.disabled);
-    const seen = new Map();
-    for (const q of nb[c.id]) {
-      const k = keyOf(q, c.id);
-      if (!k || seen.has(k)) continue;
-      const ch = choiceOf(q, c.id);
-      seen.set(k, { k, main: ch.main, sub: ch.sub });
+    nw[c.id] = {};
+    for (const ask of SONG_CATS.includes(c.id) ? ['title', 'artist'] : ['work']) {
+      const seen = new Map();
+      for (const q of nb[c.id]) {
+        const k = keyOf(q, c.id, ask);
+        if (!k || seen.has(k)) continue;
+        const ch = choiceOf(q, c.id, ask);
+        seen.set(k, { k, main: ch.main, sub: ch.sub });
+      }
+      nw[c.id][ask] = [...seen.values()];
     }
-    nw[c.id] = [...seen.values()];
   }
   bank = nb;
   works = nw;

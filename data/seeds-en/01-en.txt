@@ -1,0 +1,648 @@
+# 由 en-src.txt 轉出：英語流行歌（經典＋熱門）（每位歌手一個「作品」，歌曲一行）
+
+# Taylor Swift（泰勒絲） | 2014
+ENPOP | Shake It Off | Taylor Swift | y=2014 d=1
+ENPOP | Love Story | Taylor Swift | y=2008 d=1
+ENPOP | Blank Space | Taylor Swift | y=2014 d=1
+ENPOP | You Belong with Me | Taylor Swift | y=2008 d=1
+ENPOP | Anti-Hero | Taylor Swift | y=2022 d=1
+ENPOP | Cruel Summer | Taylor Swift | y=2019 d=1
+ENPOP | Bad Blood | Taylor Swift | y=2015 d=2
+ENPOP | We Are Never Ever Getting Back Together | Taylor Swift | y=2012 d=2
+ENPOP | Look What You Made Me Do | Taylor Swift | y=2017 d=2
+ENPOP | Lover | Taylor Swift | y=2019 d=2
+ENPOP | All Too Well | Taylor Swift | y=2012 d=2
+ENPOP | Wildest Dreams | Taylor Swift | y=2014 d=2
+ENPOP | willow | Taylor Swift | y=2020 d=2
+ENPOP | Fortnight | Taylor Swift | y=2024 d=2
+
+# Ed Sheeran（紅髮艾德） | 2017
+ENPOP | Shape of You | Ed Sheeran | y=2017 d=1
+ENPOP | Perfect | Ed Sheeran | y=2017 d=1
+ENPOP | Thinking Out Loud | Ed Sheeran | y=2014 d=1
+ENPOP | Photograph | Ed Sheeran | y=2014 d=2
+ENPOP | Castle on the Hill | Ed Sheeran | y=2017 d=2
+ENPOP | Shivers | Ed Sheeran | y=2021 d=2
+ENPOP | Bad Habits | Ed Sheeran | y=2021 d=2
+ENPOP | The A Team | Ed Sheeran | y=2011 d=2
+ENPOP | Lego House | Ed Sheeran | y=2011 d=2
+
+# Justin Bieber（小賈斯汀） | 2010
+ENPOP | Baby | Justin Bieber | y=2010 d=1
+ENPOP | Sorry | Justin Bieber | y=2015 d=1
+ENPOP | Love Yourself | Justin Bieber | y=2015 d=1
+ENPOP | What Do You Mean? | Justin Bieber | y=2015 d=2
+ENPOP | Peaches | Justin Bieber | y=2021 d=2
+ENPOP | Ghost | Justin Bieber | y=2021 d=2
+ENPOP | Yummy | Justin Bieber | y=2020 d=2
+
+# Adele（愛黛兒） | 2010
+ENPOP | Rolling in the Deep | Adele | y=2010 d=1
+ENPOP | Someone Like You | Adele | y=2011 d=1
+ENPOP | Hello | Adele | y=2015 d=1
+ENPOP | Set Fire to the Rain | Adele | y=2011 d=2
+ENPOP | Skyfall | Adele | y=2012 d=1
+ENPOP | Easy On Me | Adele | y=2021 d=2
+ENPOP | When We Were Young | Adele | y=2015 d=2
+
+# Bruno Mars（火星人布魯諾） | 2010
+ENPOP | Just the Way You Are | Bruno Mars | y=2010 d=1
+ENPOP | Grenade | Bruno Mars | y=2010 d=1
+ENPOP | Locked Out of Heaven | Bruno Mars | y=2012 d=1
+ENPOP | Uptown Funk | Bruno Mars | y=2014 d=1
+ENPOP | That's What I Like | Bruno Mars | y=2016 d=2
+ENPOP | 24K Magic | Bruno Mars | y=2016 d=2
+ENPOP | When I Was Your Man | Bruno Mars | y=2012 d=1
+ENPOP | Treasure | Bruno Mars | y=2013 d=2
+ENPOP | Marry You | Bruno Mars | y=2010 d=2
+ENPOP | Leave the Door Open | Bruno Mars | y=2021 d=2
+
+# Lady Gaga（女神卡卡） | 2008
+ENPOP | Poker Face | Lady Gaga | y=2008 d=1
+ENPOP | Bad Romance | Lady Gaga | y=2009 d=1
+ENPOP | Just Dance | Lady Gaga | y=2008 d=1
+ENPOP | Shallow | Lady Gaga | y=2018 d=1
+ENPOP | Born This Way | Lady Gaga | y=2011 d=1
+ENPOP | Paparazzi | Lady Gaga | y=2009 d=2
+ENPOP | Telephone | Lady Gaga | y=2010 d=2
+ENPOP | Rain on Me | Lady Gaga | y=2020 d=2
+ENPOP | Die With a Smile | Lady Gaga | y=2024 d=2
+
+# Katy Perry（凱蒂佩芮） | 2013
+ENPOP | Roar | Katy Perry | y=2013 d=1
+ENPOP | Firework | Katy Perry | y=2010 d=1
+ENPOP | Dark Horse | Katy Perry | y=2013 d=1
+ENPOP | California Gurls | Katy Perry | y=2010 d=2
+ENPOP | Teenage Dream | Katy Perry | y=2010 d=2
+ENPOP | Hot n Cold | Katy Perry | y=2008 d=2
+ENPOP | I Kissed a Girl | Katy Perry | y=2008 d=2
+ENPOP | Last Friday Night (T.G.I.F.) | Katy Perry | y=2011 d=2
+
+# Rihanna（蕾哈娜） | 2007
+ENPOP | Umbrella | Rihanna | y=2007 d=1
+ENPOP | Diamonds | Rihanna | y=2012 d=1
+ENPOP | We Found Love | Rihanna | y=2011 d=1
+ENPOP | Work | Rihanna | y=2016 d=2
+ENPOP | Only Girl (In the World) | Rihanna | y=2010 d=2
+ENPOP | Rude Boy | Rihanna | y=2010 d=2
+ENPOP | S&M | Rihanna | y=2011 d=2
+ENPOP | Stay | Rihanna | y=2012 d=2
+ENPOP | Don't Stop the Music | Rihanna | y=2007 d=2
+
+# Beyoncé（碧昂絲） | 2008
+ENPOP | Single Ladies (Put a Ring on It) | Beyoncé | y=2008 d=1
+ENPOP | Halo | Beyoncé | y=2008 d=1
+ENPOP | Crazy in Love | Beyoncé | y=2003 d=1
+ENPOP | Irreplaceable | Beyoncé | y=2006 d=2
+ENPOP | Love on Top | Beyoncé | y=2011 d=2
+ENPOP | Drunk in Love | Beyoncé | y=2013 d=2
+
+# Ariana Grande（亞莉安娜） | 2018
+ENPOP | thank u, next | Ariana Grande | y=2018 d=1
+ENPOP | 7 rings | Ariana Grande | y=2019 d=1
+ENPOP | Problem | Ariana Grande | y=2014 d=1
+ENPOP | Side to Side | Ariana Grande | y=2016 d=2
+ENPOP | Into You | Ariana Grande | y=2016 d=2
+ENPOP | No Tears Left to Cry | Ariana Grande | y=2018 d=2
+ENPOP | Break Free | Ariana Grande | y=2014 d=2
+ENPOP | positions | Ariana Grande | y=2020 d=2
+ENPOP | yes, and? | Ariana Grande | y=2024 d=2
+
+# Billie Eilish（怪奇比莉） | 2019
+ENPOP | bad guy | Billie Eilish | y=2019 d=1
+ENPOP | ocean eyes | Billie Eilish | y=2016 d=2
+ENPOP | when the party's over | Billie Eilish | y=2018 d=2
+ENPOP | lovely | Billie Eilish | y=2018 d=2
+ENPOP | What Was I Made For? | Billie Eilish | y=2023 d=2
+ENPOP | Happier Than Ever | Billie Eilish | y=2021 d=2
+ENPOP | Birds of a Feather | Billie Eilish | y=2024 d=2
+
+# Dua Lipa（杜娃利波） | 2020
+ENPOP | Levitating | Dua Lipa | y=2020 d=1
+ENPOP | Don't Start Now | Dua Lipa | y=2019 d=1
+ENPOP | New Rules | Dua Lipa | y=2017 d=2
+ENPOP | One Kiss | Dua Lipa | y=2018 d=2
+ENPOP | Physical | Dua Lipa | y=2020 d=2
+ENPOP | IDGAF | Dua Lipa | y=2017 d=2
+ENPOP | Houdini | Dua Lipa | y=2023 d=2
+
+# The Weeknd（威肯） | 2019
+ENPOP | Blinding Lights | The Weeknd | y=2019 d=1
+ENPOP | Starboy | The Weeknd | y=2016 d=1
+ENPOP | Can't Feel My Face | The Weeknd | y=2015 d=1
+ENPOP | Save Your Tears | The Weeknd | y=2020 d=2
+ENPOP | The Hills | The Weeknd | y=2015 d=2
+ENPOP | Earned It | The Weeknd | y=2015 d=2
+ENPOP | Die For You | The Weeknd | y=2016 d=2
+
+# Post Malone（波特馬龍） | 2019
+ENPOP | Circles | Post Malone | y=2019 d=1
+ENPOP | Sunflower | Post Malone | y=2018 d=1
+ENPOP | rockstar | Post Malone | y=2017 d=2
+ENPOP | Congratulations | Post Malone | y=2016 d=2
+ENPOP | Better Now | Post Malone | y=2018 d=2
+ENPOP | White Iverson | Post Malone | y=2015 d=2
+
+# Shawn Mendes（尚恩曼德斯） | 2015
+ENPOP | Stitches | Shawn Mendes | y=2015 d=1
+ENPOP | Treat You Better | Shawn Mendes | y=2016 d=2
+ENPOP | There's Nothing Holdin' Me Back | Shawn Mendes | y=2016 d=2
+ENPOP | Señorita | Shawn Mendes | y=2019 d=2
+ENPOP | In My Blood | Shawn Mendes | y=2018 d=2
+
+# Camila Cabello（卡蜜拉） | 2017
+ENPOP | Havana | Camila Cabello | y=2017 d=1
+ENPOP | Never Be the Same | Camila Cabello | y=2017 d=2
+
+# Selena Gomez（瑟琳娜） | 2013
+ENPOP | Come & Get It | Selena Gomez | y=2013 d=2
+ENPOP | Lose You to Love Me | Selena Gomez | y=2019 d=2
+ENPOP | Good for You | Selena Gomez | y=2015 d=2
+ENPOP | Love You Like a Love Song | Selena Gomez | y=2011 d=2
+
+# Miley Cyrus（麥莉希拉） | 2023
+ENPOP | Flowers | Miley Cyrus | y=2023 d=1
+ENPOP | Wrecking Ball | Miley Cyrus | y=2013 d=1
+ENPOP | Party in the U.S.A. | Miley Cyrus | y=2009 d=2
+ENPOP | We Can't Stop | Miley Cyrus | y=2013 d=2
+ENPOP | The Climb | Miley Cyrus | y=2009 d=2
+
+# Britney Spears（小甜甜布蘭妮） | 1998
+ENPOP | ...Baby One More Time | Britney Spears | y=1998 d=1
+ENPOP | Toxic | Britney Spears | y=2003 d=1
+ENPOP | Oops!... I Did It Again | Britney Spears | y=2000 d=1
+ENPOP | Womanizer | Britney Spears | y=2008 d=2
+ENPOP | Gimme More | Britney Spears | y=2007 d=2
+
+# Christina Aguilera（克莉絲汀） | 1999
+ENPOP | Genie in a Bottle | Christina Aguilera | y=1999 d=2
+ENPOP | Beautiful | Christina Aguilera | y=2002 d=2
+ENPOP | Fighter | Christina Aguilera | y=2002 d=2
+
+# Backstreet Boys（後街男孩） | 1999
+ENPOP | I Want It That Way | Backstreet Boys | y=1999 d=1
+ENPOP | Everybody (Backstreet's Back) | Backstreet Boys | y=1997 d=2
+ENPOP | As Long as You Love Me | Backstreet Boys | y=1997 d=2
+ENPOP | Larger than Life | Backstreet Boys | y=1999 d=2
+ENPOP | Shape of My Heart | Backstreet Boys | y=2000 d=2
+
+# *NSYNC（超級男孩） | 2000
+ENPOP | Bye Bye Bye | *NSYNC | y=2000 d=1
+ENPOP | It's Gonna Be Me | *NSYNC | y=2000 d=2
+
+# Westlife（西城男孩） | 2000
+ENPOP | My Love | Westlife | y=2000 d=1
+ENPOP | Flying Without Wings | Westlife | y=1999 d=1
+ENPOP | Uptown Girl | Westlife | y=2001 d=2
+ENPOP | Swear It Again | Westlife | y=1999 d=2
+ENPOP | You Raise Me Up | Westlife | y=2005 d=2
+
+# Boyzone（男孩地帶） | 1998
+ENPOP | No Matter What | Boyzone | y=1998 d=2
+
+# Spice Girls（辣妹合唱團） | 1996
+ENPOP | Wannabe | Spice Girls | y=1996 d=1
+
+# Michael Jackson（麥可傑克森） | 1983
+ENPOP | Billie Jean | Michael Jackson | y=1983 d=1
+ENPOP | Thriller | Michael Jackson | y=1982 d=1
+ENPOP | Beat It | Michael Jackson | y=1983 d=1
+ENPOP | Smooth Criminal | Michael Jackson | y=1987 d=2
+ENPOP | Heal the World | Michael Jackson | y=1991 d=2
+ENPOP | Man in the Mirror | Michael Jackson | y=1987 d=2
+ENPOP | Black or White | Michael Jackson | y=1991 d=2
+ENPOP | You Are Not Alone | Michael Jackson | y=1995 d=2
+ENPOP | Earth Song | Michael Jackson | y=1995 d=2
+
+# Madonna（瑪丹娜） | 1984
+ENPOP | Like a Virgin | Madonna | y=1984 d=2
+ENPOP | Vogue | Madonna | y=1990 d=2
+ENPOP | Hung Up | Madonna | y=2005 d=2
+ENPOP | La Isla Bonita | Madonna | y=1987 d=2
+
+# Whitney Houston（惠妮休斯頓） | 1992
+ENPOP | I Will Always Love You | Whitney Houston | y=1992 d=1
+ENPOP | I Wanna Dance with Somebody (Who Loves Me) | Whitney Houston | y=1987 d=1
+ENPOP | Greatest Love of All | Whitney Houston | y=1985 d=2
+
+# Mariah Carey（瑪麗亞凱莉） | 1994
+ENPOP | All I Want for Christmas Is You | Mariah Carey | y=1994 d=1
+ENPOP | Hero | Mariah Carey | y=1993 d=2
+ENPOP | We Belong Together | Mariah Carey | y=2005 d=2
+ENPOP | Always Be My Baby | Mariah Carey | y=1996 d=2
+
+# Céline Dion（席琳狄翁） | 1997
+ENPOP | My Heart Will Go On | Céline Dion | y=1997 d=1
+ENPOP | Because You Loved Me | Céline Dion | y=1996 d=2
+ENPOP | The Power of Love | Céline Dion | y=1993 d=2
+
+# Elton John（艾爾頓強） | 1970
+ENPOP | Your Song | Elton John | y=1970 d=2
+ENPOP | Rocket Man | Elton John | y=1972 d=2
+ENPOP | Can You Feel the Love Tonight | Elton John | y=1994 d=1
+ENPOP | Candle in the Wind | Elton John | y=1973 d=2
+ENPOP | I'm Still Standing | Elton John | y=1983 d=2
+
+# Queen（皇后合唱團） | 1975
+ENPOP | Bohemian Rhapsody | Queen | y=1975 d=1
+ENPOP | We Will Rock You | Queen | y=1977 d=1
+ENPOP | We Are the Champions | Queen | y=1977 d=1
+ENPOP | Don't Stop Me Now | Queen | y=1978 d=1
+ENPOP | Somebody to Love | Queen | y=1976 d=2
+ENPOP | Another One Bites the Dust | Queen | y=1980 d=2
+ENPOP | I Want to Break Free | Queen | y=1984 d=2
+
+# The Beatles（披頭四） | 1968
+ENPOP | Hey Jude | The Beatles | y=1968 d=1
+ENPOP | Let It Be | The Beatles | y=1970 d=1
+ENPOP | Yesterday | The Beatles | y=1965 d=1
+ENPOP | Here Comes the Sun | The Beatles | y=1969 d=2
+ENPOP | Come Together | The Beatles | y=1969 d=2
+
+# Eagles（老鷹合唱團） | 1977
+ENPOP | Hotel California | Eagles | y=1977 d=1
+
+# ABBA（阿巴合唱團） | 1976
+ENPOP | Dancing Queen | ABBA | y=1976 d=1
+ENPOP | Mamma Mia | ABBA | y=1975 d=2
+ENPOP | Super Trouper | ABBA | y=1980 d=2
+ENPOP | Money, Money, Money | ABBA | y=1976 d=2
+
+# Bee Gees（比吉斯） | 1977
+ENPOP | Stayin' Alive | Bee Gees | y=1977 d=2
+
+# Carpenters（卡本特） | 1973
+ENPOP | Yesterday Once More | Carpenters | y=1973 d=2
+ENPOP | Top of the World | Carpenters | y=1973 d=2
+
+# John Denver（約翰丹佛） | 1971
+ENPOP | Take Me Home, Country Roads | John Denver | y=1971 d=2
+
+# Simon & Garfunkel（賽門與葛芬柯） | 1964
+ENPOP | The Sound of Silence | Simon & Garfunkel | y=1964 d=2
+ENPOP | Mrs. Robinson | Simon & Garfunkel | y=1968 d=2
+
+# Bon Jovi（邦喬飛） | 1986
+ENPOP | Livin' on a Prayer | Bon Jovi | y=1986 d=1
+ENPOP | It's My Life | Bon Jovi | y=2000 d=2
+
+# Guns N' Roses（槍與玫瑰） | 1987
+ENPOP | Sweet Child o' Mine | Guns N' Roses | y=1987 d=1
+ENPOP | November Rain | Guns N' Roses | y=1992 d=2
+
+# Nirvana（超脫樂團） | 1991
+ENPOP | Smells Like Teen Spirit | Nirvana | y=1991 d=1
+
+# Green Day（綠日） | 2004
+ENPOP | Boulevard of Broken Dreams | Green Day | y=2004 d=2
+ENPOP | Basket Case | Green Day | y=1994 d=2
+
+# Linkin Park（聯合公園） | 2001
+ENPOP | In the End | Linkin Park | y=2001 d=1
+ENPOP | Numb | Linkin Park | y=2003 d=1
+ENPOP | Faint | Linkin Park | y=2003 d=2
+ENPOP | Crawling | Linkin Park | y=2000 d=2
+ENPOP | What I've Done | Linkin Park | y=2007 d=2
+
+# Coldplay（酷玩樂團） | 2000
+ENPOP | Yellow | Coldplay | y=2000 d=1
+ENPOP | Viva la Vida | Coldplay | y=2008 d=1
+ENPOP | Fix You | Coldplay | y=2005 d=1
+ENPOP | The Scientist | Coldplay | y=2002 d=2
+ENPOP | Paradise | Coldplay | y=2011 d=2
+ENPOP | Clocks | Coldplay | y=2002 d=2
+ENPOP | A Sky Full of Stars | Coldplay | y=2014 d=2
+ENPOP | Hymn for the Weekend | Coldplay | y=2015 d=2
+
+# Maroon 5（魔力紅） | 2014
+ENPOP | Sugar | Maroon 5 | y=2014 d=1
+ENPOP | Moves Like Jagger | Maroon 5 | y=2011 d=1
+ENPOP | Payphone | Maroon 5 | y=2012 d=2
+ENPOP | This Love | Maroon 5 | y=2004 d=2
+ENPOP | She Will Be Loved | Maroon 5 | y=2004 d=2
+ENPOP | Memories | Maroon 5 | y=2019 d=2
+ENPOP | Girls Like You | Maroon 5 | y=2018 d=2
+ENPOP | One More Night | Maroon 5 | y=2012 d=2
+
+# OneRepublic（共和世代） | 2013
+ENPOP | Counting Stars | OneRepublic | y=2013 d=1
+ENPOP | Apologize | OneRepublic | y=2007 d=2
+ENPOP | Secrets | OneRepublic | y=2009 d=2
+ENPOP | Stop and Stare | OneRepublic | y=2007 d=2
+
+# Imagine Dragons（夢龍） | 2012
+ENPOP | Radioactive | Imagine Dragons | y=2012 d=1
+ENPOP | Demons | Imagine Dragons | y=2012 d=2
+ENPOP | Believer | Imagine Dragons | y=2017 d=1
+ENPOP | Thunder | Imagine Dragons | y=2017 d=2
+ENPOP | Whatever It Takes | Imagine Dragons | y=2017 d=2
+ENPOP | It's Time | Imagine Dragons | y=2012 d=2
+
+# twenty one pilots（二十一名飛行員） | 2015
+ENPOP | Stressed Out | twenty one pilots | y=2015 d=2
+ENPOP | Heathens | twenty one pilots | y=2016 d=2
+
+# Panic! at the Disco（迪斯可驚魂夜） | 2018
+ENPOP | High Hopes | Panic! at the Disco | y=2018 d=2
+ENPOP | I Write Sins Not Tragedies | Panic! at the Disco | y=2005 d=2
+
+# Fall Out Boy（秋季男孩） | 2014
+ENPOP | Centuries | Fall Out Boy | y=2014 d=2
+
+# Avril Lavigne（艾薇兒） | 2002
+ENPOP | Complicated | Avril Lavigne | y=2002 d=1
+ENPOP | Sk8er Boi | Avril Lavigne | y=2002 d=2
+ENPOP | Girlfriend | Avril Lavigne | y=2007 d=2
+
+# Kelly Clarkson（凱莉克萊森） | 2004
+ENPOP | Since U Been Gone | Kelly Clarkson | y=2004 d=2
+ENPOP | Stronger (What Doesn't Kill You) | Kelly Clarkson | y=2011 d=2
+ENPOP | Because of You | Kelly Clarkson | y=2004 d=2
+
+# P!nk（粉紅佳人） | 2012
+ENPOP | Just Give Me a Reason | P!nk | y=2012 d=1
+ENPOP | So What | P!nk | y=2008 d=2
+ENPOP | Raise Your Glass | P!nk | y=2010 d=2
+
+# Eminem（阿姆） | 2002
+ENPOP | Lose Yourself | Eminem | y=2002 d=1
+ENPOP | Stan | Eminem | y=2000 d=2
+ENPOP | Without Me | Eminem | y=2002 d=2
+ENPOP | Love the Way You Lie | Eminem | y=2010 d=2
+
+# Black Eyed Peas（黑眼豆豆） | 2009
+ENPOP | I Gotta Feeling | Black Eyed Peas | y=2009 d=1
+ENPOP | Where Is the Love? | Black Eyed Peas | y=2003 d=2
+ENPOP | Boom Boom Pow | Black Eyed Peas | y=2009 d=2
+
+# Pharrell Williams（菲董） | 2013
+ENPOP | Happy | Pharrell Williams | y=2013 d=1
+
+# Wiz Khalifa（維茲卡利法） | 2015
+ENPOP | See You Again | Wiz Khalifa | y=2015 d=1
+
+# Charlie Puth（查理普斯） | 2017
+ENPOP | Attention | Charlie Puth | y=2017 d=1
+ENPOP | We Don't Talk Anymore | Charlie Puth | y=2016 d=1
+ENPOP | One Call Away | Charlie Puth | y=2015 d=2
+
+# Sam Smith（山姆史密斯） | 2014
+ENPOP | Stay with Me | Sam Smith | y=2014 d=1
+ENPOP | Too Good at Goodbyes | Sam Smith | y=2017 d=2
+ENPOP | I'm Not the Only One | Sam Smith | y=2014 d=2
+ENPOP | Unholy | Sam Smith | y=2022 d=2
+
+# Lewis Capaldi（路易斯卡帕蒂） | 2018
+ENPOP | Someone You Loved | Lewis Capaldi | y=2018 d=1
+ENPOP | Before You Go | Lewis Capaldi | y=2019 d=2
+
+# Harry Styles（哈利斯泰爾斯） | 2022
+ENPOP | As It Was | Harry Styles | y=2022 d=1
+ENPOP | Watermelon Sugar | Harry Styles | y=2019 d=1
+ENPOP | Adore You | Harry Styles | y=2019 d=2
+ENPOP | Sign of the Times | Harry Styles | y=2017 d=2
+
+# One Direction（單向組合） | 2011
+ENPOP | What Makes You Beautiful | One Direction | y=2011 d=1
+ENPOP | Story of My Life | One Direction | y=2013 d=1
+ENPOP | Best Song Ever | One Direction | y=2013 d=2
+ENPOP | Drag Me Down | One Direction | y=2015 d=2
+ENPOP | Night Changes | One Direction | y=2014 d=2
+
+# Olivia Rodrigo（奧莉維亞） | 2021
+ENPOP | drivers license | Olivia Rodrigo | y=2021 d=1
+ENPOP | good 4 u | Olivia Rodrigo | y=2021 d=1
+ENPOP | vampire | Olivia Rodrigo | y=2023 d=2
+ENPOP | deja vu | Olivia Rodrigo | y=2021 d=2
+
+# Sabrina Carpenter（莎賓娜卡本特） | 2024
+ENPOP | Espresso | Sabrina Carpenter | y=2024 d=1
+ENPOP | Please Please Please | Sabrina Carpenter | y=2024 d=2
+ENPOP | Taste | Sabrina Carpenter | y=2024 d=2
+
+# Chappell Roan | 2024
+ENPOP | Good Luck, Babe! | Chappell Roan | y=2024 d=2
+ENPOP | HOT TO GO! | Chappell Roan | y=2023 d=2
+
+# Doja Cat（朵嘉貓） | 2019
+ENPOP | Say So | Doja Cat | y=2019 d=1
+ENPOP | Kiss Me More | Doja Cat | y=2021 d=2
+ENPOP | Woman | Doja Cat | y=2021 d=2
+
+# Lizzo | 2022
+ENPOP | About Damn Time | Lizzo | y=2022 d=2
+ENPOP | Truth Hurts | Lizzo | y=2017 d=2
+ENPOP | Good as Hell | Lizzo | y=2016 d=2
+
+# Lorde（蘿兒） | 2013
+ENPOP | Royals | Lorde | y=2013 d=1
+ENPOP | Green Light | Lorde | y=2017 d=2
+
+# Sia（希雅） | 2014
+ENPOP | Chandelier | Sia | y=2014 d=1
+ENPOP | Cheap Thrills | Sia | y=2016 d=2
+
+# Calvin Harris（凱文哈里斯） | 2016
+ENPOP | This Is What You Came For | Calvin Harris | y=2016 d=2
+ENPOP | Summer | Calvin Harris | y=2014 d=2
+ENPOP | Feel So Close | Calvin Harris | y=2011 d=2
+
+# Avicii（艾維奇） | 2013
+ENPOP | Wake Me Up | Avicii | y=2013 d=1
+ENPOP | Hey Brother | Avicii | y=2013 d=2
+ENPOP | Levels | Avicii | y=2011 d=1
+
+# Alan Walker（艾倫沃克） | 2015
+ENPOP | Faded | Alan Walker | y=2015 d=1
+
+# Zedd（澤德） | 2012
+ENPOP | Clarity | Zedd | y=2012 d=2
+ENPOP | The Middle | Zedd | y=2018 d=2
+
+# Martin Garrix（馬丁蓋瑞斯） | 2013
+ENPOP | Animals | Martin Garrix | y=2013 d=2
+
+# The Chainsmokers（煙霧殺手） | 2016
+ENPOP | Closer | The Chainsmokers | y=2016 d=1
+ENPOP | Don't Let Me Down | The Chainsmokers | y=2016 d=2
+
+# Marshmello（棉花糖） | 2018
+ENPOP | Happier | Marshmello | y=2018 d=2
+ENPOP | Alone | Marshmello | y=2016 d=2
+
+# Kygo（凱戈） | 2014
+ENPOP | Firestone | Kygo | y=2014 d=2
+
+# David Guetta（大衛蓋塔） | 2011
+ENPOP | Titanium | David Guetta | y=2011 d=1
+
+# Oasis（綠洲合唱團） | 1995
+ENPOP | Wonderwall | Oasis | y=1995 d=1
+ENPOP | Don't Look Back in Anger | Oasis | y=1996 d=2
+ENPOP | Champagne Supernova | Oasis | y=1995 d=2
+
+# Radiohead（電台司令） | 1992
+ENPOP | Creep | Radiohead | y=1992 d=2
+
+# Red Hot Chili Peppers（嗆辣紅椒） | 1999
+ENPOP | Californication | Red Hot Chili Peppers | y=1999 d=2
+ENPOP | Under the Bridge | Red Hot Chili Peppers | y=1991 d=2
+
+# The Killers（殺手樂團） | 2003
+ENPOP | Mr. Brightside | The Killers | y=2003 d=1
+ENPOP | Human | The Killers | y=2008 d=2
+
+# Arctic Monkeys（北極猴子） | 2013
+ENPOP | Do I Wanna Know? | Arctic Monkeys | y=2013 d=2
+ENPOP | I Bet You Look Good on the Dancefloor | Arctic Monkeys | y=2005 d=2
+
+# Muse（謬思樂團） | 2006
+ENPOP | Supermassive Black Hole | Muse | y=2006 d=2
+
+# U2 | 1987
+ENPOP | With or Without You | U2 | y=1987 d=2
+ENPOP | One | U2 | y=1991 d=2
+ENPOP | Beautiful Day | U2 | y=2000 d=2
+
+# Sting（史汀） | 1993
+ENPOP | Shape of My Heart | Sting | y=1993 d=2
+
+# The Police（警察樂團） | 1983
+ENPOP | Every Breath You Take | The Police | y=1983 d=2
+
+# Phil Collins（菲爾柯林斯） | 1981
+ENPOP | In the Air Tonight | Phil Collins | y=1981 d=2
+ENPOP | You'll Be in My Heart | Phil Collins | y=1999 d=2
+
+# Michael Learns to Rock（邁克爾學搖滾） | 1995
+ENPOP | That's Why (You Go Away) | Michael Learns to Rock | y=1995 d=1
+ENPOP | 25 Minutes | Michael Learns to Rock | y=1991 d=2
+ENPOP | Someday | Michael Learns to Rock | y=1991 d=2
+
+# Air Supply（空中補給） | 1980
+ENPOP | All Out of Love | Air Supply | y=1980 d=2
+ENPOP | Making Love Out of Nothing at All | Air Supply | y=1983 d=2
+
+# Richard Marx（理查馬克斯） | 1989
+ENPOP | Right Here Waiting | Richard Marx | y=1989 d=2
+
+# Roxette（樂塞特） | 1990
+ENPOP | It Must Have Been Love | Roxette | y=1990 d=2
+ENPOP | Listen to Your Heart | Roxette | y=1988 d=2
+
+# Ace of Base（王牌樂團） | 1993
+ENPOP | The Sign | Ace of Base | y=1993 d=2
+
+# Savage Garden（野人花園） | 1997
+ENPOP | Truly Madly Deeply | Savage Garden | y=1997 d=2
+ENPOP | I Knew I Loved You | Savage Garden | y=1999 d=2
+
+# Lionel Richie（萊諾李奇） | 1984
+ENPOP | Hello | Lionel Richie | y=1984 d=2
+
+# Stevie Wonder（史提夫汪達） | 1984
+ENPOP | I Just Called to Say I Love You | Stevie Wonder | y=1984 d=2
+
+# Ben E. King（班伊金） | 1961
+ENPOP | Stand by Me | Ben E. King | y=1961 d=2
+
+# Louis Armstrong（路易斯阿姆斯壯） | 1967
+ENPOP | What a Wonderful World | Louis Armstrong | y=1967 d=2
+
+# Frank Sinatra（法蘭克辛納屈） | 1969
+ENPOP | My Way | Frank Sinatra | y=1969 d=2
+ENPOP | Fly Me to the Moon | Frank Sinatra | y=1964 d=2
+
+# Elvis Presley（貓王） | 1961
+ENPOP | Can't Help Falling in Love | Elvis Presley | y=1961 d=1
+ENPOP | Jailhouse Rock | Elvis Presley | y=1957 d=2
+
+# Eric Clapton（艾瑞克克萊普頓） | 1992
+ENPOP | Tears in Heaven | Eric Clapton | y=1992 d=2
+
+# Bob Marley（巴布馬利） | 1977
+ENPOP | One Love | Bob Marley | y=1977 d=2
+
+# Gotye（高爾提） | 2011
+ENPOP | Somebody That I Used to Know | Gotye | y=2011 d=1
+
+# Passenger（旅人） | 2012
+ENPOP | Let Her Go | Passenger | y=2012 d=1
+
+# Jason Mraz（傑森瑪耶茲） | 2008
+ENPOP | I'm Yours | Jason Mraz | y=2008 d=1
+
+# Train（火車合唱團） | 2009
+ENPOP | Hey, Soul Sister | Train | y=2009 d=2
+
+# Plain White T's | 2005
+ENPOP | Hey There Delilah | Plain White T's | y=2005 d=2
+
+# John Legend（約翰傳奇） | 2013
+ENPOP | All of Me | John Legend | y=2013 d=1
+
+# Alicia Keys（艾莉西亞凱斯） | 2001
+ENPOP | Fallin' | Alicia Keys | y=2001 d=2
+ENPOP | If I Ain't Got You | Alicia Keys | y=2003 d=2
+ENPOP | Girl on Fire | Alicia Keys | y=2012 d=2
+
+# Justin Timberlake（賈斯汀提姆布萊克） | 2016
+ENPOP | Can't Stop the Feeling! | Justin Timberlake | y=2016 d=1
+ENPOP | Cry Me a River | Justin Timberlake | y=2002 d=2
+ENPOP | SexyBack | Justin Timberlake | y=2006 d=2
+
+# Jason Derulo（傑森迪盧洛） | 2009
+ENPOP | Whatcha Say | Jason Derulo | y=2009 d=2
+ENPOP | Talk Dirty | Jason Derulo | y=2013 d=2
+
+# Kesha（凱莎） | 2009
+ENPOP | TiK ToK | Kesha | y=2009 d=1
+
+# LMFAO | 2011
+ENPOP | Party Rock Anthem | LMFAO | y=2011 d=2
+
+# Owl City（貓頭鷹之城） | 2009
+ENPOP | Fireflies | Owl City | y=2009 d=1
+
+# Carly Rae Jepsen（卡莉蕾吉普森） | 2012
+ENPOP | Call Me Maybe | Carly Rae Jepsen | y=2012 d=1
+
+# Meghan Trainor（梅根特瑞娜） | 2014
+ENPOP | All About That Bass | Meghan Trainor | y=2014 d=2
+
+# Fergie（費吉） | 2006
+ENPOP | Big Girls Don't Cry | Fergie | y=2006 d=2
+
+# Nelly Furtado（奈莉費塔朵） | 2006
+ENPOP | Say It Right | Nelly Furtado | y=2006 d=2
+ENPOP | Promiscuous | Nelly Furtado | y=2006 d=2
+
+# Eurythmics（舞韻合唱團） | 1983
+ENPOP | Sweet Dreams (Are Made of This) | Eurythmics | y=1983 d=2
+
+# a-ha | 1985
+ENPOP | Take On Me | a-ha | y=1985 d=1
+
+# Wham!（威猛合唱團） | 1984
+ENPOP | Last Christmas | Wham! | y=1984 d=1
+ENPOP | Wake Me Up Before You Go-Go | Wham! | y=1984 d=2
+
+# Culture Club（文化俱樂部） | 1983
+ENPOP | Karma Chameleon | Culture Club | y=1983 d=2
+
+# Cyndi Lauper（辛蒂露波） | 1983
+ENPOP | Girls Just Want to Have Fun | Cyndi Lauper | y=1983 d=2
+ENPOP | Time After Time | Cyndi Lauper | y=1984 d=2
+
+# Tina Turner（蒂娜透納） | 1984
+ENPOP | What's Love Got to Do with It | Tina Turner | y=1984 d=2
+
+# Michael Bublé（麥可布雷） | 2005
+ENPOP | Home | Michael Bublé | y=2005 d=2
+ENPOP | Haven't Met You Yet | Michael Bublé | y=2009 d=2
+
+# Norah Jones（諾拉瓊絲） | 2002
+ENPOP | Don't Know Why | Norah Jones | y=2002 d=2
+
+# Idina Menzel（伊迪娜曼佐） | 2013
+ENPOP | Let It Go | Idina Menzel | y=2013 d=1

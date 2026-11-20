@@ -1,4 +1,4 @@
-// 機器人模擬：用真的 WebSocket 連到真的伺服器，跑完一整局，檢查流程與計分。
+// 機器人模擬：用真的 WebSocket 連到真的伺服器，開房間、選「猜歌大賽」、跑完一整局，最後回大廳，檢查流程與計分。
 // 用法：node scripts/simulate-multi.mjs [--bots 6] [--questions 3] [--mode choice|typing] [--score speed|fixed|combo] [--url ws://host:port/ws]
 // 沒給 --url 時會在本機隨機 port 啟動伺服器。
 import { WebSocket } from 'ws';
@@ -25,6 +25,7 @@ class Bot {
     this.ws.on('message', (d) => this.onMsg(JSON.parse(d.toString())));
   }
   send(o) { this.ws.send(JSON.stringify(o)); }
+  gsend(m) { this.send({ t: 'g', m }); } // 遊戲訊息要包在 {t:'g', m}
   waitFor(pred, ms = 20000) {
     return new Promise((res, rej) => {
       const t = setTimeout(() => rej(new Error(`${this.name} 等待逾時`)), ms);
@@ -33,13 +34,14 @@ class Bot {
     });
   }
   async onMsg(m) {
+    if (m.t === 'g') m = m.m; // 伺服器把遊戲訊息包在 {t:'g', g, m}，這裡拆開
     this.msgs.push(m);
     if (this._w) { const w = this._w; this._w = null; w(); }
     if (m.t === 'joined') { this.id = m.playerId; this.code = m.code; }
-    else if (m.t === 'room') this.room = m;
+    else if (m.t === 'hub') this.room = m;
     else if (m.t === 'works') this.works = m.list;
     else if (m.t === 'pong') this.offset = m.s - (m.c + Date.now()) / 2;
-    else if (m.t === 'question') { this.q = m; await sleep(100 + Math.random() * 300); this.send({ t: 'ready', idx: m.idx }); }
+    else if (m.t === 'question') { this.q = m; await sleep(100 + Math.random() * 300); this.gsend({ t: 'ready', idx: m.idx }); }
     else if (m.t === 'go') this.onGo(m);
     else if (m.t === 'reveal') this.reveals++;
     else if (m.t === 'final') this.final = m;
@@ -56,7 +58,7 @@ class Bot {
     const msg = { t: 'lock', idx: q.idx, elapsedMs: Date.now() - t };
     if (q.choices) msg.choice = Math.floor(Math.random() * q.choices.length); else msg.key = 'guess-' + Math.floor(Math.random() * 5);
     this.guessRight = right; // 機器人看不到答案；這裡只隨機亂猜，正確率由運氣決定
-    this.send(msg);
+    this.gsend(msg);
   }
 }
 
@@ -81,6 +83,7 @@ async function main() {
   log('房內人數', host.room.players.length);
   if (host.room.players.length !== N) throw new Error('人數不對');
 
+  host.send({ t: 'pick', game: 'songguess' });
   host.send({ t: 'settings', settings: { categories: ['anime'], count: Q, duration: 5, graceSecs: 0, quorumMode: 'half', quorumSecs: 3, answerMode: MODE, scoreMode: SCORE } });
   await sleep(200);
   host.send({ t: 'start' });
@@ -90,7 +93,7 @@ async function main() {
     const right = rv.rows.filter((r) => r.correct).length;
     log(`第 ${i}/${Q} 題揭曉（${rv.reason}）：「${rv.answer.work}」答對 ${right}/${rv.rows.length}，前三名：${rv.ranking.slice(0, 3).map((r) => `${r.nick} ${r.score}`).join('、')}`);
     await sleep(200);
-    host.send({ t: 'next' });
+    host.gsend({ t: 'next' });
   }
   const fin = await host.waitFor((m) => m.t === 'final', 15000);
   log('最終排行：');
@@ -102,6 +105,9 @@ async function main() {
   if (bad.length) throw new Error('有機器人沒收到完整訊息：' + bad.map((b) => `${b.name}(reveal ${b.reveals})`).join(','));
   const sums = new Set(bots.map((b) => JSON.stringify(b.final.ranking)));
   if (sums.size !== 1) throw new Error('各機器人看到的排行榜不一致');
+  host.send({ t: 'lobby' });
+  await Promise.all(bots.map((b) => b.waitFor((m) => m.t === 'hub' && m.phase === 'lobby' && b.msgs.filter((x) => x.t === 'final').length > 0 && b.msgs.lastIndexOf(m) > b.msgs.findIndex((x) => x.t === 'final'), 5000)));
+  log('全員回到大廳');
   log(`✅ 模擬完成：${N} 位機器人，${Q} 題，全部收到相同的最終排行榜`);
   bots.forEach((b) => b.ws.close());
   if (srv) srv.close();

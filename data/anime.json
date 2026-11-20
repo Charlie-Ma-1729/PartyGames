@@ -55247,26 +55247,6 @@
   "review": true
  },
  {
-  "id": "a-3c77ff63",
-  "workId": "w675a0f",
-  "kind": "ED",
-  "ytId": "UEfd7PR4cfw",
-  "start": 0,
-  "mid": 12,
-  "prompt": "這首歌來自哪部動畫？",
-  "answer": {
-   "title": "フィルター",
-   "work": "我的妹妹哪有這麼可愛（俺の妹がこんなに可愛いわけがない）",
-   "artist": "Ayase Aragaki (CV: Saori Hayami)"
-  },
-  "year": 2010,
-  "difficulty": 2,
-  "video": "【俺の妹がこんなに可愛いわけがない。2話ED】 フィルター (TV.size) 【GP6 TAB】",
-  "channel": "ryo5656",
-  "startSource": "heuristic",
-  "review": true
- },
- {
   "id": "a-a8172884",
   "workId": "w675a0f",
   "kind": "ED",

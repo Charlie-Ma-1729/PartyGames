@@ -1,0 +1,56 @@
+/* 派對遊戲外殼：首頁、房間大廳、遊戲選單、全域提示 */
+
+/* 遊戲卡片（首頁一覽 + 大廳選單共用） */
+.gamegrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.gcard {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; padding: 14px 16px; border-radius: 16px;
+  background: #25274a; border: 2px solid #3a3d70; color: var(--text); font: inherit; cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.gcard.static { cursor: default; }
+.gcard:not(.static):not(.ro):hover { border-color: var(--accent2); }
+.gcard:not(.static):not(.ro):active { transform: translateY(1px); }
+.gcard.on { border-color: var(--accent); background: linear-gradient(135deg, rgba(255, 79, 139, 0.22), rgba(124, 92, 255, 0.22)); box-shadow: 0 0 0 2px rgba(255, 79, 139, 0.25); }
+.gcard.ro { cursor: default; }
+.gcard:disabled { color: var(--text); opacity: 1; }
+.gcard:disabled:not(.on) { opacity: 0.55; }
+.gicon { font-size: 34px; line-height: 1; }
+.gname { font-size: 20px; font-weight: 800; }
+.gdesc { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.gmeta { font-size: 13px; color: #ffd166; margin-top: auto; }
+
+/* 房間大廳 */
+.lobby-cols { display: grid; grid-template-columns: 1fr; gap: 0 20px; align-items: start; }
+.lobby-players, .lobby-main .card { margin-top: 0; }
+@media (min-width: 1000px) {
+  #screen-lobby { max-width: 1200px; }
+  .lobby-cols { grid-template-columns: 300px 1fr; }
+  .lobby-players { position: sticky; top: 16px; }
+}
+.gset { margin-top: 14px; }
+.gset.readonly select, .gset.readonly input { pointer-events: none; opacity: 0.75; }
+#l-start:disabled { opacity: 0.55; cursor: not-allowed; }
+#l-start { margin-top: 18px; }
+
+/* 全域提示（浮在最上層；各遊戲共用） */
+.gtoast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px); z-index: 120; max-width: min(92vw, 560px);
+  background: #1f6f4f; color: #fff; padding: 10px 18px; border-radius: 999px; font-size: 15px; opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4); text-align: center;
+}
+.gtoast.on { opacity: 1; transform: translate(-50%, 0); }
+.gtoast.warn { background: #b45309; }
+
+/* 離開／回大廳等房主專用鈕 */
+.row .host-only, .controls .host-only { margin: 0; }
+.rank-table .mrow { grid-template-columns: 2.4em 1fr auto auto; }
+.hidden { display: none !important; }
+
+/* 手機：遊戲卡片改成一列一張的緊湊版 */
+@media (max-width: 600px) {
+  .gamegrid { grid-template-columns: 1fr; gap: 10px; }
+  .gcard { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; row-gap: 2px; padding: 12px 14px; }
+  .gcard .gicon { grid-row: 1 / span 3; font-size: 30px; align-self: center; }
+  .gcard .gname { font-size: 18px; }
+  .gcard .gmeta { margin-top: 2px; }
+}

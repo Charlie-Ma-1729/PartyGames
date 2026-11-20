@@ -9,7 +9,8 @@
     body { text-align: left; }
     .wrap { max-width: 1100px; margin: 0 auto; padding: 16px 20px 80px; }
     .bar { position: sticky; top: 0; z-index: 5; background: #14152c; padding: 12px 0; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    input[type=search] { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #3a3d70; background: #25274a; color: var(--text); min-width: 220px; }
+    input[type=search], select.f { font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid #3a3d70; background: #25274a; color: var(--text); min-width: 160px; }
+    input[type=search] { min-width: 220px; }
     .player { width: 320px; aspect-ratio: 16/9; position: fixed; right: 16px; bottom: 16px; z-index: 6; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px #000a; background: #000; }
     .player #yt { width: 100%; height: 100%; }
     table { width: 100%; border-collapse: collapse; }
@@ -20,16 +21,21 @@
     button.sm { padding: 6px 10px; font-size: 13px; border-radius: 8px; background: #2c2f5a; }
     .muted { color: var(--muted); }
     a { color: #9fb4ff; }
+    .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #2c2f5a; font-size: 12px; margin-right: 6px; }
+    #more { margin: 14px 0; }
   </style>
 </head>
 <body>
 <div class="wrap">
   <h1 style="font-size:28px">題庫預覽與微調</h1>
-  <p class="muted">試聽每首歌、調整起點秒數、停用有問題的題目。調整結果先存在瀏覽器，按「複製 overrides.json」後貼到 <code>data/overrides.json</code>，再執行 <code>node scripts/build.mjs</code> 即可永久生效。</p>
+  <p class="muted">所有題庫（動漫、日本／華語／英語流行歌、遊戲 OST、電影）都能在這裡試聽、調整起點秒數、停用有問題的題目。調整結果先存在瀏覽器，按「複製 overrides.json」後貼到 <code>data/overrides.json</code>，再執行對應題庫的 <code>node scripts/build.mjs</code>（流行歌加 <code>--cat jpop|tw|en</code>）即可永久生效。</p>
   <div class="bar">
+    <select id="cat" class="f" title="題庫"></select>
+    <select id="kind" class="f" title="類型"><option value="">所有類型</option></select>
     <input id="q" type="search" placeholder="搜尋作品 / 歌名 / 歌手">
+    <button id="sample" class="sm" title="在目前篩選條件下隨機抽 30 首，快速聽聽看各種曲風">🎲 隨機抽 30 首</button>
     <label style="flex-direction:row;align-items:center;gap:6px"><input id="only-changed" type="checkbox"> 只看有調整的</label>
-    <label style="flex-direction:row;align-items:center;gap:6px"><input id="only-review" type="checkbox"> 只看需確認的（開頭可能不是音樂）</label>
+    <label style="flex-direction:row;align-items:center;gap:6px"><input id="only-review" type="checkbox"> 只看需確認的</label>
     <button id="copy" class="ghost">複製 overrides.json</button>
     <span id="count" class="muted"></span>
   </div>
@@ -37,19 +43,25 @@
     <thead><tr><th></th><th>作品 / 歌名</th><th>類型</th><th>起點(秒)</th><th></th></tr></thead>
     <tbody id="rows"></tbody>
   </table>
+  <button id="more" class="ghost hidden">顯示更多…</button>
 </div>
 <div class="player"><div id="yt"></div></div>
 
 <script type="module">
 import { ClipPlayer } from './js/player.js';
-import { loadBad } from './js/questions.js';
+import { CATEGORIES, loadBank, loadBad, isSongKind } from './js/questions.js';
 
 const $ = (id) => document.getElementById(id);
 const LS = 'songguesser-overrides-v1';
-let bank = [];
-let ov = {};       // id -> {start?, disabled?}
-let baseOv = {};   // data/overrides.json 現有內容
+const PAGE = 300; // 一次最多列出幾首（全部題庫加起來有六千多首）
+const KIND_NAME = { OP: 'OP 片頭曲', ED: 'ED 片尾曲', INSERT: '插入曲', OST: 'OST 配樂', SONG: '電影歌曲', JPOP: '日本流行', TWPOP: '華語流行', ENPOP: '英語流行' };
+
+let all = [];       // 所有題庫的題目（每題帶 _cat）
+let ov = {};        // id -> {start?, disabled?}
+let baseOv = {};    // data/overrides.json 現有內容
 let cur = null;
+let limit = PAGE;
+let sampled = null; // 隨機抽樣的結果（null = 不抽樣）
 
 try { ov = JSON.parse(localStorage.getItem(LS) || '{}'); } catch { ov = {}; }
 const save = () => { try { localStorage.setItem(LS, JSON.stringify(ov)); } catch {} };
@@ -57,31 +69,52 @@ const save = () => { try { localStorage.setItem(LS, JSON.stringify(ov)); } catch
 const player = new ClipPlayer('yt', {});
 await player.init();
 
-const res = await fetch('data/anime.json', { cache: 'no-cache' });
-bank = await res.json();
+const bank = await loadBank();
+for (const c of CATEGORIES) for (const q of bank[c.id] || []) { q._cat = c.id; all.push(q); }
 try { baseOv = await (await fetch('data/overrides.json', { cache: 'no-cache' })).json(); } catch { baseOv = {}; }
 
-const idOf = (q) => q.id.replace(/^a-/, '');
-// 玩遊戲時按 X 回報的題目，視為「停用」
-for (const q of bank) {
-  if (loadBad().has(q.id) && !ov[idOf(q)]) ov[idOf(q)] = { disabled: true };
+// 題庫與類型下拉
+const catSel = $('cat');
+catSel.append(new Option(`全部題庫（${all.length} 首）`, ''));
+for (const c of CATEGORIES) {
+  const n = (bank[c.id] || []).length;
+  if (n) catSel.append(new Option(`${c.label}（${n} 首）`, c.id));
 }
+function fillKinds() {
+  const sel = $('kind');
+  const pool = catSel.value ? all.filter((q) => q._cat === catSel.value) : all;
+  const kinds = [...new Set(pool.map((q) => q.kind))];
+  sel.replaceChildren(new Option('所有類型', ''));
+  kinds.forEach((k) => sel.append(new Option(KIND_NAME[k] || k, k)));
+}
+fillKinds();
+
+// 題目 id 去掉前綴（a-／m-／g-／j-／t-／e-）就是 overrides.json 用的歌曲 id
+const idOf = (q) => q.id.replace(/^[a-z]-/, '');
+// 玩遊戲時按 X 回報的題目，視為「停用」
+for (const q of all) if (loadBad().has(q.id) && !ov[idOf(q)]) ov[idOf(q)] = { disabled: true };
 const startOf = (q) => ov[idOf(q)]?.start ?? q.start ?? 0;
 
-function render() {
+function matches(q) {
   const kw = $('q').value.trim().toLowerCase();
-  const changedOnly = $('only-changed').checked;
+  if (catSel.value && q._cat !== catSel.value) return false;
+  if ($('kind').value && q.kind !== $('kind').value) return false;
+  const a = q.answer;
+  if (kw && !`${a.work} ${a.title} ${a.artist || ''} ${a.artistEn || ''}`.toLowerCase().includes(kw)) return false;
+  if ($('only-changed').checked && !ov[idOf(q)]) return false;
+  if ($('only-review').checked && !q.review) return false;
+  return true;
+}
+
+function render() {
   const rows = $('rows');
   rows.innerHTML = '';
-  let shown = 0;
-  bank.forEach((q) => {
+  const list = sampled ? sampled.filter(matches) : all.filter(matches);
+  const shown = list.slice(0, limit);
+  shown.forEach((q) => {
     const a = q.answer;
-    const text = `${a.work} ${a.title} ${a.artist || ''}`.toLowerCase();
-    if (kw && !text.includes(kw)) return;
+    const song = isSongKind(q.kind); // 流行歌：歌名是主標、歌手是副標
     const o = ov[idOf(q)];
-    if (changedOnly && !o) return;
-    if ($('only-review').checked && !q.review) return;
-    shown++;
     const tr = document.createElement('tr');
     if (o?.disabled) tr.classList.add('off');
     if (cur === q.id) tr.classList.add('cur');
@@ -91,14 +124,14 @@ function render() {
       <td></td>
       <td><input class="num" type="number" min="0" step="1"> <button class="sm" data-act="now" title="把目前播放位置設為起點">⏱ 設為目前位置</button></td>
       <td><button class="sm" data-act="off"></button> <a target="_blank" rel="noopener">YouTube</a></td>`;
-    tr.querySelector('b').textContent = a.work;
-    tr.querySelector('.muted').textContent = `♪ ${a.title}${a.artist ? ' / ' + a.artist : ''}　｜　影片：${q.video || ''}（${q.channel || ''}）${q.review ? ' ⚠需確認' : ''}${q.startSource === 'peak' ? ' ✓起點取自最多重播' : ''}`;
-    tr.children[2].textContent = q.kind;
+    tr.querySelector('b').textContent = song ? a.title : a.work;
+    tr.querySelector('.muted').textContent = `${song ? '🎤 ' + (a.artist || '') + (a.artistEn ? '（' + a.artistEn + '）' : '') : '♪ ' + a.title + (a.artist ? ' / ' + a.artist : '')}　｜　影片：${q.video || ''}（${q.channel || ''}）${q.review ? ' ⚠需確認' : ''}${q.startSource === 'peak' ? ' ✓起點取自最多重播' : ''}`;
+    tr.children[2].textContent = KIND_NAME[q.kind] || q.kind;
     const input = tr.querySelector('input');
     input.value = startOf(q);
     input.addEventListener('change', () => {
       ov[idOf(q)] = { ...(ov[idOf(q)] || {}), start: Math.max(0, Number(input.value) || 0) };
-      save(); updateCount();
+      save(); updateCount(list.length);
     });
     tr.querySelector('[data-act=off]').textContent = o?.disabled ? '啟用' : '停用';
     tr.querySelector('a').href = 'https://www.youtube.com/watch?v=' + q.ytId + '&t=' + startOf(q);
@@ -114,7 +147,7 @@ function render() {
         const t = Math.floor(player.yt.getCurrentTime());
         input.value = t;
         ov[idOf(q)] = { ...(ov[idOf(q)] || {}), start: t };
-        save(); updateCount();
+        save(); updateCount(list.length);
       } else if (act === 'off') {
         const d = !ov[idOf(q)]?.disabled;
         ov[idOf(q)] = { ...(ov[idOf(q)] || {}), disabled: d };
@@ -123,22 +156,44 @@ function render() {
     });
     rows.append(tr);
   });
-  updateCount(shown);
+  $('more').classList.toggle('hidden', shown.length >= list.length);
+  $('more').textContent = `顯示更多…（還有 ${list.length - shown.length} 首）`;
+  updateCount(list.length, shown.length);
 }
 
-function updateCount(shown) {
+function updateCount(total, shown) {
   const changed = Object.keys(ov).length;
-  $('count').textContent = `${shown ?? '…'} / ${bank.length} 首　已調整 ${changed} 首`;
+  $('count').textContent = `${sampled ? '隨機抽樣 ' : ''}符合 ${total} 首${shown != null && shown < total ? `（顯示前 ${shown}）` : ''}　已調整 ${changed} 首`;
 }
 
-$('q').addEventListener('input', render);
-$('only-changed').addEventListener('change', render);
-$('only-review').addEventListener('change', render);
+const refresh = () => { limit = PAGE; render(); };
+catSel.addEventListener('change', () => { sampled = null; fillKinds(); refresh(); });
+$('kind').addEventListener('change', () => { sampled = null; refresh(); });
+$('q').addEventListener('input', () => { sampled = null; refresh(); });
+$('only-changed').addEventListener('change', refresh);
+$('only-review').addEventListener('change', refresh);
+$('more').addEventListener('click', () => { limit += PAGE; render(); });
+// 隨機抽 30 首：先依「題庫＋類型」輪流抽，讓不同曲風都聽得到
+$('sample').addEventListener('click', () => {
+  const pool = all.filter(matches);
+  const groups = new Map();
+  pool.forEach((q) => { const k = q._cat + '|' + q.kind; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(q); });
+  groups.forEach((g) => g.sort(() => Math.random() - 0.5));
+  const picked = [];
+  const lists = [...groups.values()];
+  for (let i = 0; picked.length < 30 && lists.some((g) => g.length); i++) {
+    const g = lists[i % lists.length];
+    if (g.length) picked.push(g.pop());
+  }
+  sampled = picked;
+  limit = PAGE;
+  render();
+});
 $('copy').addEventListener('click', async () => {
   const merged = { ...baseOv };
   for (const [id, v] of Object.entries(ov)) merged[id] = { ...(merged[id] || {}), ...v };
   const text = JSON.stringify(merged, null, 1);
-  try { await navigator.clipboard.writeText(text); alert('已複製！貼到 data/overrides.json 後執行 node scripts/build.mjs'); }
+  try { await navigator.clipboard.writeText(text); alert('已複製！貼到 data/overrides.json 後執行 node scripts/build.mjs（流行歌加 --cat jpop|tw|en）'); }
   catch { prompt('請手動複製：', text); }
 });
 

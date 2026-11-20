@@ -2,7 +2,7 @@
 // 用法：node scripts/build.mjs
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
-import { parseSeeds, ROOT, CACHE_DIR, CAT, norm } from './lib.mjs';
+import { parseSeeds, ROOT, CACHE_DIR, CAT, SC, norm } from './lib.mjs';
 
 const cacheFile = path.join(CACHE_DIR, 'resolved.json');
 const cache = existsSync(cacheFile) ? JSON.parse(readFileSync(cacheFile, 'utf8')) : {};
@@ -23,7 +23,7 @@ for (const w of works) {
   for (const s of w.songs) {
     total++;
     const r = cache[s.key];
-    if (!r || r.fail) { missing.push(`${w.zh} / ${s.kind} ${s.title}`); continue; }
+    if (!r || r.fail || (r.bad && !(overrides[s.id] || {}).ytId)) { missing.push(`${w.zh} / ${s.kind} ${s.title}`); continue; } // bad = 查不到官方版本（只有翻唱／粉絲上傳），不收
     const ov = overrides[s.id] || {};
     if (ov.disabled) continue;
     // 同一部作品裡若兩首歌解析到同一支影片，只留第一首（避免出現重複題）
@@ -38,7 +38,7 @@ for (const w of works) {
     const cr = credits[s.key] || {};
     const pick = (a, b) => a || b || undefined;
     out.push({
-      id: (CAT === 'movie' ? 'm-' : CAT === 'ost' ? 'g-' : 'a-') + s.id,
+      id: (SC ? SC.prefix : CAT === 'movie' ? 'm-' : CAT === 'ost' ? 'g-' : 'a-') + s.id,
       workId: w.workId,
       kind: CAT === 'movie' && s.vocal ? 'SONG' : s.kind, // SONG = 有人聲的歌；OST = 純配樂
       ytId: ov.ytId || r.ytId,
@@ -48,16 +48,18 @@ for (const w of works) {
       // 「從中間播」用的起點：最多重播處前 4 秒（沒有資料時用估計值）
       mid: ov.mid ?? r.start,
       revealStart: ov.revealStart ?? (r.startSource === 'peak' ? r.start : undefined),
-      prompt: CAT === 'ost' ? '這段配樂來自哪款遊戲？' : CAT === 'movie' ? (s.vocal ? '這首歌來自哪部電影或影集？' : '這段配樂來自哪部電影或影集？') : s.kind === 'OST' ? '這段配樂來自哪部動畫？' : '這首歌來自哪部動畫？',
+      prompt: SC ? '這首歌的歌名是？' : CAT === 'ost' ? '這段配樂來自哪款遊戲？' : CAT === 'movie' ? (s.vocal ? '這首歌來自哪部電影或影集？' : '這段配樂來自哪部電影或影集？') : s.kind === 'OST' ? '這段配樂來自哪部動畫？' : '這首歌來自哪部動畫？',
       answer: {
         title: s.title,
         work: workName,
-        artist: pick(s.artist, cr.artist),
+        // J-POP：「作品」就是歌手；artist 放顯示名稱、artistEn 放英文／羅馬字名（選項小字用）
+        artist: SC ? w.zh : pick(s.artist, cr.artist),
+        artistEn: SC && w.ja !== w.zh ? w.ja : undefined, // 副標：英文名（日／華語）或中文名（英語歌）
         lyricist: pick(s.lyricist, cr.lyricist),
         composer: pick(s.composer, cr.composer),
         arranger: pick(s.arranger, cr.arranger),
       },
-      year: w.year,
+      year: s.year || w.year,
       difficulty: s.difficulty,
       // 以下欄位僅供 preview.html 檢查用
       video: r.videoTitle,
@@ -69,7 +71,7 @@ for (const w of works) {
   }
 }
 
-writeFileSync(path.join(ROOT, 'data', CAT + '.json'), JSON.stringify(out, null, 1));
+writeFileSync(path.join(ROOT, 'data', (SC ? SC.file : CAT) + '.json'), JSON.stringify(out, null, 1));
 const nWorks = new Set(out.map((q) => q.workId)).size;
 console.log(`seeds 共 ${total} 首 / ${works.length} 部作品`);
 console.log(`入庫 ${out.length} 首（${nWorks} 部作品），缺影片 ${missing.length} 首`);

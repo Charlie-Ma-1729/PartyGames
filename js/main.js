@@ -1,12 +1,14 @@
-import { CATEGORIES, loadBank, buildQueue, buildChoices } from './questions.js';
+import { CATEGORIES, loadBank, buildQueue, buildChoices, assignAsk } from './questions.js';
 import { Game } from './game.js';
 import * as ui from './ui.js';
 import { getSharedPlayer } from './player.js';
-import { initMulti } from './multi/client.js';
+import { initHub } from './hub/client.js';
 
 const $ = (id) => document.getElementById(id);
 let bank = {};
 let game = null;
+/** 單人模式（沒有進房間）才由這支檔案處理按鈕；進了房間（body.multi）就交給 hub／各遊戲模組 */
+const solo = () => !document.body.classList.contains('multi');
 
 // ===== 音量（記在 localStorage，兩個滑桿同步）=====
 const VOL_KEY = 'songguesser-volume';
@@ -76,7 +78,7 @@ async function startGame() {
   const kinds = selectedKinds();
   const pool = cats.flatMap((c) => bank[c] || []);
   const count = Number($('opt-count').value);
-  const queue = buildQueue(pool, {
+  let queue = buildQueue(pool, {
     kinds,
     maxDifficulty: Number($('opt-difficulty').value),
     maxPerWork: Number($('opt-perwork').value),
@@ -86,6 +88,7 @@ async function startGame() {
     alert('符合條件的題目是 0 首，請放寬設定。');
     return;
   }
+  queue = assignAsk(queue, $('opt-jpopask').value); // 日本流行歌：猜歌名／猜歌手／混合
   ui.showScreen('game');
   if (!game) game = new Game(volume);
 
@@ -97,7 +100,7 @@ async function startGame() {
     const maxDifficulty = Number($('opt-difficulty').value);
     makeChoices = (q) => {
       const cat = catOf.get(q.id);
-      return buildChoices(q, bank[cat] || [], cat, { maxDifficulty });
+      return buildChoices(q, bank[cat] || [], cat, { maxDifficulty, ask: q.ask || 'work' });
     };
   }
   await game.start(queue, count, Number($('opt-duration').value), $('opt-auto').value === '1', $('opt-start').value === '1', makeChoices);
@@ -105,14 +108,15 @@ async function startGame() {
 
 $('btn-start').addEventListener('click', startGame);
 $('btn-again').addEventListener('click', () => ui.showScreen('setup'));
-$('btn-quit').addEventListener('click', () => { if (game) game.quit(); ui.showScreen('setup'); });
-$('btn-main').addEventListener('click', () => game && game.press());
-$('btn-replay').addEventListener('click', () => game && game.replay());
-$('btn-skip').addEventListener('click', () => game && game.skip());
-$('btn-flag').addEventListener('click', () => game && game.flagCurrent());
+$('btn-home').addEventListener('click', () => ui.showScreen('home'));
+$('btn-quit').addEventListener('click', () => { if (!solo()) return; if (game) game.quit(); ui.showScreen('setup'); });
+$('btn-main').addEventListener('click', () => solo() && game && game.press());
+$('btn-replay').addEventListener('click', () => solo() && game && game.replay());
+$('btn-skip').addEventListener('click', () => solo() && game && game.skip());
+$('btn-flag').addEventListener('click', () => solo() && game && game.flagCurrent());
 $('choices').addEventListener('click', (e) => {
   const d = e.target.closest('.choice');
-  if (d && game) game.pick(Number(d.dataset.i));
+  if (d && game && solo()) game.pick(Number(d.dataset.i));
 });
 
 // 點擊後讓按鈕失焦，避免空白鍵同時觸發「按鈕點擊」與「鍵盤事件」
@@ -141,10 +145,11 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'ArrowRight') game.skip();
 });
 
-// 多人模式（需要 Node 伺服器；單人完全不受影響）
-initMulti({
+// 派對首頁與房間（多人遊戲需要 Node 伺服器；單人猜歌完全不受影響）
+initHub({
   getVolume: () => volume,
   stopSingle: () => { if (game) game.quit(); },
+  startSolo: () => ui.showScreen('setup'),
 });
 
 init();

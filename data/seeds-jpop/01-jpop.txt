@@ -1,0 +1,1025 @@
+# 由 jpop-src.txt 轉出：2020 年後熱門日本流行歌曲（每位歌手一個「作品」，歌曲一行）
+
+# YOASOBI | 2020
+JPOP | 群青 | YOASOBI | y=2020 d=1
+JPOP | ハルジオン | YOASOBI | y=2020 d=2
+JPOP | もしも命が描けたら | YOASOBI | y=2020 d=2
+JPOP | たぶん | YOASOBI | y=2021 d=1
+JPOP | 怪物 | YOASOBI | y=2021 d=1
+JPOP | ミスター | YOASOBI | y=2021 d=2
+JPOP | 優しい彗星 | YOASOBI | y=2022 d=1
+JPOP | アイドル | YOASOBI | y=2023 d=1
+JPOP | 勇者 | YOASOBI | y=2023 d=1
+JPOP | 祝福 | YOASOBI | y=2022 d=1
+JPOP | 三原色 | YOASOBI | y=2023 d=2
+JPOP | 海のまにまに | YOASOBI | y=2023 d=2
+JPOP | セブンティーン | YOASOBI | y=2023 d=2
+JPOP | UNDEAD | YOASOBI | y=2024 d=2
+JPOP | 好きだ | YOASOBI | y=2024 d=2
+JPOP | 夜に駆ける | YOASOBI | y=2020 d=1
+JPOP | アンコール | YOASOBI | y=2021 d=2
+JPOP | ハルカ | YOASOBI | y=2021 d=2
+JPOP | もう少しだけ | YOASOBI | y=2021 d=2
+JPOP | あの夢をなぞって | YOASOBI | y=2021 d=2
+
+# Ado | 2020
+JPOP | うっせぇわ | Ado | y=2020 d=1
+JPOP | 夜のピエロ | Ado | y=2021 d=2
+JPOP | 踊 | Ado | y=2022 d=1
+JPOP | 新時代 | Ado | y=2022 d=1
+JPOP | 唱 | Ado | y=2022 d=1
+JPOP | 阿修羅ちゃん | Ado | y=2022 d=2
+JPOP | レディメイド | Ado | y=2022 d=2
+JPOP | ウタカタララバイ | Ado | y=2022 d=2
+JPOP | 私は最強 | Ado | y=2022 d=2
+JPOP | 逆光 | Ado | y=2022 d=1
+JPOP | ギラギラ | Ado | y=2022 d=2
+JPOP | 心という名の不可解 | Ado | y=2023 d=2
+JPOP | Tot Musica | Ado | y=2022 d=2
+JPOP | 風のゆくえ | Ado | y=2022 d=2
+
+# Official髭男dism | 2020
+JPOP | I LOVE... | Official髭男dism | y=2020 d=1
+JPOP | Laughter | Official髭男dism | y=2020 d=2
+JPOP | Cry Baby | Official髭男dism | y=2021 d=1
+JPOP | Universe | Official髭男dism | y=2021 d=1
+JPOP | Subtitle | Official髭男dism | y=2022 d=1
+JPOP | ミックスナッツ | Official髭男dism | y=2022 d=1
+JPOP | ホワイトノイズ | Official髭男dism | y=2023 d=2
+JPOP | らしさ | Official髭男dism | y=2022 d=2
+JPOP | Pretender | Official髭男dism | y=2019 d=1
+JPOP | 宿命 | Official髭男dism | y=2019 d=1
+JPOP | イエスタデイ | Official髭男dism | y=2020 d=2
+JPOP | 115万キロのフィルム | Official髭男dism | y=2020 d=2
+JPOP | ノーダウト | Official髭男dism | y=2020 d=2
+JPOP | HELLO | Official髭男dism | y=2020 d=2
+JPOP | パラボラ | Official髭男dism | y=2020 d=2
+JPOP | Stand By You | Official髭男dism | y=2020 d=2
+JPOP | ビンテージ | Official髭男dism | y=2020 d=2
+JPOP | TATTOO | Official髭男dism | y=2023 d=2
+JPOP | SOULSOUP | Official髭男dism | y=2024 d=2
+
+# King Gnu | 2020
+JPOP | 一途 | King Gnu | y=2020 d=1
+JPOP | ユーモア | King Gnu | y=2020 d=2
+JPOP | 逆夢 | King Gnu | y=2021 d=1
+JPOP | カメレオン | King Gnu | y=2021 d=2
+JPOP | BOY | King Gnu | y=2021 d=2
+JPOP | 雨燦々 | King Gnu | y=2021 d=2
+JPOP | Teenager Forever | King Gnu | y=2022 d=1
+JPOP | 三文小説 | King Gnu | y=2022 d=2
+JPOP | 小さな惑星 | King Gnu | y=2022 d=2
+JPOP | SPECIALZ | King Gnu | y=2023 d=1
+JPOP | 白日 | King Gnu | y=2020 d=1
+JPOP | 飛行艇 | King Gnu | y=2020 d=2
+JPOP | どろん | King Gnu | y=2020 d=2
+JPOP | 傘 | King Gnu | y=2020 d=2
+
+# 米津玄師（Kenshi Yonezu） | 2020
+JPOP | 感電 | 米津玄師 | y=2020 d=1
+JPOP | 地球儀 | 米津玄師 | y=2020 d=2
+JPOP | 迷える羊 | 米津玄師 | y=2020 d=2
+JPOP | Pale Blue | 米津玄師 | y=2021 d=1
+JPOP | KICK BACK | 米津玄師 | y=2022 d=1
+JPOP | M八七 | 米津玄師 | y=2022 d=2
+JPOP | POP SONG | 米津玄師 | y=2022 d=2
+JPOP | 月を見ていた | 米津玄師 | y=2022 d=2
+JPOP | さよーならまたいつか！ | 米津玄師 | y=2024 d=1
+JPOP | 毎日 | 米津玄師 | y=2024 d=2
+JPOP | Plazma | 米津玄師 | y=2024 d=2
+JPOP | Lemon | 米津玄師 | y=2018 d=1
+JPOP | 馬と鹿 | 米津玄師 | y=2019 d=1
+JPOP | 海の幽霊 | 米津玄師 | y=2019 d=2
+JPOP | Flamingo | 米津玄師 | y=2018 d=2
+JPOP | 灰色と青 | 米津玄師 | y=2018 d=2
+JPOP | ピースサイン | 米津玄師 | y=2017 d=2
+JPOP | orion | 米津玄師 | y=2017 d=2
+JPOP | アイネクライネ | 米津玄師 | y=2017 d=2
+JPOP | LOSER | 米津玄師 | y=2017 d=2
+JPOP | LADY | 米津玄師 | y=2023 d=2
+
+# Vaundy | 2020
+JPOP | 怪獣の花唄 | Vaundy | y=2020 d=1
+JPOP | 裸の勇者 | Vaundy | y=2021 d=1
+JPOP | 恋風邪にのせて | Vaundy | y=2021 d=2
+JPOP | 瞬間的シックスセンス | Vaundy | y=2021 d=2
+JPOP | 再生 | Vaundy | y=2021 d=2
+JPOP | 花占い | Vaundy | y=2022 d=2
+JPOP | しわあわせ | Vaundy | y=2022 d=2
+JPOP | 不可幸力 | Vaundy | y=2022 d=2
+JPOP | napori | Vaundy | y=2023 d=2
+JPOP | タイムパラドックス | Vaundy | y=2024 d=2
+JPOP | 踊り子 | Vaundy | y=2022 d=1
+JPOP | そんなbitterな話 | Vaundy | y=2023 d=2
+
+# Mrs. GREEN APPLE | 2020
+JPOP | 点描の唄 | Mrs. GREEN APPLE | y=2020 d=2
+JPOP | WanteD! WanteD! | Mrs. GREEN APPLE | y=2021 d=2
+JPOP | ダンスホール | Mrs. GREEN APPLE | y=2022 d=1
+JPOP | Soranji | Mrs. GREEN APPLE | y=2022 d=2
+JPOP | StaRt | Mrs. GREEN APPLE | y=2022 d=2
+JPOP | ナハトムジーク | Mrs. GREEN APPLE | y=2022 d=2
+JPOP | ケセラセラ | Mrs. GREEN APPLE | y=2023 d=1
+JPOP | ANTENNA | Mrs. GREEN APPLE | y=2023 d=2
+JPOP | ライラック | Mrs. GREEN APPLE | y=2024 d=1
+JPOP | Magic | Mrs. GREEN APPLE | y=2024 d=2
+JPOP | 青と夏 | Mrs. GREEN APPLE | y=2018 d=1
+JPOP | インフェルノ | Mrs. GREEN APPLE | y=2019 d=2
+JPOP | 僕のこと | Mrs. GREEN APPLE | y=2019 d=2
+JPOP | ロマンチシズム | Mrs. GREEN APPLE | y=2019 d=2
+JPOP | ブルーアンビエンス | Mrs. GREEN APPLE | y=2023 d=2
+JPOP | コロンブス | Mrs. GREEN APPLE | y=2024 d=2
+JPOP | familie | Mrs. GREEN APPLE | y=2024 d=2
+JPOP | Dear | Mrs. GREEN APPLE | y=2024 d=2
+
+# back number | 2021
+JPOP | 水平線 | back number | y=2021 d=1
+JPOP | ブルーアンバー | back number | y=2021 d=2
+JPOP | 怪盗 | back number | y=2021 d=2
+JPOP | 大不正解 | back number | y=2021 d=2
+JPOP | アイラブユー | back number | y=2023 d=1
+JPOP | 花束 | back number | y=2023 d=2
+JPOP | 冬と春 | back number | y=2024 d=2
+JPOP | HAPPY BIRTHDAY | back number | y=2019 d=2
+JPOP | ヒロイン | back number | y=2015 d=2
+JPOP | クリスマスソング | back number | y=2016 d=1
+JPOP | 高嶺の花子さん | back number | y=2019 d=1
+JPOP | ハッピーエンド | back number | y=2017 d=1
+JPOP | 新しい恋人達に | back number | y=2024 d=2
+JPOP | 瞬き | back number | y=2018 d=2
+JPOP | SISTER | back number | y=2015 d=2
+JPOP | オールドファッション | back number | y=2018 d=2
+
+# Aimer | 2020
+JPOP | 蝶々結び | Aimer | y=2020 d=2
+JPOP | 残響散歌 | Aimer | y=2021 d=1
+JPOP | 一生に一度の恋 | Aimer | y=2022 d=2
+JPOP | STAND-ALONE | Aimer | y=2022 d=2
+JPOP | SPARK-AGAIN | Aimer | y=2022 d=2
+
+# LiSA | 2020
+JPOP | 炎 | LiSA | y=2020 d=1
+JPOP | 往け | LiSA | y=2021 d=2
+JPOP | 明け星 | LiSA | y=2021 d=2
+JPOP | unlasting | LiSA | y=2022 d=2
+JPOP | Rising Hope | LiSA | y=2020 d=2
+JPOP | 紅蓮華 | LiSA | y=2020 d=1
+
+# Eve | 2020
+JPOP | 廻廻奇譚 | Eve | y=2020 d=1
+JPOP | 暴徒 | Eve | y=2020 d=2
+JPOP | 蒼のワルツ | Eve | y=2020 d=2
+JPOP | 心海 | Eve | y=2021 d=2
+JPOP | 平行線 | Eve | y=2021 d=2
+JPOP | お気に召すまま | Eve | y=2021 d=2
+JPOP | 僕らまだアンダーグラウンド | Eve | y=2022 d=2
+JPOP | ラストダンス | Eve | y=2022 d=2
+
+# ずっと真夜中でいいのに。（ZUTOMAYO） | 2020
+JPOP | 脳裏上のシェイク | ずっと真夜中でいいのに。 | y=2020 d=2
+JPOP | 残機 | ずっと真夜中でいいのに。 | y=2020 d=2
+JPOP | あいつら全員同窓会 | ずっと真夜中でいいのに。 | y=2021 d=2
+JPOP | マイノリティ脈絡 | ずっと真夜中でいいのに。 | y=2021 d=2
+JPOP | ミズキリ | ずっと真夜中でいいのに。 | y=2021 d=2
+JPOP | 暗く黒く | ずっと真夜中でいいのに。 | y=2021 d=2
+JPOP | 綺羅キラー | ずっと真夜中でいいのに。 | y=2022 d=2
+JPOP | ハゼ馳せる果てるまで | ずっと真夜中でいいのに。 | y=2022 d=2
+JPOP | ばかじゃないのに | ずっと真夜中でいいのに。 | y=2023 d=2
+JPOP | 秒針を噛む | ずっと真夜中でいいのに。 | y=2020 d=2
+JPOP | 正しくなれない | ずっと真夜中でいいのに。 | y=2021 d=2
+
+# ヨルシカ（Yorushika） | 2020
+JPOP | 春泥棒 | ヨルシカ | y=2020 d=1
+JPOP | 花に亡霊 | ヨルシカ | y=2020 d=2
+JPOP | 老人と海 | ヨルシカ | y=2020 d=2
+JPOP | 晴る | ヨルシカ | y=2020 d=2
+JPOP | 又三郎 | ヨルシカ | y=2021 d=2
+JPOP | アルジャーノン | ヨルシカ | y=2021 d=2
+JPOP | 斜陽 | ヨルシカ | y=2023 d=2
+JPOP | ただ君に晴れ | ヨルシカ | y=2020 d=1
+JPOP | だから僕は音楽を辞めた | ヨルシカ | y=2020 d=2
+
+# あいみょん（Aimyon） | 2020
+JPOP | 裸の心 | あいみょん | y=2020 d=1
+JPOP | 桜が降る夜は | あいみょん | y=2020 d=2
+JPOP | ハート | あいみょん | y=2021 d=2
+JPOP | 初恋が泣いている | あいみょん | y=2021 d=2
+JPOP | 愛の花 | あいみょん | y=2022 d=2
+JPOP | 夢追い人 | あいみょん | y=2022 d=2
+JPOP | 会いに行くのに | あいみょん | y=2021 d=2
+JPOP | マリーゴールド | あいみょん | y=2018 d=1
+JPOP | 君はロックを聴かない | あいみょん | y=2018 d=2
+JPOP | 愛を伝えたいだとか | あいみょん | y=2018 d=2
+JPOP | ハルノヒ | あいみょん | y=2019 d=2
+JPOP | 今夜このまま | あいみょん | y=2019 d=2
+JPOP | 空の青さを知る人よ | あいみょん | y=2019 d=2
+JPOP | 愛を知るまでは | あいみょん | y=2021 d=2
+
+# 星野源（Gen Hoshino） | 2020
+JPOP | うちで踊ろう | 星野源 | y=2020 d=1
+JPOP | 創造 | 星野源 | y=2021 d=2
+JPOP | Eureka | 星野源 | y=2021 d=2
+JPOP | 光の跡 | 星野源 | y=2021 d=2
+JPOP | 喜劇 | 星野源 | y=2022 d=2
+JPOP | SUN | 星野源 | y=2015 d=2
+JPOP | 恋 | 星野源 | y=2016 d=1
+JPOP | Family Song | 星野源 | y=2017 d=2
+JPOP | ドラえもん | 星野源 | y=2018 d=2
+JPOP | アイデア | 星野源 | y=2018 d=2
+JPOP | Pop Virus | 星野源 | y=2019 d=2
+JPOP | 不思議 | 星野源 | y=2021 d=2
+
+# 優里（Yuuri） | 2020
+JPOP | ドライフラワー | 優里 | y=2020 d=1
+JPOP | ベテルギウス | 優里 | y=2021 d=1
+JPOP | かくれんぼ | 優里 | y=2021 d=2
+JPOP | レオ | 優里 | y=2021 d=2
+JPOP | シャッター | 優里 | y=2021 d=2
+JPOP | ピーターパン | 優里 | y=2021 d=2
+JPOP | ビリミリオン | 優里 | y=2023 d=2
+JPOP | カーテンコール | 優里 | y=2024 d=2
+
+# 藤井風（Fujii Kaze） | 2020
+JPOP | 何なんw | 藤井風 | y=2020 d=1
+JPOP | 死ぬのがいいわ | 藤井風 | y=2020 d=1
+JPOP | 青春病 | 藤井風 | y=2020 d=2
+JPOP | 帰ろう | 藤井風 | y=2020 d=2
+JPOP | きらり | 藤井風 | y=2022 d=1
+JPOP | damn | 藤井風 | y=2022 d=2
+JPOP | 満ちてゆく | 藤井風 | y=2023 d=2
+JPOP | 旅路 | 藤井風 | y=2023 d=2
+
+# Creepy Nuts | 2024
+JPOP | Bling-Bang-Bang-Born | Creepy Nuts | y=2024 d=1
+JPOP | オトノケ | Creepy Nuts | y=2024 d=1
+JPOP | のびしろ | Creepy Nuts | y=2023 d=2
+JPOP | よふかしのうた | Creepy Nuts | y=2021 d=2
+JPOP | 助演男優賞 | Creepy Nuts | y=2020 d=2
+JPOP | 堕天 | Creepy Nuts | y=2021 d=2
+JPOP | 二度寝 | Creepy Nuts | y=2022 d=2
+
+# imase | 2022
+JPOP | NIGHT DANCER | imase | y=2022 d=1
+JPOP | Happy Order? | imase | y=2023 d=2
+
+# 新しい学校のリーダーズ（ATARASHII GAKKO!） | 2022
+JPOP | オトナブルー | 新しい学校のリーダーズ | y=2022 d=1
+JPOP | 最終人類 | 新しい学校のリーダーズ | y=2022 d=2
+
+# tuki. | 2023
+JPOP | 晩餐歌 | tuki. | y=2023 d=1
+
+# Saucy Dog | 2020
+JPOP | シンデレラボーイ | Saucy Dog | y=2020 d=1
+JPOP | いつか | Saucy Dog | y=2021 d=2
+JPOP | 結 | Saucy Dog | y=2022 d=2
+JPOP | あぁ、もう。 | Saucy Dog | y=2022 d=2
+
+# 緑黄色社会（Ryokuoushoku Shakai） | 2020
+JPOP | Mela! | 緑黄色社会 | y=2020 d=1
+JPOP | キャラクター | 緑黄色社会 | y=2021 d=2
+JPOP | 陽はまた昇る | 緑黄色社会 | y=2021 d=2
+JPOP | 花になって | 緑黄色社会 | y=2022 d=2
+
+# sumika | 2020
+JPOP | Starting Over | sumika | y=2020 d=2
+
+# SEKAI NO OWARI | 2022
+JPOP | Habit | SEKAI NO OWARI | y=2022 d=1
+JPOP | silent | SEKAI NO OWARI | y=2021 d=2
+JPOP | 最高到達点 | SEKAI NO OWARI | y=2024 d=2
+JPOP | Dragon Night | SEKAI NO OWARI | y=2015 d=1
+JPOP | RPG | SEKAI NO OWARI | y=2015 d=2
+JPOP | ANTI-HERO | SEKAI NO OWARI | y=2015 d=2
+JPOP | RAIN | SEKAI NO OWARI | y=2017 d=2
+JPOP | サザンカ | SEKAI NO OWARI | y=2018 d=2
+JPOP | Fight Music | SEKAI NO OWARI | y=2012 d=2
+JPOP | スターライトパレード | SEKAI NO OWARI | y=2012 d=2
+
+# RADWIMPS | 2022
+JPOP | すずめ feat.十明 | RADWIMPS | y=2022 d=1
+JPOP | 前前前世 | RADWIMPS | y=2016 d=1
+JPOP | なんでもないや | RADWIMPS | y=2016 d=1
+JPOP | スパークル | RADWIMPS | y=2016 d=2
+JPOP | 夢灯籠 | RADWIMPS | y=2016 d=2
+JPOP | 愛にできることはまだあるかい | RADWIMPS | y=2019 d=2
+JPOP | グランドエスケープ | RADWIMPS | y=2019 d=2
+
+# ONE OK ROCK | 2020
+JPOP | Wasted Nights | ONE OK ROCK | y=2020 d=2
+JPOP | Renegades | ONE OK ROCK | y=2021 d=2
+JPOP | Save Yourself | ONE OK ROCK | y=2020 d=2
+JPOP | Make It Out Alive | ONE OK ROCK | y=2020 d=2
+JPOP | Neon | ONE OK ROCK | y=2022 d=2
+JPOP | Wherever you are | ONE OK ROCK | y=2016 d=1
+JPOP | The Beginning | ONE OK ROCK | y=2016 d=2
+JPOP | 完全感覚Dreamer | ONE OK ROCK | y=2016 d=1
+JPOP | Always coming back | ONE OK ROCK | y=2016 d=2
+JPOP | We are | ONE OK ROCK | y=2017 d=2
+JPOP | Change | ONE OK ROCK | y=2018 d=2
+JPOP | Stand Out Fit In | ONE OK ROCK | y=2019 d=2
+JPOP | 内秘心書 | ONE OK ROCK | y=2011 d=2
+
+# BUMP OF CHICKEN | 2020
+JPOP | Gravity | BUMP OF CHICKEN | y=2020 d=2
+JPOP | 窓の中から | BUMP OF CHICKEN | y=2022 d=2
+JPOP | なないろ | BUMP OF CHICKEN | y=2022 d=2
+JPOP | Hello,world! | BUMP OF CHICKEN | y=2015 d=2
+JPOP | リボン | BUMP OF CHICKEN | y=2017 d=2
+JPOP | 天体観測 | BUMP OF CHICKEN | y=2001 d=1
+
+# Mr.Children | 2022
+JPOP | 永遠 | Mr.Children | y=2022 d=2
+JPOP | ケモノミチ | Mr.Children | y=2021 d=2
+JPOP | HANABI | Mr.Children | y=2018 d=1
+JPOP | himawari | Mr.Children | y=2017 d=2
+JPOP | ヒカリノアトリエ | Mr.Children | y=2017 d=2
+JPOP | here comes my love | Mr.Children | y=2018 d=2
+JPOP | innocent world | Mr.Children | y=1994 d=1
+JPOP | Tomorrow never knows | Mr.Children | y=1994 d=1
+JPOP | Sign | Mr.Children | y=2004 d=1
+JPOP | しるし | Mr.Children | y=2006 d=2
+JPOP | 足音 ~Be Strong | Mr.Children | y=2008 d=2
+
+# スピッツ（Spitz） | 2020
+JPOP | 美しい鰭 | スピッツ | y=2020 d=2
+JPOP | 優しいあの子 | スピッツ | y=2019 d=2
+JPOP | ロビンソン | スピッツ | y=1995 d=1
+JPOP | チェリー | スピッツ | y=1996 d=1
+
+# マカロニえんぴつ（Macaroni Enpitsu） | 2020
+JPOP | なんでもないよ、 | マカロニえんぴつ | y=2020 d=2
+JPOP | ヤングアダルト | マカロニえんぴつ | y=2022 d=2
+JPOP | 恋人ごっこ | マカロニえんぴつ | y=2021 d=2
+JPOP | ブルーベリー・ナイツ | マカロニえんぴつ | y=2022 d=2
+JPOP | リンジュー・ラヴ | マカロニえんぴつ | y=2023 d=2
+
+# 乃木坂46（Nogizaka46） | 2020
+JPOP | ごめんねFingers crossed | 乃木坂46 | y=2020 d=2
+JPOP | 僕は僕を好きになる | 乃木坂46 | y=2021 d=2
+JPOP | Sing Out! | 乃木坂46 | y=2021 d=2
+JPOP | Actually... | 乃木坂46 | y=2022 d=2
+JPOP | おひとりさま天国 | 乃木坂46 | y=2022 d=2
+JPOP | インフルエンサー | 乃木坂46 | y=2017 d=2
+JPOP | 逃げ水 | 乃木坂46 | y=2017 d=2
+JPOP | いつかできるから今日できる | 乃木坂46 | y=2017 d=2
+JPOP | サヨナラの意味 | 乃木坂46 | y=2016 d=2
+JPOP | 裸足でSummer | 乃木坂46 | y=2016 d=2
+JPOP | ハルジオンが咲く頃 | 乃木坂46 | y=2016 d=2
+JPOP | 太陽ノック | 乃木坂46 | y=2015 d=2
+JPOP | 命は美しい | 乃木坂46 | y=2015 d=2
+JPOP | 今、話したい誰かがいる | 乃木坂46 | y=2015 d=2
+JPOP | シンクロニシティ | 乃木坂46 | y=2018 d=2
+JPOP | ジコチューで行こう! | 乃木坂46 | y=2018 d=2
+JPOP | 帰り道は遠回りしたくなる | 乃木坂46 | y=2018 d=2
+JPOP | 夜明けまで強がらなくてもいい | 乃木坂46 | y=2019 d=2
+JPOP | しあわせの保護色 | 乃木坂46 | y=2020 d=2
+
+# 櫻坂46（Sakurazaka46） | 2020
+JPOP | Nobody's fault | 櫻坂46 | y=2020 d=1
+JPOP | BAN | 櫻坂46 | y=2021 d=2
+JPOP | Start over! | 櫻坂46 | y=2021 d=2
+JPOP | 桜月 | 櫻坂46 | y=2022 d=2
+JPOP | 承認欲求 | 櫻坂46 | y=2022 d=2
+JPOP | 流れ弾 | 櫻坂46 | y=2023 d=2
+JPOP | Buddies | 櫻坂46 | y=2023 d=2
+
+# 日向坂46（Hinatazaka46） | 2020
+JPOP | 君しか勝たん | 日向坂46 | y=2020 d=2
+JPOP | ってか | 日向坂46 | y=2021 d=2
+JPOP | ドレミソラシド | 日向坂46 | y=2020 d=2
+JPOP | One choice | 日向坂46 | y=2020 d=2
+JPOP | 僕なんか | 日向坂46 | y=2020 d=2
+JPOP | キュン | 日向坂46 | y=2019 d=2
+JPOP | ソンナコトナイヨ | 日向坂46 | y=2020 d=2
+JPOP | こんなに好きになっちゃっていいの? | 日向坂46 | y=2019 d=2
+
+# AKB48 | 2020
+JPOP | 根も葉もRumor | AKB48 | y=2020 d=2
+JPOP | ジワるDAYS | AKB48 | y=2021 d=2
+JPOP | 翼はいらない | AKB48 | y=2016 d=2
+JPOP | 君はメロディー | AKB48 | y=2016 d=2
+JPOP | LOVE TRIP | AKB48 | y=2016 d=2
+JPOP | ハイテンション | AKB48 | y=2016 d=2
+JPOP | 365日の紙飛行機 | AKB48 | y=2016 d=1
+JPOP | 僕たちは戦わない | AKB48 | y=2015 d=2
+JPOP | 希望的リフレイン | AKB48 | y=2015 d=2
+JPOP | Teacher Teacher | AKB48 | y=2018 d=2
+JPOP | 失恋、ありがとう | AKB48 | y=2020 d=2
+JPOP | ヘビーローテーション | AKB48 | y=2010 d=1
+JPOP | ポニーテールとシュシュ | AKB48 | y=2010 d=2
+JPOP | フライングゲット | AKB48 | y=2011 d=2
+JPOP | 恋するフォーチュンクッキー | AKB48 | y=2013 d=1
+
+# Snow Man | 2020
+JPOP | D.D. | Snow Man | y=2020 d=2
+JPOP | HELLO HELLO | Snow Man | y=2021 d=2
+JPOP | Secret Touch | Snow Man | y=2022 d=2
+JPOP | KISSIN' MY LIPS | Snow Man | y=2020 d=2
+JPOP | Crazy F-R-E-S-H Beat | Snow Man | y=2020 d=2
+JPOP | Grandeur | Snow Man | y=2021 d=2
+JPOP | ブラザービート | Snow Man | y=2022 d=2
+
+# SixTONES | 2020
+JPOP | Imitation Rain | SixTONES | y=2020 d=2
+JPOP | NAVIGATOR | SixTONES | y=2020 d=2
+JPOP | マスカラ | SixTONES | y=2022 d=2
+JPOP | こっから | SixTONES | y=2021 d=2
+JPOP | NEW ERA | SixTONES | y=2020 d=2
+JPOP | 僕が僕じゃないみたいだ | SixTONES | y=2021 d=2
+
+# King & Prince | 2021
+JPOP | Mazy Night | King & Prince | y=2021 d=2
+JPOP | ツキヨミ | King & Prince | y=2021 d=2
+JPOP | koi-wazurai | King & Prince | y=2021 d=2
+JPOP | シンデレラガール | King & Prince | y=2018 d=2
+JPOP | Memorial | King & Prince | y=2018 d=2
+JPOP | 君を待ってる | King & Prince | y=2019 d=2
+JPOP | I promise | King & Prince | y=2021 d=2
+JPOP | Magic Touch | King & Prince | y=2021 d=2
+
+# なにわ男子（Naniwa Danshi） | 2021
+JPOP | 初心LOVE | なにわ男子 | y=2021 d=2
+
+# NiziU | 2020
+JPOP | Make you happy | NiziU | y=2020 d=1
+JPOP | Step and a step | NiziU | y=2021 d=2
+JPOP | Take a picture | NiziU | y=2021 d=2
+JPOP | CLAP CLAP | NiziU | y=2021 d=2
+JPOP | Poppin' Shakin' | NiziU | y=2022 d=2
+
+# JO1 | 2020
+JPOP | 無限大 | JO1 | y=2020 d=2
+JPOP | Run&Go | JO1 | y=2021 d=2
+JPOP | Born To Be Wild | JO1 | y=2021 d=2
+JPOP | OH-EH-OH | JO1 | y=2020 d=2
+
+# BE:FIRST | 2021
+JPOP | Gift | BE:FIRST | y=2021 d=2
+JPOP | Shining One | BE:FIRST | y=2021 d=2
+JPOP | Bye-Good-Bye | BE:FIRST | y=2022 d=2
+JPOP | Boom Boom Back | BE:FIRST | y=2023 d=2
+JPOP | Mainstream | BE:FIRST | y=2023 d=2
+
+# Number_i | 2024
+JPOP | GOAT | Number_i | y=2024 d=1
+JPOP | BON | Number_i | y=2024 d=2
+
+# Da-iCE | 2020
+JPOP | スターマイン | Da-iCE | y=2020 d=2
+JPOP | Kartell | Da-iCE | y=2023 d=2
+JPOP | CITRUS | Da-iCE | y=2021 d=1
+JPOP | I wonder | Da-iCE | y=2024 d=2
+
+# 宇多田ヒカル（Hikaru Utada） | 2021
+JPOP | One Last Kiss | 宇多田ヒカル | y=2021 d=1
+JPOP | Find Love | 宇多田ヒカル | y=2021 d=2
+JPOP | BADモード | 宇多田ヒカル | y=2021 d=2
+JPOP | PINK BLOOD | 宇多田ヒカル | y=2022 d=2
+JPOP | 君に夢中 | 宇多田ヒカル | y=2022 d=2
+JPOP | First Love | 宇多田ヒカル | y=2023 d=2
+JPOP | 花束を君に | 宇多田ヒカル | y=2016 d=2
+JPOP | 道 | 宇多田ヒカル | y=2016 d=2
+JPOP | あなた | 宇多田ヒカル | y=2018 d=2
+JPOP | 初恋 | 宇多田ヒカル | y=2018 d=2
+JPOP | Automatic | 宇多田ヒカル | y=1998 d=1
+JPOP | Can You Keep A Secret? | 宇多田ヒカル | y=2001 d=2
+JPOP | COLORS | 宇多田ヒカル | y=2002 d=2
+JPOP | Flavor Of Life | 宇多田ヒカル | y=2007 d=1
+JPOP | 桜流し | 宇多田ヒカル | y=2012 d=2
+
+# Uru | 2020
+JPOP | それを愛と呼ぶなら | Uru | y=2020 d=2
+JPOP | 紡ぎ | Uru | y=2021 d=2
+JPOP | あなたがいることで | Uru | y=2020 d=2
+JPOP | プロローグ | Uru | y=2019 d=2
+
+# ReoNa | 2021
+JPOP | ANIMA | ReoNa | y=2021 d=2
+JPOP | ないない | ReoNa | y=2022 d=2
+
+# 星街すいせい（Hoshimachi Suisei） | 2021
+JPOP | Stellar Stellar | 星街すいせい | y=2021 d=2
+JPOP | ビビデバ | 星街すいせい | y=2024 d=2
+
+# yama | 2021
+JPOP | 春を告げる | yama | y=2021 d=2
+JPOP | Oz. | yama | y=2023 d=2
+
+# Tani Yuuki | 2021
+JPOP | Myra | Tani Yuuki | y=2021 d=2
+JPOP | W / X / Y | Tani Yuuki | y=2022 d=1
+JPOP | もう一度 | Tani Yuuki | y=2023 d=2
+
+# TOMOO | 2022
+JPOP | Ginger | TOMOO | y=2022 d=2
+
+# Omoinotake | 2023
+JPOP | 幾億光年 | Omoinotake | y=2023 d=2
+
+# Novelbright | 2022
+JPOP | 開幕宣言 | Novelbright | y=2022 d=2
+JPOP | Walking with you | Novelbright | y=2020 d=2
+JPOP | ツキミソウ | Novelbright | y=2021 d=2
+JPOP | 愛とか恋とか | Novelbright | y=2022 d=2
+
+# ano | 2023
+JPOP | ちゅ、多様性。 | ano | y=2023 d=2
+
+# FRUITS ZIPPER | 2023
+JPOP | わたしの一番かわいいところ | FRUITS ZIPPER | y=2023 d=2
+
+# millennium parade | 2020
+JPOP | Fly with me | millennium parade | y=2020 d=2
+
+# milet | 2021
+JPOP | Anytime Anywhere | milet | y=2021 d=2
+JPOP | Ordinary days | milet | y=2020 d=2
+JPOP | inside you | milet | y=2020 d=2
+
+# Awesome City Club | 2021
+JPOP | 勿忘 | Awesome City Club | y=2021 d=1
+
+# =LOVE | 2021
+JPOP | ナツマトペ | =LOVE | y=2021 d=2
+JPOP | とくべチュ、して | =LOVE | y=2022 d=2
+
+# 瑛人（Eito） | 2020
+JPOP | 香水 | 瑛人 | y=2020 d=1
+
+# 菅田将暉（Masaki Suda） | 2019
+JPOP | まちがいさがし | 菅田将暉 | y=2019 d=1
+JPOP | 虹 | 菅田将暉 | y=2021 d=1
+JPOP | さよならエレジー | 菅田将暉 | y=2018 d=2
+JPOP | 見たこともない景色 | 菅田将暉 | y=2017 d=2
+
+# DAOKO × 米津玄師（DAOKO × Kenshi Yonezu） | 2017
+JPOP | 打上花火 | DAOKO × 米津玄師 | y=2017 d=1
+
+# Foorin | 2019
+JPOP | パプリカ | Foorin | y=2019 d=1
+
+# DISH// | 2020
+JPOP | 猫 | DISH// | y=2020 d=1
+
+# 欅坂46（Keyakizaka46） | 2016
+JPOP | サイレントマジョリティー | 欅坂46 | y=2016 d=1
+JPOP | 世界には愛しかない | 欅坂46 | y=2016 d=2
+JPOP | 二人セゾン | 欅坂46 | y=2017 d=2
+JPOP | 不協和音 | 欅坂46 | y=2017 d=1
+JPOP | 風に吹かれても | 欅坂46 | y=2017 d=2
+JPOP | ガラスを割れ! | 欅坂46 | y=2018 d=2
+JPOP | アンビバレント | 欅坂46 | y=2018 d=2
+JPOP | 黒い羊 | 欅坂46 | y=2019 d=2
+
+# Rin音 | 2020
+JPOP | snow jam | Rin音 | y=2020 d=2
+
+# wacci | 2020
+JPOP | 別の人の彼女になったよ | wacci | y=2020 d=2
+JPOP | 恋だろ | wacci | y=2022 d=2
+
+# 家入レオ（Leo Ieiri） | 2020
+JPOP | 未完成 | 家入レオ | y=2020 d=2
+JPOP | 君がくれた夏 | 家入レオ | y=2015 d=2
+JPOP | Silly | 家入レオ | y=2015 d=2
+JPOP | もし君を許せたら | 家入レオ | y=2018 d=2
+
+# [ALEXANDROS] | 2015
+JPOP | ワタリドリ | [ALEXANDROS] | y=2015 d=2
+
+# 空音（Kuune） | 2020
+JPOP | Hug feat. Kojikoji | 空音 | y=2020 d=2
+
+# Sexy Zone | 2020
+JPOP | RUN | Sexy Zone | y=2020 d=2
+
+# ちゃんみな（Chanmina） | 2020
+JPOP | Never Grow Up | ちゃんみな | y=2020 d=2
+
+# スキマスイッチ（Sukima Switch） | 2015
+JPOP | 奏(かなで) | スキマスイッチ | y=2015 d=2
+
+# オレンジスパイニクラブ（Orange Spy Nicklub） | 2020
+JPOP | キンモクセイ | オレンジスパイニクラブ | y=2020 d=2
+
+# 平井大（Dai Hirai） | 2021
+JPOP | Stand by me, Stand by you. | 平井大 | y=2021 d=2
+JPOP | 題名のない今日 | 平井大 | y=2021 d=2
+
+# 川崎鷹也（Takaya Kawasaki） | 2021
+JPOP | 魔法の絨毯 | 川崎鷹也 | y=2021 d=2
+
+# MISIA | 2018
+JPOP | アイノカタチ feat.HIDE(GReeeeN) | MISIA | y=2018 d=2
+JPOP | Everything | MISIA | y=2000 d=1
+
+# なとり（Natori） | 2022
+JPOP | Overdose | なとり | y=2022 d=1
+
+# 水曜日のカンパネラ（Wednesday Campanella） | 2022
+JPOP | エジソン | 水曜日のカンパネラ | y=2022 d=2
+
+# 幾田りら（Rira Ikuta） | 2022
+JPOP | スパークル | 幾田りら | y=2022 d=2
+
+# 大橋ちっぽけ（Chippoke Ohashi） | 2022
+JPOP | 常緑 | 大橋ちっぽけ | y=2022 d=2
+
+# 夜のひと笑い（Yoru no Hitowarai） | 2022
+JPOP | ミライチズ | 夜のひと笑い | y=2022 d=2
+
+# MAISONdes | 2022
+JPOP | ヨワネハキ | MAISONdes | y=2022 d=2
+JPOP | トウキョウ・シャンディ・ランデヴ | MAISONdes | y=2023 d=2
+
+# きゃない（Kyanai） | 2022
+JPOP | バニラ | きゃない | y=2022 d=2
+
+# キタニタツヤ（Tatsuya Kitani） | 2023
+JPOP | 青のすみか | キタニタツヤ | y=2023 d=2
+
+# 10-FEET | 2023
+JPOP | 第ゼロ感 | 10-FEET | y=2023 d=1
+
+# MAN WITH A MISSION × milet | 2023
+JPOP | 絆ノ奇跡 | MAN WITH A MISSION × milet | y=2023 d=2
+
+# MAN WITH A MISSION | 2019
+JPOP | Remember Me | MAN WITH A MISSION | y=2019 d=2
+JPOP | Raise your flag | MAN WITH A MISSION | y=2015 d=2
+JPOP | Seven Deadly Sins | MAN WITH A MISSION | y=2015 d=2
+
+# MY FIRST STORY | 2023
+JPOP | I'm a mess | MY FIRST STORY | y=2023 d=2
+
+# 百足 & 韻マン（Mukade & Inman） | 2023
+JPOP | 君のまま | 百足 & 韻マン | y=2023 d=2
+
+# Kanaria | 2023
+JPOP | 酔いどれ知らず | Kanaria | y=2023 d=2
+
+# 女王蜂（Queen Bee） | 2023
+JPOP | メフィスト | 女王蜂 | y=2023 d=2
+
+# 由薫（Yui Kaoru） | 2023
+JPOP | 星月夜 | 由薫 | y=2023 d=2
+
+# ヤングスキニー（Young Skinny） | 2023
+JPOP | 本当はね、 | ヤングスキニー | y=2023 d=2
+
+# シャイトープ（Shy Tope） | 2023
+JPOP | ランデヴー | シャイトープ | y=2023 d=2
+
+# HoneyWorks | 2023
+JPOP | 可愛くてごめん | HoneyWorks | y=2023 d=2
+
+# ポルノグラフィティ（Porno Graffitti） | 2023
+JPOP | サウダージ | ポルノグラフィティ | y=2023 d=2
+JPOP | オー!リバル | ポルノグラフィティ | y=2015 d=2
+
+# こっちのけんと（Kocchi no Kento） | 2024
+JPOP | はいよろこんで | こっちのけんと | y=2024 d=1
+
+# 友成空（Sora Tomonari） | 2024
+JPOP | 鬼ノ宴 | 友成空 | y=2024 d=2
+
+# GEMN | 2024
+JPOP | ファタール | GEMN | y=2024 d=2
+
+# 羊文学（Hitsujibungaku） | 2024
+JPOP | more than words | 羊文学 | y=2024 d=2
+
+# aiko | 2024
+JPOP | 相思相愛 | aiko | y=2024 d=2
+
+# マルシィ（Marcy） | 2024
+JPOP | ラブソング | マルシィ | y=2024 d=2
+
+# SPYAIR | 2024
+JPOP | オレンジ | SPYAIR | y=2024 d=2
+
+# Reol | 2021
+JPOP | 第六感 | Reol | y=2021 d=2
+
+# Chinozo | 2021
+JPOP | グッバイ宣言 | Chinozo | y=2021 d=2
+
+# INI | 2021
+JPOP | Rocketeer | INI | y=2021 d=2
+JPOP | CALL 119 | INI | y=2022 d=2
+
+# 三浦春馬（Haruma Miura） | 2020
+JPOP | Night Diver | 三浦春馬 | y=2020 d=2
+
+# 西野カナ（Kana Nishino） | 2015
+JPOP | トリセツ | 西野カナ | y=2015 d=1
+JPOP | もしも運命の人がいるのなら | 西野カナ | y=2015 d=2
+JPOP | Darling | 西野カナ | y=2015 d=2
+JPOP | 好き | 西野カナ | y=2015 d=2
+JPOP | あなたの好きなところ | 西野カナ | y=2016 d=2
+JPOP | パッ | 西野カナ | y=2017 d=2
+JPOP | アイラブユー | 西野カナ | y=2018 d=2
+JPOP | 会いたくて 会いたくて | 西野カナ | y=2010 d=1
+JPOP | Best Friend | 西野カナ | y=2010 d=2
+
+# 三代目 J SOUL BROTHERS | 2015
+JPOP | R.Y.U.S.E.I. | 三代目 J SOUL BROTHERS | y=2015 d=1
+JPOP | Summer Madness | 三代目 J SOUL BROTHERS | y=2015 d=2
+JPOP | O.R.I.O.N. | 三代目 J SOUL BROTHERS | y=2015 d=2
+JPOP | Welcome to TOKYO | 三代目 J SOUL BROTHERS | y=2016 d=2
+
+# ゲスの極み乙女。（Gesu no Kiwami Otome） | 2015
+JPOP | 私以外私じゃないの | ゲスの極み乙女。 | y=2015 d=2
+JPOP | ロマンスがありあまる | ゲスの極み乙女。 | y=2015 d=2
+JPOP | オトナチック | ゲスの極み乙女。 | y=2015 d=2
+
+# UNISON SQUARE GARDEN | 2015
+JPOP | シュガーソングとビターステップ | UNISON SQUARE GARDEN | y=2015 d=2
+
+# サカナクション（Sakanaction） | 2015
+JPOP | 新宝島 | サカナクション | y=2015 d=1
+JPOP | 忘れられないの | サカナクション | y=2019 d=2
+
+# 秦基博（Motohiro Hata） | 2015
+JPOP | ひまわりの約束 | 秦基博 | y=2015 d=1
+
+# 嵐（Arashi） | 2015
+JPOP | Sakura | 嵐 | y=2015 d=2
+JPOP | 愛を叫べ | 嵐 | y=2015 d=2
+JPOP | 青空の下、キミのとなり | 嵐 | y=2015 d=2
+JPOP | I seek | 嵐 | y=2016 d=2
+JPOP | 復活LOVE | 嵐 | y=2016 d=2
+JPOP | つなぐ | 嵐 | y=2017 d=2
+JPOP | 夏疾風 | 嵐 | y=2018 d=2
+JPOP | Find The Answer | 嵐 | y=2018 d=2
+JPOP | 君のうた | 嵐 | y=2018 d=2
+JPOP | BRAVE | 嵐 | y=2019 d=2
+JPOP | カイト | 嵐 | y=2020 d=2
+JPOP | Turning Up | 嵐 | y=2020 d=2
+JPOP | A・RA・SHI | 嵐 | y=1999 d=1
+JPOP | Love so sweet | 嵐 | y=2007 d=1
+JPOP | Happiness | 嵐 | y=2008 d=1
+JPOP | Believe | 嵐 | y=2008 d=2
+JPOP | Troublemaker | 嵐 | y=2012 d=1
+JPOP | Monster | 嵐 | y=2012 d=2
+JPOP | GUTS! | 嵐 | y=2013 d=2
+JPOP | Calling | 嵐 | y=2014 d=2
+
+# Superfly | 2015
+JPOP | Beautiful | Superfly | y=2015 d=2
+JPOP | 愛をこめて花束を | Superfly | y=2018 d=2
+JPOP | タマシイレボリューション | Superfly | y=2010 d=2
+
+# miwa | 2015
+JPOP | 夜空。 | miwa | y=2015 d=2
+
+# chay | 2015
+JPOP | あなたに恋をしてみました | chay | y=2015 d=2
+
+# 大原櫻子（Sakurako Ohara） | 2015
+JPOP | 瞳 | 大原櫻子 | y=2015 d=2
+
+# 福山雅治（Masaharu Fukuyama） | 2015
+JPOP | I am a HERO | 福山雅治 | y=2015 d=2
+JPOP | 桜坂 | 福山雅治 | y=2000 d=1
+
+# ゆず（Yuzu） | 2015
+JPOP | OLA!! | ゆず | y=2015 d=2
+JPOP | 夏色 | ゆず | y=1998 d=1
+JPOP | 栄光の架橋 | ゆず | y=2004 d=1
+
+# コブクロ（Kobukuro） | 2016
+JPOP | 未来 | コブクロ | y=2016 d=2
+JPOP | 蕾 | コブクロ | y=2007 d=2
+JPOP | 桜 | コブクロ | y=2005 d=1
+
+# ケツメイシ（Ketsumeishi） | 2016
+JPOP | 友よ〜この先もずっと… | ケツメイシ | y=2016 d=2
+JPOP | さくら | ケツメイシ | y=2005 d=1
+
+# GReeeeN | 2016
+JPOP | キセキ | GReeeeN | y=2016 d=1
+
+# Perfume | 2016
+JPOP | FLASH | Perfume | y=2016 d=2
+JPOP | TOKYO GIRL | Perfume | y=2017 d=2
+JPOP | Relax In The City | Perfume | y=2015 d=2
+JPOP | 無限未来 | Perfume | y=2018 d=2
+JPOP | ポリリズム | Perfume | y=2007 d=1
+JPOP | チョコレイト・ディスコ | Perfume | y=2007 d=1
+JPOP | ワンルーム・ディスコ | Perfume | y=2009 d=2
+
+# 安室奈美恵（Namie Amuro） | 2016
+JPOP | Hero | 安室奈美恵 | y=2016 d=2
+JPOP | Just You and I | 安室奈美恵 | y=2017 d=2
+JPOP | CAN YOU CELEBRATE? | 安室奈美恵 | y=1997 d=1
+
+# WANIMA | 2016
+JPOP | ともに | WANIMA | y=2016 d=1
+JPOP | やってみよう | WANIMA | y=2017 d=2
+JPOP | CHARM | WANIMA | y=2017 d=2
+JPOP | アゲイン | WANIMA | y=2019 d=2
+
+# Suchmos | 2017
+JPOP | STAY TUNE | Suchmos | y=2017 d=2
+
+# 三浦大知（Daichi Miura） | 2017
+JPOP | EXCITE | 三浦大知 | y=2017 d=2
+JPOP | Blizzard | 三浦大知 | y=2019 d=2
+
+# ピコ太郎（Piko-Taro） | 2016
+JPOP | PPAP(ペンパイナッポーアッポーペン) | ピコ太郎 | y=2016 d=1
+
+# DA PUMP | 2018
+JPOP | U.S.A. | DA PUMP | y=2018 d=1
+
+# KANA-BOON | 2015
+JPOP | シルエット | KANA-BOON | y=2015 d=2
+
+# HY | 2019
+JPOP | 366日 | HY | y=2019 d=2
+
+# MONGOL800 | 2019
+JPOP | 小さな恋のうた | MONGOL800 | y=2019 d=2
+
+# Little Glee Monster | 2018
+JPOP | 世界はあなたに笑いかけている | Little Glee Monster | y=2018 d=2
+
+# SHISHAMO | 2017
+JPOP | 明日も | SHISHAMO | y=2017 d=2
+
+# 神様、僕は気づいてしまった（Kamisama Boku wa Kidzuite Shimatta） | 2017
+JPOP | CQCQ | 神様、僕は気づいてしまった | y=2017 d=2
+
+# Doughnuts Hole | 2017
+JPOP | おとなの掟 | Doughnuts Hole | y=2017 d=2
+
+# 清水翔太（Shota Shimizu） | 2017
+JPOP | My Boo | 清水翔太 | y=2017 d=2
+
+# 桐谷健太（Kenta Kiritani） | 2016
+JPOP | 海の声 | 桐谷健太 | y=2016 d=1
+
+# JY | 2016
+JPOP | 好きな人がいること | JY | y=2016 d=2
+
+# 藤原さくら（Sakura Fujiwara） | 2016
+JPOP | Soup | 藤原さくら | y=2016 d=2
+
+# 平井堅（Ken Hirai） | 2016
+JPOP | 魔法って言っていいかな? | 平井堅 | y=2016 d=2
+JPOP | ノンフィクション | 平井堅 | y=2017 d=2
+
+# 桑田佳祐（Keisuke Kuwata） | 2016
+JPOP | ヨシ子さん | 桑田佳祐 | y=2016 d=2
+JPOP | 白い恋人達 | 桑田佳祐 | y=2001 d=2
+JPOP | 波乗りジョニー | 桑田佳祐 | y=2001 d=2
+
+# 椎名林檎（Sheena Ringo） | 2015
+JPOP | 長く短い祭 | 椎名林檎 | y=2015 d=2
+JPOP | 丸ノ内サディスティック | 椎名林檎 | y=1999 d=1
+JPOP | 罪と罰 | 椎名林檎 | y=2000 d=2
+
+# 絢香（Ayaka） | 2015
+JPOP | にじいろ | 絢香 | y=2015 d=2
+JPOP | 三日月 | 絢香 | y=2006 d=2
+
+# B'z | 2015
+JPOP | 有頂天 | B'z | y=2015 d=2
+JPOP | RED | B'z | y=2015 d=2
+JPOP | ultra soul | B'z | y=2001 d=1
+JPOP | LOVE PHANTOM | B'z | y=1995 d=1
+
+# ワルキューレ（Walküre） | 2016
+JPOP | 一度だけの恋なら | ワルキューレ | y=2016 d=2
+
+# WhiteFlame feat.初音ミク | 2015
+JPOP | 千本桜 | WhiteFlame feat.初音ミク | y=2015 d=2
+
+# 坂本九（Kyu Sakamoto） | 1961
+JPOP | 上を向いて歩こう | 坂本九 | y=1961 d=1
+
+# 美空ひばり（Hibari Misora） | 1989
+JPOP | 川の流れのように | 美空ひばり | y=1989 d=1
+
+# ピンク・レディー（Pink Lady） | 1977
+JPOP | UFO | ピンク・レディー | y=1977 d=1
+
+# 松田聖子（Seiko Matsuda） | 1980
+JPOP | 青い珊瑚礁 | 松田聖子 | y=1980 d=1
+
+# 松任谷由実（Yumi Matsutoya） | 1973
+JPOP | ひこうき雲 | 松任谷由実 | y=1973 d=1
+JPOP | 恋人がサンタクロース | 松任谷由実 | y=1980 d=1
+JPOP | Hello, my friend | 松任谷由実 | y=1994 d=2
+JPOP | 春よ、来い | 松任谷由実 | y=1994 d=1
+
+# 中島みゆき（Miyuki Nakajima） | 1975
+JPOP | 時代 | 中島みゆき | y=1975 d=1
+JPOP | 地上の星 | 中島みゆき | y=2000 d=1
+JPOP | 糸 | 中島みゆき | y=1998 d=1
+
+# 井上陽水（Yosui Inoue） | 1990
+JPOP | 少年時代 | 井上陽水 | y=1990 d=1
+
+# 山下達郎（Tatsuro Yamashita） | 1983
+JPOP | クリスマス・イブ | 山下達郎 | y=1983 d=1
+
+# 竹内まりや（Mariya Takeuchi） | 1984
+JPOP | Plastic Love | 竹内まりや | y=1984 d=1
+
+# サザンオールスターズ（Southern All Stars） | 2000
+JPOP | TSUNAMI | サザンオールスターズ | y=2000 d=1
+
+# 尾崎豊（Yutaka Ozaki） | 1983
+JPOP | I LOVE YOU | 尾崎豊 | y=1983 d=1
+
+# 小田和正（Kazumasa Oda） | 1991
+JPOP | ラブ・ストーリーは突然に | 小田和正 | y=1991 d=1
+
+# TM NETWORK | 1987
+JPOP | Get Wild | TM NETWORK | y=1987 d=1
+
+# THE BLUE HEARTS | 1987
+JPOP | リンダリンダ | THE BLUE HEARTS | y=1987 d=1
+
+# ZARD | 1993
+JPOP | 負けないで | ZARD | y=1993 d=1
+
+# WANDS | 1994
+JPOP | 世界が終るまでは… | WANDS | y=1994 d=1
+
+# 篠原涼子 with t.komuro（Ryoko Shinohara） | 1994
+JPOP | 恋しさと せつなさと 心強さと | 篠原涼子 with t.komuro | y=1994 d=1
+
+# ZONE | 2001
+JPOP | secret base ~君がくれたもの~ | ZONE | y=2001 d=1
+
+# 槇原敬之（Noriyuki Makihara） | 1991
+JPOP | どんなときも | 槇原敬之 | y=1991 d=1
+
+# GLAY | 1997
+JPOP | HOWEVER | GLAY | y=1997 d=1
+
+# L'Arc~en~Ciel | 1998
+JPOP | HONEY | L'Arc~en~Ciel | y=1998 d=1
+JPOP | READY STEADY GO | L'Arc~en~Ciel | y=2000 d=2
+
+# ASIAN KUNG-FU GENERATION | 2004
+JPOP | リライト | ASIAN KUNG-FU GENERATION | y=2004 d=1
+JPOP | 君という花 | ASIAN KUNG-FU GENERATION | y=2003 d=2
+JPOP | ソラニン | ASIAN KUNG-FU GENERATION | y=2010 d=2
+
+# ORANGE RANGE | 2004
+JPOP | 花 | ORANGE RANGE | y=2004 d=2
+
+# いきものがかり（Ikimonogakari） | 2010
+JPOP | ありがとう | いきものがかり | y=2010 d=1
+JPOP | YELL | いきものがかり | y=2009 d=1
+JPOP | ブルーバード | いきものがかり | y=2008 d=2
+JPOP | SAKURA | いきものがかり | y=2006 d=2
+
+# 大塚愛（Ai Otsuka） | 2003
+JPOP | さくらんぼ | 大塚愛 | y=2003 d=1
+JPOP | プラネタリウム | 大塚愛 | y=2005 d=2
+
+# 木村カエラ（Kaela Kimura） | 2006
+JPOP | Butterfly | 木村カエラ | y=2006 d=2
+
+# 青山テルマ feat.SoulJa（Thelma Aoyama） | 2008
+JPOP | そばにいるね | 青山テルマ feat.SoulJa | y=2008 d=1
+
+# きゃりーぱみゅぱみゅ（Kyary Pamyu Pamyu） | 2011
+JPOP | PONPONPON | きゃりーぱみゅぱみゅ | y=2011 d=1
+JPOP | つけまつける | きゃりーぱみゅぱみゅ | y=2012 d=2
+JPOP | にんじゃりばんばん | きゃりーぱみゅぱみゅ | y=2012 d=2
+JPOP | ファッションモンスター | きゃりーぱみゅぱみゅ | y=2012 d=2
+
+# supercell | 2009
+JPOP | 君の知らない物語 | supercell | y=2009 d=1
+
+# 浜崎あゆみ（Ayumi Hamasaki） | 1999
+JPOP | M | 浜崎あゆみ | y=1999 d=1
+JPOP | SEASONS | 浜崎あゆみ | y=2000 d=2
+JPOP | evolution | 浜崎あゆみ | y=2001 d=2
+JPOP | Dearest | 浜崎あゆみ | y=2002 d=2
+
+# 東京事変（Tokyo Jihen） | 2007
+JPOP | 閃光少女 | 東京事変 | y=2007 d=2
+
+# SMAP | 2003
+JPOP | 世界に一つだけの花 | SMAP | y=2003 d=1
+JPOP | 夜空ノムコウ | SMAP | y=1998 d=1
+
+# TOKIO | 2003
+JPOP | AMBITIOUS JAPAN! | TOKIO | y=2003 d=2
+JPOP | 宙船 | TOKIO | y=2006 d=2
+
+# EXILE | 2003
+JPOP | Choo Choo TRAIN | EXILE | y=2003 d=2
+JPOP | Lovers Again | EXILE | y=2007 d=2
+JPOP | 道 | EXILE | y=2007 d=2
+
+# 修二と彰（Shuji to Akira） | 2005
+JPOP | 青春アミーゴ | 修二と彰 | y=2005 d=1

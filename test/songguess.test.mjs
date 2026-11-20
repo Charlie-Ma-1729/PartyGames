@@ -744,3 +744,9 @@ test('鎖定倒數：沒有「全員」選項（全員鎖定本來就立刻揭�
   assert.equal(cleanSettings({ quorumMode: 'half' }).quorumMode, 'half');
   assert.equal(cleanSettings({ quorumMode: 'n' }).quorumMode, 'n');
 });
+
+test('鎖定倒數：沒有「全員」選項（全員鎖定本來就立刻揭曉）；舊的 all 設定視為不倒數', () => {
+  assert.equal(cleanSettings({ quorumMode: 'all' }).quorumMode, 'off');
+  assert.equal(cleanSettings({ quorumMode: 'half' }).quorumMode, 'half');
+  assert.equal(cleanSettings({ quorumMode: 'n' }).quorumMode, 'n');
+});
